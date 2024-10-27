@@ -3,7 +3,7 @@
 .idea/*
 .env
 media/*
-db.sqlite3
+foodie_be/sql/db.sqlite3
 foodie_be/authentication/migrations/*
 foodie_be/foodie/migrations/*
 __pycache__
