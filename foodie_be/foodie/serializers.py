@@ -11,6 +11,10 @@ class CategorySerializer(serializers.ModelSerializer):
             "name",
         )
 
+    def update(self, instance, validated_data):
+        instance.name = validated_data['name']
+        instance.save()
+        return instance
 
 class IngredientsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -60,3 +64,8 @@ class TagsSerializer(serializers.ModelSerializer):
             "pk",
             "name",
         )
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data['name']
+        instance.save()
+        return instance
