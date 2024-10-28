@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 import uuid
 import django
 from django.db import models
-from django.db.models import BooleanField
 
 
 def upload_to(instance, filename):
@@ -30,7 +29,7 @@ class Category(models.Model):
 class Recipe(models.Model):
     name = models.CharField(max_length=170)
     serves = models.IntegerField()
-    is_favorite = BooleanField(default=False)
+    is_favorite = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=django.utils.timezone.now)
     image = models.ImageField(upload_to=upload_to, blank=False, null=False)
     video = models.FileField(upload_to=upload_vide_to, blank=True, null=True)

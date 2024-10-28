@@ -1,21 +1,30 @@
 from django.shortcuts import get_list_or_404, get_object_or_404
-from rest_framework import generics, filters
+from rest_framework import generics, filters, viewsets
+from rest_framework.decorators import action
+
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
 from .HeaderAuthentication import HeaderAuthentication
-from .generics import UpdateAPIView, RetrieveUpdateAPIView
+from .generics import UpdateAPIView, PatchAPIView, ListModelViewSet
 from .models import Category, Recipe, Tag
 from .serializers import RecipesSerializer, CategorySerializer, TagsSerializer
 
-
-class SearchRecipies(generics.ListAPIView):
+class SearchRecipies(ListModelViewSet):
     authentication_classes = [HeaderAuthentication]
     pagination_class = PageNumberPagination
     serializer_class = RecipesSerializer
+
     queryset = Recipe.objects.all()
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
+
+    @action(detail=False)
+    def favorites(self, request, *args, **kwargs):
+        # Get all favorite recipes and sort them by pk
+        favorite_recipes = get_list_or_404(Recipe, is_favorite=True).sort()
+        serializer = self.get_serializer(favorite_recipes, many=True)
+        return Response(serializer.data)
 
 
 class Categories(generics.ListAPIView):
@@ -48,12 +57,12 @@ class TrendingRecipies(generics.ListAPIView):
         return Recipe.objects.filter(pk__in=results_pks).order_by('-pk')
 
 
-class FavoriteRecipes(RetrieveUpdateAPIView):
+class FavoriteRecipes(PatchAPIView):
     authentication_classes = [HeaderAuthentication]
     serializer_class = RecipesSerializer
-    queryset = Recipe.objects.filter(is_favorite=True)
+    queryset = Recipe.objects.all()
 
-    def patch(self, request, *args, **kwargs):
+    def patch(self,  request, *args, **kwargs):
         recipe = get_object_or_404(Recipe, pk=kwargs['pk'])
         if recipe.is_favorite:
             recipe.is_favorite = False
@@ -61,8 +70,7 @@ class FavoriteRecipes(RetrieveUpdateAPIView):
             recipe.is_favorite = True
         recipe.save()
 
-        return Response(data="Success", status=HTTP_201_CREATED)
-
+        return Response(data=f"Success {"favorite" if recipe.is_favorite else "unfavorite"} recipe", status=HTTP_201_CREATED)
 
 class Tags(generics.ListAPIView):
     authentication_classes = [HeaderAuthentication]

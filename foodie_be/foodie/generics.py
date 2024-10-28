@@ -1,23 +1,24 @@
-from rest_framework import generics
-from rest_framework import mixins
+from rest_framework import mixins, generics, viewsets
 
 class UpdateAPIView(mixins.UpdateModelMixin, generics.GenericAPIView):
     """
     Concrete view for updating a model instance.
-    Only Put request
     """
     def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
 
-class RetrieveUpdateAPIView(mixins.RetrieveModelMixin,
-                            mixins.UpdateModelMixin,
-                            generics.GenericAPIView):
+class PatchAPIView(mixins.UpdateModelMixin, generics.GenericAPIView):
     """
-    Concrete view for retrieving, updating a model (patch only) instance.
+    Concrete view for updating a model (patch only) instance.
     """
-    def get(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
-
     def patch(self, request, *args, **kwargs):
         return self.partial_update(request, *args, **kwargs)
+
+
+class ListModelViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """
+    Concrete view set for list a model instances.
+    """
+    def get(self, request, *args, **kwargs):
+        return super().list(self, request, *args, **kwargs)
