@@ -1,6 +1,6 @@
-![Logo](https://github.com/mikebgrep/foodie/blob/master/assets/logo.jpeg)
+![logo](https://github.com/mikebgrep/foodie/blob/master/assets/_d902a046-c74b-4ecf-bc96-4c5b781c6441.jpeg)
 
-# Foodie
+# ForkAPI
 ![version](https://img.shields.io/badge/version-1.0.0-green) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
 
 ###  Lightweight Rest API with admin panel which manage food recipies easily 
