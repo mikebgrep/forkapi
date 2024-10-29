@@ -1,5 +1,5 @@
 """
-ASGI config for foodie_be project.
+ASGI config for forkapi project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 

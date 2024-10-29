@@ -30,20 +30,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 #    libfribidi-dev
 
 # Set the working directory
-WORKDIR /foodie_be
+WORKDIR /forkapi
 
 # Copy the project
-COPY /foodie_be /foodie_be
+COPY /forkapi /forkapi
 
-COPY ./requirements.txt /foodie_be/requirements.txt
-COPY ./nginx/ssl /foodie_be/nginx/ssl
+COPY ./requirements.txt /forkapi/requirements.txt
+COPY ./nginx/ssl /forkapi/nginx/ssl
 
 # Install dependencies
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Privilege sql folder and containing files
-RUN mkdir /foodie_be/sql
+RUN mkdir /forkapi/sql
 RUN chown -R www-data:www-data /foodie_be/sql
 RUN echo 'umask 002' >> /etc/profile
 

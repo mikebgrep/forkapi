@@ -1,5 +1,5 @@
 """
-WSGI config for foodie_be project.
+WSGI config for forkapi project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

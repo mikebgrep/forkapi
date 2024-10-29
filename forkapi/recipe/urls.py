@@ -4,7 +4,7 @@ from rest_framework.routers import SimpleRouter
 from . import views
 from .views import Categories, TrendingRecipies, CategoryRecipes, FavoriteRecipes, Tags, TagsRecipies, SearchRecipies
 
-app_name = "foodie"
+app_name = "recipe"
 
 route = SimpleRouter()
 route.register(r"favorites", FavoriteRecipes)

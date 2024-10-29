@@ -1,5 +1,5 @@
 """
-URL configuration for foodie_be project.
+URL configuration for forkapi project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.1/topics/http/urls/
@@ -20,18 +20,18 @@ from django.contrib import admin
 from django.template.defaulttags import url
 from django.urls import path, include, re_path
 
-from foodie import views
+from recipe import views
 
 if settings.DEBUG:
     urlpatterns = (static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(settings.STATIC_URL,
                                                                                               document_root=settings.STATIC_ROOT) + [
                        path("api/auth/", include("authentication.urls")),
-                       path("api/foodie/", include("foodie.urls")),
+                       path("api/recipe/", include("recipe.urls")),
                        path('', admin.site.urls),
                    ])
 else:
     urlpatterns = ([
         path("api/auth/", include("authentication.urls")),
-        path("api/foodie/", include("foodie.urls")),
+        path("api/recipe/", include("recipe.urls")),
         path('', admin.site.urls),
     ])

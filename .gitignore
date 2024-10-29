@@ -3,11 +3,11 @@
 .idea/*
 .env
 media/*
-foodie_be/sql/db.sqlite3
-foodie_be/authentication/migrations/*
-foodie_be/foodie/migrations/*
+forkapi/sql/db.sqlite3
+forkapi/authentication/migrations/*
+forkapi/recipe/migrations/*
 __pycache__
-foodie_be/static/*
-foodie_be/media/*
+forkapi/static/*
+forkapi/media/*
 fullchain.pem
 privkey.pem
