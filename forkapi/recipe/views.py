@@ -1,8 +1,10 @@
 from django.shortcuts import get_list_or_404, get_object_or_404
 from rest_framework import generics, filters, status
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
 
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
 from .HeaderAuthentication import HeaderAuthentication
@@ -93,23 +95,27 @@ class TagsRecipies(generics.ListAPIView):
 
 
 class CreateCategory(generics.CreateAPIView):
-    authentication_classes = [HeaderAuthentication]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = CategorySerializer
 
 
 class UpdateCategory(UpdateAPIView):
-    authentication_classes = [HeaderAuthentication]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = CategorySerializer
     queryset = Category.objects.all()
 
 
 class CreateTag(generics.CreateAPIView):
-    authentication_classes = [HeaderAuthentication]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = TagsSerializer
 
 
 class UpdateTag(UpdateAPIView):
-    authentication_classes = [HeaderAuthentication]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = TagsSerializer
     queryset = Tag.objects.all()
 
@@ -118,7 +124,8 @@ class CreateRecipe(generics.CreateAPIView):
     """
     View for creating the recipe (only main info without ingredients and steps).
     """
-    authentication_classes = [HeaderAuthentication]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = RecipesSerializer
 
 
@@ -126,7 +133,8 @@ class CreateIngredients(generics.CreateAPIView):
     """
     View for creating Ingredients (many) for recipe (recipe pk needs to be passwd in the response).
     """
-    authentication_classes = [HeaderAuthentication]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = IngredientsSerializer
 
     def get_serializer(self, *args, **kwargs):
@@ -137,7 +145,8 @@ class CreateSteps(generics.CreateAPIView):
     """
     View for creating Steps (many) for recipe (recipe pk needs to be passwd in the response).
     """
-    authentication_classes = [HeaderAuthentication]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = StepsSerializer
 
     def get_serializer(self, *args, **kwargs):
@@ -148,6 +157,7 @@ class UpdateRecipe(UpdateAPIView):
     """
     View for updating the recipe (only main info without ingredients and steps).
     """
-    authentication_classes = [HeaderAuthentication]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = RecipesSerializer
     queryset = Recipe.objects.all()
