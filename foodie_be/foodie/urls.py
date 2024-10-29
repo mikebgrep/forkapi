@@ -1,9 +1,8 @@
 from django.urls import path, include
 from rest_framework.routers import SimpleRouter
 
-from . import views
 from .views import Categories, TrendingRecipies, CategoryRecipes, FavoriteRecipes, Tags, TagsRecipies, SearchRecipies, \
-    CreateCategory, UpdateCategory
+    CreateCategory, UpdateCategory, CreateRecipe, CreateIngredients, CreateSteps, UpdateRecipe
 
 app_name = "foodie"
 
@@ -20,6 +19,10 @@ urlpatterns = [
     path('', include(router.urls)),
     # Creation and update views
     path("category/add", CreateCategory.as_view()),
-    path("category/<int:pk>", UpdateCategory.as_view())
+    path("category/<int:pk>", UpdateCategory.as_view()),
+    path("recipe", CreateRecipe.as_view()),
+    path("recipe/<int:pk>", UpdateRecipe.as_view()),
+    path("recipe/ingredients", CreateIngredients.as_view()),
+    path("recipe/steps", CreateSteps.as_view()),
 
 ]

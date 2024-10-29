@@ -16,22 +16,33 @@ class CategorySerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+
 class IngredientsSerializer(serializers.ModelSerializer):
+    recipe = serializers.PrimaryKeyRelatedField(
+        queryset=Recipe.objects.all(),
+        write_only=True
+    )
+
     class Meta:
         model = Ingredient
         fields = (
             "name",
             "quantity",
-            "metric"
+            "metric",
+            "recipe"
         )
 
-
 class StepsSerializer(serializers.ModelSerializer):
+    recipe = serializers.PrimaryKeyRelatedField(
+        queryset=Recipe.objects.all(),
+        write_only=True
+    )
+
     class Meta:
         model = Step
         fields = (
-            "pk",
-            "text"
+            "text",
+            "recipe"
         )
 
 
@@ -57,7 +68,6 @@ class RecipesSerializer(serializers.ModelSerializer):
 
 
 class TagsSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Tag
         fields = (
