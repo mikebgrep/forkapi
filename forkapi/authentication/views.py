@@ -19,6 +19,8 @@ class LoginView(generics.CreateAPIView):
     """
     Retrieve Access Token for the user so can manage creating endpoint in recipe
     """
+    authentication_classes = [HeaderAuthentication]
+
     def post(self, request, *args, **kwargs):
         user = get_object_or_404(models.User, username=request.data['username'])
         if not user.check_password(request.data['password']):
