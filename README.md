@@ -2,7 +2,7 @@
 
 ![version](https://img.shields.io/badge/version-1.0.0-green) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
 
-<img align="right" src="https://github.com/mikebgrep/foodie/blob/master/assets/logo.png" height="210px" alt="Logo">
+<img align="right" src="https://github.com/mikebgrep/foodie/blob/master/assets/logo.png" height="170px" alt="Logo">
 
 ForkApi is a Lightweight Rest API with admin panel which manage food recipies easily 
 
