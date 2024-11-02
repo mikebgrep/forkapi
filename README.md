@@ -24,9 +24,7 @@ You can check the documentation of the API on this web page 👇
 
 
 ## Support 
-You can support the repo as click on the gif bellow 👇 I will share a repo with Android application to the supporters that leave a tip more or equal to 17$)
-
-[![tip](https://github.com/mikebgrep/good-food-recipes-api/blob/master/Coin-Kit_Support-XXX-OnTipeee.gif)](https://en.tipeee.com/mikebgrep)
+You can support the repo as click on the sponsorship button on right.
 
 ### License
 The repository use MIT license
