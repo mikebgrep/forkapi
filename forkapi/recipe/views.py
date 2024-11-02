@@ -1,3 +1,4 @@
+from django.core.serializers import get_serializer
 from django.shortcuts import get_list_or_404, get_object_or_404
 from rest_framework import generics, filters, status
 from rest_framework.authentication import TokenAuthentication
@@ -7,6 +8,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
+from yaml import serialize
+
 from .HeaderAuthentication import HeaderAuthentication
 from .generics import UpdateAPIView, PatchAPIView, ListModelViewSet
 from .models import Category, Recipe, Tag
@@ -68,7 +71,7 @@ class FavoriteRecipes(PatchAPIView):
     serializer_class = RecipesSerializer
     queryset = Recipe.objects.all()
 
-    def patch(self,  request, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
         recipe = get_object_or_404(Recipe, pk=kwargs['pk'])
         if recipe.is_favorite:
             recipe.is_favorite = False
@@ -76,7 +79,9 @@ class FavoriteRecipes(PatchAPIView):
             recipe.is_favorite = True
         recipe.save()
 
-        return Response(data=f"Success {"favorite" if recipe.is_favorite else "unfavorite"} recipe", status=HTTP_201_CREATED)
+        return Response(data=f"Success {"favorite" if recipe.is_favorite else "unfavorite"} recipe",
+                        status=HTTP_201_CREATED)
+
 
 class Tags(generics.ListAPIView):
     authentication_classes = [HeaderAuthentication]
@@ -141,6 +146,15 @@ class CreateIngredients(generics.CreateAPIView):
         kwargs['many'] = True
         return IngredientsSerializer(*args, **kwargs)
 
+    def perform_create(self, serializer):
+        recipe_id = self.kwargs.get('pk')
+
+        ingredients_data = serializer.validated_data
+        for ingredient in ingredients_data:
+            ingredient['recipe_id'] = recipe_id
+
+        serializer.save()
+
 class CreateSteps(generics.CreateAPIView):
     """
     View for creating Steps (many) for recipe (recipe pk needs to be passwd in the response).
@@ -152,6 +166,16 @@ class CreateSteps(generics.CreateAPIView):
     def get_serializer(self, *args, **kwargs):
         kwargs['many'] = True
         return StepsSerializer(*args, **kwargs)
+
+    def perform_create(self, serializer):
+        recipe_id = self.kwargs.get('pk')
+
+        steps_data = serializer.validated_data
+        for step in steps_data:
+            step['recipe_id'] = recipe_id
+
+        serializer.save()
+
 
 class UpdateRecipe(UpdateAPIView):
     """

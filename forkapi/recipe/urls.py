@@ -24,7 +24,7 @@ urlpatterns = [
     path("tag/add", CreateTag.as_view()),
     path("tag/<int:pk>", UpdateTag.as_view()),
     path("<int:pk>", UpdateRecipe.as_view()),
-    path("ingredients", CreateIngredients.as_view()),
-    path("steps", CreateSteps.as_view()),
+    path("<int:pk>/ingredients", CreateIngredients.as_view()),
+    path("<int:pk>/steps", CreateSteps.as_view()),
 
 ]
