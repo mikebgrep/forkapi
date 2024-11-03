@@ -205,7 +205,7 @@ JAZZMIN_SETTINGS = {
     "navigation_expanded": True,
 
     # Hide these apps when generating side menu e.g (auth)
-    "hide_apps": ["auth"],
+    "hide_apps": ["auth", "authtoken"],
 
     # Hide these models when generating side menu (e.g auth.user)
     "hide_models": [],
