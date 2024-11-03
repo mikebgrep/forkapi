@@ -4,27 +4,27 @@
 
 <img align="right" src="https://github.com/mikebgrep/foodie/blob/master/assets/logo.png" height="170px" alt="Logo">
 
-ForkApi is a Lightweight Rest API with admin panel which manage food recipies easily 
+ForkApi is a Lightweight RestAPI with admin panel to manage food recipes easily. 
 
  
-   - 🐍Python Django & Django rest framework based
+   - 🐍 Python Django & Django rest framework based
    - 🛳 Dockerfile for easy deployment + included packages for Raspberry Pi.
    - 👨‍🍳 Admin panel revamped with [jazzmin](https://github.com/farridav/django-jazzmin)
-   - 🤖 Android application source code for the supporters ( find more info in the readme bellow 👇)
-   - 🔐 Header authentication for easy access management to the API
+   - 🔐 Header authentication for easy access management to the API read endpoints
+   - 🔐 Token authentication for create and update endpoints
    - 🪶 SQLite database support.
-   - 🔎 Search endpoint support pagination
+   - 🔎 Search endpoints supporting pagination
 
 ### Documentation
-You can check the documentation of the API on this web page 👇
+You can sneek peek into  the documentation of the API on this web page 👇
 ## [Documentation](https://mikebgrep.github.io/forkapi/)
 
 ### Admin panel 
-![admin](https://github.com/mikebgrep/foodie/blob/master/assets/foodie-admin.gif)
+![admin](https://github.com/mikebgrep/foodie/blob/master/assets/admin.gif)
 
 
 ## Support 
-You can support the repo as click on the sponsorship button on right.
+You can support the repo as clicking on the sponsorship button on right.
 
 ### License
-The repository use MIT license
+The repository use [MIT](https://opensource.org/licenses/MIT) license
