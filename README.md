@@ -24,7 +24,9 @@ You can sneek peek into  the documentation of the API on this web page 👇
 
 
 ## Support 
-You can support the repo as clicking on the sponsorship button on right.
+You can support the repo as clicking on the sponsorship button.
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/mikegrep)
 
 ### License
 The repository use [MIT](https://opensource.org/licenses/MIT) license
