@@ -1,7 +1,7 @@
-import os, uuid, random, pytest
+import os, uuid, random, pytest, json
 
 from authentication.models import User
-from recipe.models import Category, Tag, Recipe
+from recipe.models import Category, Tag, Recipe, Ingredient
 from rest_framework.authtoken.models import Token
 from dotenv import load_dotenv
 from rest_framework.test import APIClient
@@ -85,7 +85,7 @@ def create_recipe(api_client):
 
     recipe_data = {
         "name": f"Recipe-{uuid.uuid4()}",
-        "serves": int(random.uniform(0,20)),
+        "serves": int(random.uniform(0, 20)),
         "category": category.pk,
         "tag": tag.pk,
         "prep_time": int(random.uniform(1, 60)),
@@ -98,6 +98,23 @@ def create_recipe(api_client):
     recipe = Recipe.objects.get(name=recipe_data['name'])
 
     return recipe, recipe_data
+
+@pytest.mark.django_db
+def create_ingredients_for_recipe(recipe: Recipe, api_client):
+
+    ingredients = [
+        {"name": f"ingredient-{uuid.uuid4()}", "quantity": str(random.uniform(1, 100)), "metric": "pcs"},
+        {"name": f"ingredient-{uuid.uuid4()}", "quantity": str(random.uniform(1, 100)), "metric": "tbsp"},
+        {"name": f"ingredient-{uuid.uuid4()}", "quantity": str(random.uniform(1, 100)), "metric": "tbsp"}
+    ]
+
+    response = api_client.post(f"/api/recipe/{recipe.pk}/ingredients", json=ingredients, format="json")
+    print(response.content)
+    assert response.status_code == 201
+    ingredients = Ingredient.objects.select_related(recipe=recipe).all()
+    print(ingredients)
+    return ingredients, ingredients
+
 
 
 @pytest.mark.django_db
@@ -231,3 +248,104 @@ def test_create_recipe(api_client):
     assert recipe.image is not None
     assert recipe.video is not None
     assert recipe.prep_time == recipe_data['prep_time']
+
+
+@pytest.mark.django_db
+def test_create_recipe_with_wrong_access_token(api_client):
+    add_access_token_header(api_client)
+    tag, tag_data = create_tag(api_client)
+    category, category_data = create_category(api_client)
+
+    recipe_data = {
+        "name": f"Recipe-{uuid.uuid4()}",
+        "serves": int(random.uniform(0, 20)),
+        "category": category.pk,
+        "tag": tag.pk,
+        "prep_time": int(random.uniform(1, 60)),
+        "image": open("tests/uploads/upload-image.png", 'rb'),
+        "video": open("tests/uploads/upload-video.mp4", 'rb')
+    }
+
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {uuid.uuid4()}")
+    response = api_client.post("/api/recipe/", recipe_data, format="multipart")
+    assert response.status_code == 401
+
+@pytest.mark.django_db
+def test_create_recipe_with_wrong_data(api_client):
+    add_access_token_header(api_client)
+    tag, tag_data = create_tag(api_client)
+    category, category_data = create_category(api_client)
+
+    recipe_data = {
+        "name": f"Recipe-{uuid.uuid4()}",
+        "serves": int(random.uniform(0, 20)),
+        "category": "Category",
+        "tag": tag.pk,
+        "prep_time": int(random.uniform(1, 60)),
+        "image": open("tests/uploads/upload-image.png", 'rb'),
+        "video": open("tests/uploads/upload-video.mp4", 'rb')
+    }
+
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {uuid.uuid4()}")
+    response = api_client.post("/api/recipe/", recipe_data, format="multipart")
+    assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_update_recipe_main_info(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    tag, tag_data = create_tag(api_client)
+    category, category_data = create_category(api_client)
+
+    update_recipe_data = {
+        "name": f"Recipe-{uuid.uuid4()}",
+        "serves": int(random.uniform(0, 20)),
+        "category": category.pk,
+        "tag": tag.pk,
+        "prep_time": int(random.uniform(1, 60)),
+        "image": open("tests/uploads/upload-image.png", 'rb'),
+        "video": open("tests/uploads/upload-video.mp4", 'rb')
+    }
+
+    response = api_client.put(f"/api/recipe/{recipe.pk}", update_recipe_data, format="multipart")
+    assert response.status_code == 200
+
+    updated_recipe = Recipe.objects.get(name=update_recipe_data['name'])
+    assert updated_recipe.serves == update_recipe_data['serves']
+    assert updated_recipe.tag.pk == tag.pk
+    assert updated_recipe.category.pk == category.pk
+    assert updated_recipe.prep_time == update_recipe_data['prep_time']
+    assert updated_recipe.image != recipe.image
+    assert updated_recipe.video != recipe.video
+
+
+@pytest.mark.django_db
+def test_update_recipe_main_info_with_invalid_access_token(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    tag, tag_data = create_tag(api_client)
+    category, category_data = create_category(api_client)
+
+    update_recipe_data = {
+        "name": f"Recipe-{uuid.uuid4()}",
+        "serves": int(random.uniform(0, 20)),
+        "category": category.pk,
+        "tag": tag.pk,
+        "prep_time": int(random.uniform(1, 60)),
+        "image": open("tests/uploads/upload-image.png", 'rb'),
+        "video": open("tests/uploads/upload-video.mp4", 'rb')
+    }
+
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {uuid.uuid4()}")
+    response = api_client.put(f"/api/recipe/{recipe.pk}", update_recipe_data, format="multipart")
+    assert response.status_code == 401
+
+@pytest.mark.django_db
+def test_create_ingredients_for_recipe(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    ingredients, ingredients_data = create_ingredients_for_recipe(recipe, api_client)
+
+    assert ingredients.recipe == recipe
+    assert ingredients
