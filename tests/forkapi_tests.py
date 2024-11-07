@@ -467,6 +467,7 @@ def test_unfavorite_recipe(api_client):
     recipe = Recipe.objects.get(pk=recipe.pk)
     assert recipe.is_favorite == False
 
+
 @pytest.mark.django_db
 def test_favorite_recipe_without_auth_header(api_client):
     add_access_token_header(api_client)
@@ -482,6 +483,7 @@ def test_favorite_non_existing_recipe(api_client):
     response = api_client.patch("/api/recipe/202/favorite", format="json")
 
     assert response.status_code == 404
+
 
 @pytest.mark.django_db
 def test_get_favorite_recipes(api_client):
@@ -504,7 +506,8 @@ def test_get_favorite_recipes(api_client):
     response_data = json.loads(response.content)
 
     assert len([x.name for x in favorite_recipes if x.name in [y['name'] for y in response_data['results']]]) == 2
-    assert len([x.is_favorite for x in favorite_recipes if x.is_favorite in [y['is_favorite'] for y in response_data['results']]]) == 2
+    assert len([x.is_favorite for x in favorite_recipes if
+                x.is_favorite in [y['is_favorite'] for y in response_data['results']]]) == 2
     assert response_data['count'] == 2
 
 
@@ -513,12 +516,14 @@ def test_get_favorites_no_recipes_match(api_client):
     response = api_client.get("/api/recipe/home/favorites/", format="json")
     assert response.status_code == 404
 
+
 @pytest.mark.django_db
 def test_get_favorites_no_secret_header(api_client):
     api_client.credentials()
     response = api_client.get("/api/recipe/home/favorites/", format="json")
 
     assert response.status_code == 403
+
 
 @pytest.mark.django_db
 def test_get_trending_recipes(api_client):
@@ -544,7 +549,89 @@ def test_get_trending_recipes_without_auth_header(api_client):
     assert response.status_code == 403
 
 
+@pytest.mark.django_db
+def test_get_recipe_by_name(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    create_recipe(api_client)
+
+    remove_access_token_header_and_add_header_secret(api_client)
+
+    response = api_client.get(f"/api/recipe/home/?search={recipe.name}", format="json")
+    assert response.status_code == 200
+
+    response_data = json.loads(response.content)
+    assert response_data['count'] == 1
+    assert response_data['results'][0]['name'] == recipe.name
 
 
+@pytest.mark.django_db
+def test_get_recipe_by_name_without_secret_header(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    api_client.credentials()
+
+    response = api_client.get(f"/api/recipe/home/?search={recipe.name}", format="json")
+    assert response.status_code == 403
 
 
+@pytest.mark.django_db
+def test_get_recipe_without_query_parameter(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    second_recipe, second_recipe_data = create_recipe(api_client)
+
+    remove_access_token_header_and_add_header_secret(api_client)
+
+    response = api_client.get(f"/api/recipe/home/", format="json")
+    assert response.status_code == 200
+
+    response_data = json.loads(response.content)
+    assert response_data['count'] == 2
+    assert len([x for x in response_data['results'] if x['name'] == recipe.name or x['name'] == second_recipe.name]) == 2
+
+@pytest.mark.django_db
+def test_get_recipe_return_recipe_main_info(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+
+    remove_access_token_header_and_add_header_secret(api_client)
+    response = api_client.get(f"/api/recipe/home/", format="json")
+
+    assert response.status_code == 200
+
+    response_data = json.loads(response.content)
+    assert recipe.name == response_data['results'][0]['name']
+    assert recipe.serves == response_data['results'][0]['serves']
+    assert recipe.prep_time == response_data['results'][0]['prep_time']
+    assert recipe.video is not None
+    assert recipe.image is not None
+    assert recipe.is_favorite == response_data['results'][0]['is_favorite']
+    assert recipe.category.pk == response_data['results'][0]['category']
+    assert recipe.tag.pk == response_data['results'][0]['tag']
+
+
+@pytest.mark.django_db
+def test_get_recipe_return_full_info(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    ingredients, ingredients_data = create_ingredients_for_recipe(recipe, api_client)
+    steps, steps_data = create_steps_for_recipe(recipe, api_client)
+
+    remove_access_token_header_and_add_header_secret(api_client)
+    response = api_client.get(f"/api/recipe/home/", format="json")
+    assert response.status_code == 200
+
+    response_data = json.loads(response.content)
+
+    assert recipe.name == response_data['results'][0]['name']
+    assert recipe.serves == response_data['results'][0]['serves']
+    assert recipe.prep_time == response_data['results'][0]['prep_time']
+    assert recipe.video is not None
+    assert recipe.image is not None
+    assert recipe.is_favorite == response_data['results'][0]['is_favorite']
+    assert recipe.category.pk == response_data['results'][0]['category']
+    assert recipe.tag.pk == response_data['results'][0]['tag']
+
+    assert len(ingredients) == len([x for x in response_data['results'][0]['ingredients']])
+    assert len(steps) == len([x for x in response_data['results'][0]['steps']])
