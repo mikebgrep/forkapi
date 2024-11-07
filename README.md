@@ -22,11 +22,6 @@ You can sneek peek into  the documentation of the API on this web page 👇
 ### Admin panel 
 ![admin](https://github.com/mikebgrep/foodie/blob/master/assets/admin.gif)
 
-## Test
-Run single test with command
-```commandline
-tox -- -k test_function_name
-```
 ## Support 
 You can support the repo as clicking on the sponsorship button.
 
