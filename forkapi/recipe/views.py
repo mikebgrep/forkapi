@@ -1,14 +1,11 @@
-from django.core.serializers import get_serializer
 from django.shortcuts import get_list_or_404, get_object_or_404
-from rest_framework import generics, filters, status
+from rest_framework import generics, filters
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
-
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
-from yaml import serialize
 
 from .HeaderAuthentication import HeaderAuthentication
 from .generics import UpdateAPIView, PatchAPIView, ListModelViewSet
@@ -24,13 +21,12 @@ class SearchRecipies(ListModelViewSet):
     pagination_class = PageNumberPagination
     serializer_class = RecipesSerializer
 
-    queryset = Recipe.objects.all()
+    queryset = Recipe.objects.all().order_by('created_at')
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
 
     @action(detail=False)
     def favorites(self, request, *args, **kwargs):
-        # Get all favorite recipes and sort them by pk
         favorite_recipes = get_list_or_404(Recipe, is_favorite=True)
         favorite_recipes.sort()
         page = self.paginate_queryset(favorite_recipes)
