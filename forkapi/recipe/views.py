@@ -31,9 +31,11 @@ class SearchRecipies(ListModelViewSet):
     @action(detail=False)
     def favorites(self, request, *args, **kwargs):
         # Get all favorite recipes and sort them by pk
-        favorite_recipes = get_list_or_404(Recipe, is_favorite=True).sort()
-        serializer = self.get_serializer(favorite_recipes, many=True)
-        return Response(serializer.data)
+        favorite_recipes = get_list_or_404(Recipe, is_favorite=True)
+        favorite_recipes.sort()
+        page = self.paginate_queryset(favorite_recipes)
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
 
 
 class Categories(generics.ListAPIView):
