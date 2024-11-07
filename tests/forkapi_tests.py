@@ -50,6 +50,11 @@ def add_access_token_header(api_client):
     api_client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
 
 
+def remove_access_token_header_and_add_header_secret(api_client):
+    api_client.credentials()
+    api_client.credentials(HTTP_X_AUTH_HEADER=os.getenv('X_AUTH_HEADER'))
+
+
 @pytest.mark.django_db
 def create_category(api_client):
     category_data = {
@@ -99,22 +104,37 @@ def create_recipe(api_client):
 
     return recipe, recipe_data
 
+
 @pytest.mark.django_db
 def create_ingredients_for_recipe(recipe: Recipe, api_client):
+    ingredients_data = json.dumps([
+        {"name": f"ingredient-{uuid.uuid4()}", "quantity": str(int(random.uniform(1, 100))), "metric": "pcs"},
+        {"name": f"ingredient-{uuid.uuid4()}", "quantity": str(int(random.uniform(1, 100))), "metric": "tbsp"},
+        {"name": f"ingredient-{uuid.uuid4()}", "quantity": str(int(random.uniform(1, 100))), "metric": "tbsp"}
+    ])
 
-    ingredients = [
-        {"name": f"ingredient-{uuid.uuid4()}", "quantity": str(random.uniform(1, 100)), "metric": "pcs"},
-        {"name": f"ingredient-{uuid.uuid4()}", "quantity": str(random.uniform(1, 100)), "metric": "tbsp"},
-        {"name": f"ingredient-{uuid.uuid4()}", "quantity": str(random.uniform(1, 100)), "metric": "tbsp"}
-    ]
-
-    response = api_client.post(f"/api/recipe/{recipe.pk}/ingredients", json=ingredients, format="json")
-    print(response.content)
+    response = api_client.post(f"/api/recipe/{recipe.pk}/ingredients", data=ingredients_data,
+                               content_type="application/json")
     assert response.status_code == 201
-    ingredients = Ingredient.objects.select_related(recipe=recipe).all()
-    print(ingredients)
-    return ingredients, ingredients
 
+    ingredients = recipe.ingredients.all()
+    return ingredients, json.loads(ingredients_data)
+
+
+@pytest.mark.django_db
+def create_steps_for_recipe(recipe: Recipe, api_client):
+    steps_data = json.dumps([
+        {"text": f"Prepare-{uuid.uuid4()}"},
+        {"text": f"Mix-{uuid.uuid4()}"},
+        {"text": f"Serve-{uuid.uuid4()}"},
+        {"text": f"Enjoy-{uuid.uuid4()}"},
+    ])
+
+    response = api_client.post(f"/api/recipe/{recipe.pk}/steps", data=steps_data, content_type="application/json")
+    assert response.status_code == 201
+
+    steps = recipe.steps.all()
+    return steps, json.loads(steps_data)
 
 
 @pytest.mark.django_db
@@ -270,6 +290,7 @@ def test_create_recipe_with_wrong_access_token(api_client):
     response = api_client.post("/api/recipe/", recipe_data, format="multipart")
     assert response.status_code == 401
 
+
 @pytest.mark.django_db
 def test_create_recipe_with_wrong_data(api_client):
     add_access_token_header(api_client)
@@ -341,11 +362,189 @@ def test_update_recipe_main_info_with_invalid_access_token(api_client):
     response = api_client.put(f"/api/recipe/{recipe.pk}", update_recipe_data, format="multipart")
     assert response.status_code == 401
 
+
 @pytest.mark.django_db
 def test_create_ingredients_for_recipe(api_client):
     add_access_token_header(api_client)
     recipe, recipe_data = create_recipe(api_client)
     ingredients, ingredients_data = create_ingredients_for_recipe(recipe, api_client)
 
-    assert ingredients.recipe == recipe
-    assert ingredients
+    assert len(ingredients) == len(ingredients_data)
+    assert len([x.name for x in ingredients if x.name in [y['name'] for y in ingredients_data]]) == len(ingredients)
+    assert len([x.quantity for x in ingredients if x.quantity in [y['quantity'] for y in ingredients_data]]) == len(
+        ingredients)
+    assert len([x.metric for x in ingredients if x.metric in [y['metric'] for y in ingredients_data]]) == len(
+        ingredients)
+
+
+@pytest.mark.django_db
+def test_create_ingredients_for_recipe_wrong_access_token(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {uuid.uuid4()}")
+
+    ingredients_data = json.dumps([
+        {"name": f"ingredient-{uuid.uuid4()}", "quantity": str(int(random.uniform(1, 100))), "metric": "pcs"},
+        {"name": f"ingredient-{uuid.uuid4()}", "quantity": str(int(random.uniform(1, 100))), "metric": "tbsp"},
+        {"name": f"ingredient-{uuid.uuid4()}", "quantity": str(int(random.uniform(1, 100))), "metric": "tbsp"}
+    ])
+
+    response = api_client.post(f"/api/recipe/{recipe.pk}/ingredients", data=ingredients_data,
+                               content_type="application/json")
+    assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_create_steps_for_recipe(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    steps, steps_data = create_steps_for_recipe(recipe, api_client)
+
+    assert len(steps) == len(steps_data)
+    assert len([x.text for x in steps if x.text in [y['text'] for y in steps_data]]) == len(steps)
+
+
+@pytest.mark.django_db
+def test_create_steps_for_recipe_wrong_access_token(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {uuid.uuid4()}")
+
+    steps_data = json.dumps([
+        {"text": f"Prepare-{uuid.uuid4()}"},
+        {"text": f"Mix-{uuid.uuid4()}"},
+        {"text": f"Serve-{uuid.uuid4()}"},
+        {"text": f"Enjoy-{uuid.uuid4()}"},
+    ])
+
+    response = api_client.post(f"/api/recipe/{recipe.pk}/steps", data=steps_data, content_type="application/json")
+    assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_create_steps_for_recipe_wrong_data(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+
+    steps_data = json.dumps([
+        {"text": False},
+        {"text": f"Mix-{uuid.uuid4()}"},
+        {"text": f"Serve-{uuid.uuid4()}"},
+        {"text": f"Enjoy-{uuid.uuid4()}"},
+    ])
+
+    response = api_client.post(f"/api/recipe/{recipe.pk}/steps", data=steps_data, content_type="application/json")
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_favorite_a_recipe(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    remove_access_token_header_and_add_header_secret(api_client)
+
+    response = api_client.patch(f"/api/recipe/{recipe.pk}/favorite", format="json")
+    assert response.status_code == 201
+
+    recipe = Recipe.objects.get(pk=recipe.pk)
+    assert recipe.is_favorite == True
+
+
+@pytest.mark.django_db
+def test_unfavorite_recipe(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    remove_access_token_header_and_add_header_secret(api_client)
+
+    response = api_client.patch(f"/api/recipe/{recipe.pk}/favorite", format="json")
+    assert response.status_code == 201
+
+    response = api_client.patch(f"/api/recipe/{recipe.pk}/favorite", format="json")
+    assert response.status_code == 201
+
+    recipe = Recipe.objects.get(pk=recipe.pk)
+    assert recipe.is_favorite == False
+
+@pytest.mark.django_db
+def test_favorite_recipe_without_auth_header(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    api_client.credentials()
+
+    response = api_client.patch(f"/api/recipe/{recipe.pk}/favorite", format="json")
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_favorite_non_existing_recipe(api_client):
+    response = api_client.patch("/api/recipe/202/favorite", format="json")
+
+    assert response.status_code == 404
+
+@pytest.mark.django_db
+def test_get_favorite_recipes(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    second_recipe, second_recipe_data = create_recipe(api_client)
+
+    remove_access_token_header_and_add_header_secret(api_client)
+
+    api_client.patch(f"/api/recipe/{recipe.pk}/favorite", format="json")
+    api_client.patch(f"/api/recipe/{second_recipe.pk}/favorite", format="json")
+
+    response = api_client.get("/api/recipe/home/favorites/", format="json")
+    assert response.status_code == 200
+    favorite_recipes = Recipe.objects.filter(is_favorite=True).all()
+
+    assert len(favorite_recipes) == 2
+    assert len([x for x in favorite_recipes if x.pk == recipe.pk or second_recipe.pk]) == 2
+
+    response_data = json.loads(response.content)
+
+    assert len([x.name for x in favorite_recipes if x.name in [y['name'] for y in response_data['results']]]) == 2
+    assert len([x.is_favorite for x in favorite_recipes if x.is_favorite in [y['is_favorite'] for y in response_data['results']]]) == 2
+    assert response_data['count'] == 2
+
+
+@pytest.mark.django_db
+def test_get_favorites_no_recipes_match(api_client):
+    response = api_client.get("/api/recipe/home/favorites/", format="json")
+    assert response.status_code == 404
+
+@pytest.mark.django_db
+def test_get_favorites_no_secret_header(api_client):
+    api_client.credentials()
+    response = api_client.get("/api/recipe/home/favorites/", format="json")
+
+    assert response.status_code == 403
+
+@pytest.mark.django_db
+def test_get_trending_recipes(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    second_recipe, second_recipe_data = create_recipe(api_client)
+
+    remove_access_token_header_and_add_header_secret(api_client)
+
+    response = api_client.get("/api/recipe/trending", format="json")
+    assert response.status_code == 200
+
+    response_data = json.loads(response.content)
+    assert len([x for x in response_data if x['name'] == recipe.name or x['name'] == second_recipe_data['name']]) == 2
+    assert response_data[0]['name'] != response_data[1]['name']
+
+
+@pytest.mark.django_db
+def test_get_trending_recipes_without_auth_header(api_client):
+    api_client.credentials()
+
+    response = api_client.get("/api/recipe/trending", format="json")
+    assert response.status_code == 403
+
+
+
+
+
+
