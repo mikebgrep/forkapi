@@ -161,7 +161,7 @@ hide:
 
     ##### Example cURL
     
-    > ```
+    > ``` bash
     >  curl --location 'localhost:8080/api/recipe/trending' --header 'X-Auth-Header: X_AUTH_HEADER
     > ```
 
@@ -286,6 +286,37 @@ hide:
     >  curl --location --request PUT 'host/api/recipe/1' --header 'Authorization: Token d8916a5f6cf16d2c6a87bc7461bc4680245609f0' --form 'image=@"/path/image.jpg"' --form 'name="Update name"' --form 'serves="4"' --form 'category="1"' --form 'tag="1"' --form 'prep_time="21"'
     > ```
 
+
+#### Delete recipes
+
+??? pied-piper-delete "DELETE /api/recipe/pk:int/"
+
+    ##### Parameters
+    
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be deleted`                   | 
+
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint example "token 443c104be8c6daeeaf86df634e69b97668b99900"`                         | 
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                            |
+    |---------------|-----------------------------------|---------------------------------------------------------------------|
+    | `204`         | `application/json`                |                                                                     |
+    | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location --request DELETE 'host/api/recipe/<int:pk>/' --header 'Authorization: Token d8916a5f6cf16d2c6a87bc7461bc4680245609f0' 
+    > ```
+
 ------------------------------------------------------------------------------------------
 
 # Category
@@ -309,7 +340,7 @@ hide:
 
     ##### Example cURL
     
-    > ```
+    > ``` bash
     >  curl --location 'host/api/recipe/category' --header 'X-Auth-Header: X_AUTH_HEADER'
     > ```
 
@@ -340,7 +371,7 @@ hide:
 
     ##### Example cURL
     
-    > ```
+    > ``` bash
     >  curl --location 'host/api/recipe/category/1/recipes' --header 'X-Auth-Header: X_AUTH_HEADER'
     > ```
 
@@ -441,7 +472,7 @@ hide:
 
     ##### Example cURL
     
-    > ```
+    > ``` bash
     >  curl --location 'host/api/recipe/tags' --header 'X-Auth-Header: X_AUTH_HEADER'
     > ```
 
@@ -471,7 +502,7 @@ hide:
 
     ##### Example cURL
     
-    > ```
+    > ``` bash
     >  curl --location 'host/api/recipe/tag/<int:pk>/recipes' --header 'X-Auth-Header: X_AUTH_HEADER'
     > ```
 
@@ -556,6 +587,10 @@ hide:
 
 ??? pied-piper "POST /api/recipe/int:pk/ingredients"
 
+    ???+ Info 
+        
+        Override already existing ingredients for the recipe
+
     ##### Payload
     ``` json title="recipe.Igredient object list"
     [
@@ -608,6 +643,10 @@ hide:
 # Steps
 
 ??? pied-piper "POST /api/recipe/int:pk/steps"
+
+    ???+ Info 
+        
+        Override already existing steps for the recipe
 
     ##### Payload
     ``` json title="recipe.Step object list"
