@@ -1,0 +1,72 @@
+
+
+
+site_name: ForkAPI Docs
+site_url: https://mikebgrep.github.io/forkapi/
+repo_url: https://github.com/mikebgrep/forkapi
+repo_name: mikebgrep/forkapi
+copyright: Copyright &copy; 2024 Mihael Hadzhiev
+
+
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - tables
+  - admonition
+  - pymdownx.blocks.caption
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - toc:
+      permalink: true
+      toc_depth: 4
+
+extra_css:
+  - stylesheets/extra.css
+
+
+nav:
+  - Home: index.md
+  - User Guide: user-guide.md
+  - Installation: Installation.md
+  - Make Your First Request: first-request.md
+  - Rest Reference: rest-references.md
+  - Contribution: contribution.md
+
+theme:
+  name: material
+  icon:
+    logo: material/library-outline
+    previous: fontawesome/solid/angle-left
+    next: fontawesome/solid/angle-right
+  plugins:
+    - search
+  features:
+    - search.suggest
+    - search.highlight
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - content.code.copy
+    - content.code.annotate
+    - navigation.footer
+
+
+  palette:
+    - scheme: slate
+      primary: light blue
+      toggle:
+       icon: material/toggle-switch
+       name: Switch to dark mode
+
+    - scheme: default
+      primary: blue
+      toggle:
+       icon: material/toggle-switch
+       name: Switch to light mode
+
