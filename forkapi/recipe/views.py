@@ -9,7 +9,7 @@ from rest_framework.status import HTTP_201_CREATED
 
 from .HeaderAuthentication import HeaderAuthentication
 from .generics import UpdateAPIView, PatchAPIView, ListModelViewSet
-from .models import Category, Recipe, Tag
+from .models import Category, Recipe, Tag, Ingredient, Step
 from .serializers import RecipesSerializer, CategorySerializer, TagsSerializer, IngredientsSerializer, StepsSerializer
 
 
@@ -147,6 +147,10 @@ class CreateIngredients(generics.CreateAPIView):
     def perform_create(self, serializer):
         recipe_id = self.kwargs.get('pk')
 
+        # Perform delete of the current ingredients if any
+        ingredients = Ingredient.objects.prefetch_related('recipe').filter(recipe_id=recipe_id)
+        ingredients.delete()
+
         ingredients_data = serializer.validated_data
         for ingredient in ingredients_data:
             ingredient['recipe_id'] = recipe_id
@@ -167,6 +171,10 @@ class CreateSteps(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         recipe_id = self.kwargs.get('pk')
+
+        # Perform delete on current steps
+        steps = Step.objects.prefetch_related('recipe').filter(recipe_id=recipe_id)
+        steps.delete()
 
         steps_data = serializer.validated_data
         for step in steps_data:
