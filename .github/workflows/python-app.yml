@@ -38,6 +38,7 @@ jobs:
       id: test_run
       env:
         X_AUTH_HEADER: ${{ secrets.X_AUTH_HEADER }}
-        DJANGO_SECRET: ${{ secrets.DJANGO_SECRET }}
+        DJANGO_SECRET: '91104238ecc97f62592f7d9cc9e277e2aeaffe432e5fd2a8ad'
+        PAGINATION_PAGE_SIZE: 15
       run: |
         tox -- -v
