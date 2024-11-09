@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
 
 from .HeaderAuthentication import HeaderAuthentication
-from .generics import UpdateAPIView, PatchAPIView, ListModelViewSet
+from .generics import UpdateAPIView, PatchAPIView, ListModelViewSet, CreateDestroyAPIView
 from .models import Category, Recipe, Tag, Ingredient, Step
 from .serializers import RecipesSerializer, CategorySerializer, TagsSerializer, IngredientsSerializer, StepsSerializer
 
@@ -123,13 +123,15 @@ class UpdateTag(UpdateAPIView):
     queryset = Tag.objects.all()
 
 
-class CreateRecipe(generics.CreateAPIView):
+class CreateDestroyRecipe(CreateDestroyAPIView):
     """
-    View for creating the recipe (only main info without ingredients and steps).
+    View for creating a recipe (only main info without ingredients and steps)
+    and delete (steps and ingredients inclusive)
     """
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = RecipesSerializer
+    queryset = Recipe.objects.all()
 
 
 class CreateIngredients(generics.CreateAPIView):
