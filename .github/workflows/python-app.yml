@@ -20,6 +20,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python 3.12
+      env:
+        X_AUTH_HEADER: ${{ secrets.X_AUTH_HEADER }}
+        DJANGO_SECRET: ${{ secrets.DJANGO_SECRET }}
+        PAGINATION_PAGE_SIZE: 15
       uses: actions/setup-python@v3
       with:
         python-version: "3.12"
