@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    container_name: nginx-yaml
+    volumes:
+      - uwsgi_data:/tmp/uwsgi/
+      - web_static:/forkapi/static/:ro
+      - web_media:/forkapi/media/
+      - cert:/forkapi/nginx/ssl/:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - foodie_network
+    depends_on:
+      - web
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: recipe-yaml
+    env_file:
+      - .env
+    restart: always
+    command: >
+      sh -c "uwsgi --ini uwsgi.ini"
+    volumes:
+      - data:/forkapi/sql/
+      - cert:/forkapi/nginx/ssl/
+      - uwsgi_data:/tmp/uwsgi/
+      - web_media:/forkapi/media/
+      - web_static:/forkapi/static/
+    networks:
+      - foodie_network
+
+volumes:
+  data:
+  cert:
+  uwsgi_data:
+  web_static:
+  web_media:
+
+networks:
+   foodie_network:
+        driver: bridge

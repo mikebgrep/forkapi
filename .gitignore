@@ -1,0 +1,14 @@
+# created by virtualenv automatically
+.venv/*
+.idea/*
+.env
+media/*
+forkapi/sql/db.sqlite3
+forkapi/authentication/migrations/*
+forkapi/recipe/migrations/*
+__pycache__
+forkapi/static/*
+forkapi/media/*
+fullchain.pem
+privkey.pem
+.tox
