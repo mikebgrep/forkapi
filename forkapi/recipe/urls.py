@@ -2,12 +2,16 @@ from django.urls import path, include
 from rest_framework.routers import SimpleRouter
 
 from .views import Categories, TrendingRecipies, CategoryRecipes, FavoriteRecipes, Tags, TagsRecipies, SearchRecipies, \
-    CreateCategory, UpdateCategory, CreateRecipe, CreateIngredients, CreateSteps, UpdateRecipe, CreateTag, UpdateTag
+    CreateCategory, UpdateCategory, CreateDestroyRecipe, CreateIngredients, CreateSteps, UpdateRecipe, CreateTag, \
+    UpdateTag
 
 app_name = "recipe"
 
-router = SimpleRouter()
-router.register(r"home", SearchRecipies)
+router_search = SimpleRouter()
+router_search.register(r"home", SearchRecipies)
+router_recipe = SimpleRouter()
+router_recipe.register(r"", CreateDestroyRecipe)
+
 
 urlpatterns = [
     path("category", Categories.as_view()),
@@ -16,11 +20,12 @@ urlpatterns = [
     path("tags", Tags.as_view()),
     path("tag/<int:pk>/recipes", TagsRecipies.as_view()),
     path("<int:pk>/favorite", FavoriteRecipes.as_view()),
-    path('', include(router.urls)),
+    path('', include(router_search.urls)),
+    path('', include(router_recipe.urls)),
+
     # Creation and update views
     path("category/add", CreateCategory.as_view()),
     path("category/<int:pk>", UpdateCategory.as_view()),
-    path("", CreateRecipe.as_view()),
     path("tag/add", CreateTag.as_view()),
     path("tag/<int:pk>", UpdateTag.as_view()),
     path("<int:pk>", UpdateRecipe.as_view()),

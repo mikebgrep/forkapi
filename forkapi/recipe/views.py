@@ -1,18 +1,16 @@
-from django.core.serializers import get_serializer
 from django.shortcuts import get_list_or_404, get_object_or_404
-from rest_framework import generics, filters, status
+from django.shortcuts import get_list_or_404, get_object_or_404
+from rest_framework import generics, filters
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
-
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
-from yaml import serialize
 
 from .HeaderAuthentication import HeaderAuthentication
-from .generics import UpdateAPIView, PatchAPIView, ListModelViewSet
-from .models import Category, Recipe, Tag
+from .generics import UpdateAPIView, PatchAPIView, ListModelViewSet, CreateDestroyAPIView
+from .models import Category, Recipe, Tag, Ingredient, Step
 from .serializers import RecipesSerializer, CategorySerializer, TagsSerializer, IngredientsSerializer, StepsSerializer
 
 
@@ -24,16 +22,19 @@ class SearchRecipies(ListModelViewSet):
     pagination_class = PageNumberPagination
     serializer_class = RecipesSerializer
 
-    queryset = Recipe.objects.all()
+
+    queryset = Recipe.objects.all().order_by('created_at')
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
 
     @action(detail=False)
     def favorites(self, request, *args, **kwargs):
-        # Get all favorite recipes and sort them by pk
-        favorite_recipes = get_list_or_404(Recipe, is_favorite=True).sort()
-        serializer = self.get_serializer(favorite_recipes, many=True)
-        return Response(serializer.data)
+
+        favorite_recipes = get_list_or_404(Recipe, is_favorite=True)
+        favorite_recipes.sort()
+        page = self.paginate_queryset(favorite_recipes)
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
 
 
 class Categories(generics.ListAPIView):
@@ -125,13 +126,17 @@ class UpdateTag(UpdateAPIView):
     queryset = Tag.objects.all()
 
 
-class CreateRecipe(generics.CreateAPIView):
+class CreateDestroyRecipe(CreateDestroyAPIView):
     """
-    View for creating the recipe (only main info without ingredients and steps).
+    View for creating a recipe (only main info without ingredients and steps)
+    and delete (steps and ingredients inclusive)
     """
+
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = RecipesSerializer
+    queryset = Recipe.objects.all()
+
 
 
 class CreateIngredients(generics.CreateAPIView):
@@ -148,6 +153,11 @@ class CreateIngredients(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         recipe_id = self.kwargs.get('pk')
+
+
+        # Perform delete of the current ingredients if any
+        ingredients = Ingredient.objects.prefetch_related('recipe').filter(recipe_id=recipe_id)
+        ingredients.delete()
 
         ingredients_data = serializer.validated_data
         for ingredient in ingredients_data:
@@ -169,6 +179,10 @@ class CreateSteps(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         recipe_id = self.kwargs.get('pk')
+
+        # Perform delete on current steps
+        steps = Step.objects.prefetch_related('recipe').filter(recipe_id=recipe_id)
+        steps.delete()
 
         steps_data = serializer.validated_data
         for step in steps_data:

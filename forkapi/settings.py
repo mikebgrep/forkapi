@@ -24,7 +24,8 @@ BASE_DIR = Path(__file__).resolve().parent
 SECRET_KEY = os.getenv('DJANGO_SECRET')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
+
 
 ALLOWED_HOSTS = ['*']
 # Application definition
@@ -205,7 +206,11 @@ JAZZMIN_SETTINGS = {
     "navigation_expanded": True,
 
     # Hide these apps when generating side menu e.g (auth)
+<<<<<<< HEAD
     "hide_apps": ["auth"],
+=======
+    "hide_apps": ["auth", "authtoken"],
+>>>>>>> master
 
     # Hide these models when generating side menu (e.g auth.user)
     "hide_models": [],
