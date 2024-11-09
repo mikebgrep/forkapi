@@ -601,6 +601,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#delete-recipes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Delete recipes
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -881,6 +890,15 @@
   <a href="#update-recipe-main-info-without-ingredients-and-steps" class="md-nav__link">
     <span class="md-ellipsis">
       Update recipe main info (without ingredients and steps)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delete-recipes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Delete recipes
     </span>
   </a>
   
@@ -1334,7 +1352,7 @@ with value csrftoken=token to work proparly</p>
 </table>
 <h5 id="example-curl_4">Example cURL<a class="headerlink" href="#example-curl_4" title="Permanent link">&para;</a></h5>
 <blockquote>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a> curl --location &#39;localhost:8080/api/recipe/trending&#39; --header &#39;X-Auth-Header: X_AUTH_HEADER
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="w"> </span>curl<span class="w"> </span>--location<span class="w"> </span><span class="s1">&#39;localhost:8080/api/recipe/trending&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="err">&#39;</span>X-Auth-Header:<span class="w"> </span>X_AUTH_HEADER
 </span></code></pre></div>
 </blockquote>
 </details>
@@ -1580,61 +1598,9 @@ with value csrftoken=token to work proparly</p>
 </span></code></pre></div>
 </blockquote>
 </details>
-<hr />
-<h1 id="category">Category<a class="headerlink" href="#category" title="Permanent link">&para;</a></h1>
-<h4 id="get-all-categories">Get all categories<a class="headerlink" href="#get-all-categories" title="Permanent link">&para;</a></h4>
-<details class="pied-piper-get">
-<summary>GET /api/recipe/trending</summary>
-<h5 id="headers_8">Headers<a class="headerlink" href="#headers_8" title="Permanent link">&para;</a></h5>
-<table>
-<thead>
-<tr>
-<th>name</th>
-<th>type</th>
-<th>data type</th>
-<th>description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>X-Auth-Header</code></td>
-<td><code>required</code></td>
-<td><code>UUID</code></td>
-<td><code>Header used for authentication with the API</code></td>
-</tr>
-</tbody>
-</table>
-<h5 id="responses_8">Responses<a class="headerlink" href="#responses_8" title="Permanent link">&para;</a></h5>
-<table>
-<thead>
-<tr>
-<th>http code</th>
-<th>content-type</th>
-<th>response</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>200</code></td>
-<td><code>application/json</code></td>
-<td><code>[recipe.Category objects list]</code></td>
-</tr>
-<tr>
-<td><code>403</code></td>
-<td><code>application/json</code></td>
-<td><code>{"detail":"You must use authentication header"}</code></td>
-</tr>
-</tbody>
-</table>
-<h5 id="example-curl_8">Example cURL<a class="headerlink" href="#example-curl_8" title="Permanent link">&para;</a></h5>
-<blockquote>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a> curl --location &#39;host/api/recipe/category&#39; --header &#39;X-Auth-Header: X_AUTH_HEADER&#39;
-</span></code></pre></div>
-</blockquote>
-</details>
-<h4 id="get-all-categories-recipes">Get all categories recipes<a class="headerlink" href="#get-all-categories-recipes" title="Permanent link">&para;</a></h4>
-<details class="pied-piper-get">
-<summary>GET /api/recipe/category/int:pk/recipes</summary>
+<h4 id="delete-recipes">Delete recipes<a class="headerlink" href="#delete-recipes" title="Permanent link">&para;</a></h4>
+<details class="pied-piper-delete">
+<summary>DELETE /api/recipe/pk:int/</summary>
 <h5 id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h5>
 <table>
 <thead>
@@ -1650,10 +1616,62 @@ with value csrftoken=token to work proparly</p>
 <td><code>&lt;int:pk&gt;</code></td>
 <td><code>path (required)</code></td>
 <td><code>int</code></td>
-<td><code>Category primary key</code></td>
+<td><code>Recipe primary key to be deleted</code></td>
 </tr>
 </tbody>
 </table>
+<h5 id="headers_8">Headers<a class="headerlink" href="#headers_8" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>type</th>
+<th>data type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Authorization</code></td>
+<td><code>required</code></td>
+<td><code>Access Token</code></td>
+<td><code>Token obtained from login endpoint example "token 443c104be8c6daeeaf86df634e69b97668b99900"</code></td>
+</tr>
+</tbody>
+</table>
+<h5 id="responses_8">Responses<a class="headerlink" href="#responses_8" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>http code</th>
+<th>content-type</th>
+<th>response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>204</code></td>
+<td><code>application/json</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>401</code></td>
+<td><code>application/json</code></td>
+<td><code>{"detail":"Authentication credentials were not provided."}</code></td>
+</tr>
+</tbody>
+</table>
+<h5 id="example-curl_8">Example cURL<a class="headerlink" href="#example-curl_8" title="Permanent link">&para;</a></h5>
+<blockquote>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="w"> </span>curl<span class="w"> </span>--location<span class="w"> </span>--request<span class="w"> </span>DELETE<span class="w"> </span><span class="s1">&#39;host/api/recipe/&lt;int:pk&gt;/&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;Authorization: Token d8916a5f6cf16d2c6a87bc7461bc4680245609f0&#39;</span><span class="w"> </span>
+</span></code></pre></div>
+</blockquote>
+</details>
+<hr />
+<h1 id="category">Category<a class="headerlink" href="#category" title="Permanent link">&para;</a></h1>
+<h4 id="get-all-categories">Get all categories<a class="headerlink" href="#get-all-categories" title="Permanent link">&para;</a></h4>
+<details class="pied-piper-get">
+<summary>GET /api/recipe/trending</summary>
 <h5 id="headers_9">Headers<a class="headerlink" href="#headers_9" title="Permanent link">&para;</a></h5>
 <table>
 <thead>
@@ -1686,7 +1704,7 @@ with value csrftoken=token to work proparly</p>
 <tr>
 <td><code>200</code></td>
 <td><code>application/json</code></td>
-<td><code>[recipe.Recipe objects list]</code></td>
+<td><code>[recipe.Category objects list]</code></td>
 </tr>
 <tr>
 <td><code>403</code></td>
@@ -1697,85 +1715,13 @@ with value csrftoken=token to work proparly</p>
 </table>
 <h5 id="example-curl_9">Example cURL<a class="headerlink" href="#example-curl_9" title="Permanent link">&para;</a></h5>
 <blockquote>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a> curl --location &#39;host/api/recipe/category/1/recipes&#39; --header &#39;X-Auth-Header: X_AUTH_HEADER&#39;
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="w"> </span>curl<span class="w"> </span>--location<span class="w"> </span><span class="s1">&#39;host/api/recipe/category&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;X-Auth-Header: X_AUTH_HEADER&#39;</span>
 </span></code></pre></div>
 </blockquote>
 </details>
-<h4 id="create-category">Create category<a class="headerlink" href="#create-category" title="Permanent link">&para;</a></h4>
-<details class="pied-piper">
-<summary>POST /api/recipe/category/add</summary>
-<h5 id="payload_4">Payload<a class="headerlink" href="#payload_4" title="Permanent link">&para;</a></h5>
-<div class="language-json highlight"><span class="filename">recipe.Category object</span><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="p">{</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span>
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="p">}</span>
-</span></code></pre></div>
-<h5 id="headers_10">Headers<a class="headerlink" href="#headers_10" title="Permanent link">&para;</a></h5>
-<table>
-<thead>
-<tr>
-<th>name</th>
-<th>type</th>
-<th>data type</th>
-<th>description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>Authorization</code></td>
-<td><code>required</code></td>
-<td><code>Access Token</code></td>
-<td><code>Token obtained from login endpoint example "token 443c104be8c6daeeaf86df634e69b97668b99900"</code></td>
-</tr>
-<tr>
-<td><code>Content-Type</code></td>
-<td><code>application/json</code></td>
-<td></td>
-<td>`Applicaton Json content header</td>
-</tr>
-</tbody>
-</table>
-<h5 id="responses_10">Responses<a class="headerlink" href="#responses_10" title="Permanent link">&para;</a></h5>
-<table>
-<thead>
-<tr>
-<th>http code</th>
-<th>content-type</th>
-<th>response</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>201</code></td>
-<td><code>application/json</code></td>
-<td><code>{recipe.Category object}</code></td>
-</tr>
-<tr>
-<td><code>400</code></td>
-<td><code>application/json</code></td>
-<td><code>{"tag":["Incorrect type. message"]}</code></td>
-</tr>
-<tr>
-<td><code>401</code></td>
-<td><code>application/json</code></td>
-<td><code>{"detail":"Authentication credentials were not provided."}</code></td>
-</tr>
-</tbody>
-</table>
-<h5 id="example-curl_10">Example cURL<a class="headerlink" href="#example-curl_10" title="Permanent link">&para;</a></h5>
-<blockquote>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="w"> </span>curl<span class="w"> </span>--location<span class="w"> </span><span class="s1">&#39;host/api/recipe/category/add&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;Authorization: token 443c104be8c6daeeaf86df634e69b97668b99900&#39;</span><span class="w"> </span>--data<span class="w"> </span><span class="s1">&#39;{&quot;name&quot;:&quot;Greek&quot;}&#39;</span>
-</span></code></pre></div>
-</blockquote>
-</details>
-<h4 id="update-category">Update category<a class="headerlink" href="#update-category" title="Permanent link">&para;</a></h4>
-<details class="pied-piper-put">
-<summary>PUT /api/recipe/category/int:pk</summary>
-<h5 id="payload_5">Payload<a class="headerlink" href="#payload_5" title="Permanent link">&para;</a></h5>
-<div class="language-json highlight"><span class="filename">recipe.Category object</span><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="p">{</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span><span class="p">,</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="p">}</span>
-</span></code></pre></div>
+<h4 id="get-all-categories-recipes">Get all categories recipes<a class="headerlink" href="#get-all-categories-recipes" title="Permanent link">&para;</a></h4>
+<details class="pied-piper-get">
+<summary>GET /api/recipe/category/int:pk/recipes</summary>
 <h5 id="parameters_4">Parameters<a class="headerlink" href="#parameters_4" title="Permanent link">&para;</a></h5>
 <table>
 <thead>
@@ -1795,6 +1741,61 @@ with value csrftoken=token to work proparly</p>
 </tr>
 </tbody>
 </table>
+<h5 id="headers_10">Headers<a class="headerlink" href="#headers_10" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>type</th>
+<th>data type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>X-Auth-Header</code></td>
+<td><code>required</code></td>
+<td><code>UUID</code></td>
+<td><code>Header used for authentication with the API</code></td>
+</tr>
+</tbody>
+</table>
+<h5 id="responses_10">Responses<a class="headerlink" href="#responses_10" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>http code</th>
+<th>content-type</th>
+<th>response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>200</code></td>
+<td><code>application/json</code></td>
+<td><code>[recipe.Recipe objects list]</code></td>
+</tr>
+<tr>
+<td><code>403</code></td>
+<td><code>application/json</code></td>
+<td><code>{"detail":"You must use authentication header"}</code></td>
+</tr>
+</tbody>
+</table>
+<h5 id="example-curl_10">Example cURL<a class="headerlink" href="#example-curl_10" title="Permanent link">&para;</a></h5>
+<blockquote>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="w"> </span>curl<span class="w"> </span>--location<span class="w"> </span><span class="s1">&#39;host/api/recipe/category/1/recipes&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;X-Auth-Header: X_AUTH_HEADER&#39;</span>
+</span></code></pre></div>
+</blockquote>
+</details>
+<h4 id="create-category">Create category<a class="headerlink" href="#create-category" title="Permanent link">&para;</a></h4>
+<details class="pied-piper">
+<summary>POST /api/recipe/category/add</summary>
+<h5 id="payload_4">Payload<a class="headerlink" href="#payload_4" title="Permanent link">&para;</a></h5>
+<div class="language-json highlight"><span class="filename">recipe.Category object</span><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="p">{</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="p">}</span>
+</span></code></pre></div>
 <h5 id="headers_11">Headers<a class="headerlink" href="#headers_11" title="Permanent link">&para;</a></h5>
 <table>
 <thead>
@@ -1831,33 +1832,56 @@ with value csrftoken=token to work proparly</p>
 </thead>
 <tbody>
 <tr>
-<td><code>200</code></td>
+<td><code>201</code></td>
 <td><code>application/json</code></td>
-<td><code>{recipe.Recipe object}</code></td>
+<td><code>{recipe.Category object}</code></td>
+</tr>
+<tr>
+<td><code>400</code></td>
+<td><code>application/json</code></td>
+<td><code>{"tag":["Incorrect type. message"]}</code></td>
 </tr>
 <tr>
 <td><code>401</code></td>
 <td><code>application/json</code></td>
 <td><code>{"detail":"Authentication credentials were not provided."}</code></td>
 </tr>
-<tr>
-<td><code>404</code></td>
-<td><code>application/json</code></td>
-<td><code>{"detail":"No Category matches the given query."}</code></td>
-</tr>
 </tbody>
 </table>
 <h5 id="example-curl_11">Example cURL<a class="headerlink" href="#example-curl_11" title="Permanent link">&para;</a></h5>
 <blockquote>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="w"> </span>curl<span class="w"> </span>--location<span class="w"> </span>--request<span class="w"> </span>PUT<span class="w"> </span><span class="s1">&#39;host/api/recipe/category/6&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;Authorization: token 443c104be8c6daeeaf86df634e69b97668b99900&#39;</span><span class="w">  </span>--header<span class="w"> </span><span class="s1">&#39;Content-Type: application/json&#39;</span><span class="w">  </span>--data<span class="w"> </span><span class="s1">&#39;{&quot;name&quot;:&quot;Italiano&quot;}&#39;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="w"> </span>curl<span class="w"> </span>--location<span class="w"> </span><span class="s1">&#39;host/api/recipe/category/add&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;Authorization: token 443c104be8c6daeeaf86df634e69b97668b99900&#39;</span><span class="w"> </span>--data<span class="w"> </span><span class="s1">&#39;{&quot;name&quot;:&quot;Greek&quot;}&#39;</span>
 </span></code></pre></div>
 </blockquote>
 </details>
-<hr />
-<h1 id="tag">Tag<a class="headerlink" href="#tag" title="Permanent link">&para;</a></h1>
-<h4 id="get-all-tags">Get all tags<a class="headerlink" href="#get-all-tags" title="Permanent link">&para;</a></h4>
-<details class="pied-piper-get">
-<summary>GET /api/recipe/tags</summary>
+<h4 id="update-category">Update category<a class="headerlink" href="#update-category" title="Permanent link">&para;</a></h4>
+<details class="pied-piper-put">
+<summary>PUT /api/recipe/category/int:pk</summary>
+<h5 id="payload_5">Payload<a class="headerlink" href="#payload_5" title="Permanent link">&para;</a></h5>
+<div class="language-json highlight"><span class="filename">recipe.Category object</span><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="p">{</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span><span class="p">,</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="p">}</span>
+</span></code></pre></div>
+<h5 id="parameters_5">Parameters<a class="headerlink" href="#parameters_5" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>type</th>
+<th>data type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&lt;int:pk&gt;</code></td>
+<td><code>path (required)</code></td>
+<td><code>int</code></td>
+<td><code>Category primary key</code></td>
+</tr>
+</tbody>
+</table>
 <h5 id="headers_12">Headers<a class="headerlink" href="#headers_12" title="Permanent link">&para;</a></h5>
 <table>
 <thead>
@@ -1870,10 +1894,16 @@ with value csrftoken=token to work proparly</p>
 </thead>
 <tbody>
 <tr>
-<td><code>X-Auth-Header</code></td>
+<td><code>Authorization</code></td>
 <td><code>required</code></td>
-<td><code>UUID</code></td>
-<td><code>Header used for authentication with the API</code></td>
+<td><code>Access Token</code></td>
+<td><code>Token obtained from login endpoint example "token 443c104be8c6daeeaf86df634e69b97668b99900"</code></td>
+</tr>
+<tr>
+<td><code>Content-Type</code></td>
+<td><code>application/json</code></td>
+<td></td>
+<td>`Applicaton Json content header</td>
 </tr>
 </tbody>
 </table>
@@ -1890,43 +1920,31 @@ with value csrftoken=token to work proparly</p>
 <tr>
 <td><code>200</code></td>
 <td><code>application/json</code></td>
-<td><code>[recipe.Tag objects list]</code></td>
+<td><code>{recipe.Recipe object}</code></td>
 </tr>
 <tr>
-<td><code>403</code></td>
+<td><code>401</code></td>
 <td><code>application/json</code></td>
-<td><code>{"detail":"You must use authentication header"}</code></td>
+<td><code>{"detail":"Authentication credentials were not provided."}</code></td>
+</tr>
+<tr>
+<td><code>404</code></td>
+<td><code>application/json</code></td>
+<td><code>{"detail":"No Category matches the given query."}</code></td>
 </tr>
 </tbody>
 </table>
 <h5 id="example-curl_12">Example cURL<a class="headerlink" href="#example-curl_12" title="Permanent link">&para;</a></h5>
 <blockquote>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a> curl --location &#39;host/api/recipe/tags&#39; --header &#39;X-Auth-Header: X_AUTH_HEADER&#39;
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="w"> </span>curl<span class="w"> </span>--location<span class="w"> </span>--request<span class="w"> </span>PUT<span class="w"> </span><span class="s1">&#39;host/api/recipe/category/6&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;Authorization: token 443c104be8c6daeeaf86df634e69b97668b99900&#39;</span><span class="w">  </span>--header<span class="w"> </span><span class="s1">&#39;Content-Type: application/json&#39;</span><span class="w">  </span>--data<span class="w"> </span><span class="s1">&#39;{&quot;name&quot;:&quot;Italiano&quot;}&#39;</span>
 </span></code></pre></div>
 </blockquote>
 </details>
-<h4 id="get-all-recipes-from-tag">Get all recipes from tag<a class="headerlink" href="#get-all-recipes-from-tag" title="Permanent link">&para;</a></h4>
+<hr />
+<h1 id="tag">Tag<a class="headerlink" href="#tag" title="Permanent link">&para;</a></h1>
+<h4 id="get-all-tags">Get all tags<a class="headerlink" href="#get-all-tags" title="Permanent link">&para;</a></h4>
 <details class="pied-piper-get">
-<summary>GET /api/recipe/tag/int:pk/recipes</summary>
-<h5 id="parameters_5">Parameters<a class="headerlink" href="#parameters_5" title="Permanent link">&para;</a></h5>
-<table>
-<thead>
-<tr>
-<th>name</th>
-<th>type</th>
-<th>data type</th>
-<th>description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>&lt;int:pk&gt;</code></td>
-<td><code>path (required)</code></td>
-<td><code>int</code></td>
-<td><code>Tag primary key</code></td>
-</tr>
-</tbody>
-</table>
+<summary>GET /api/recipe/tags</summary>
 <h5 id="headers_13">Headers<a class="headerlink" href="#headers_13" title="Permanent link">&para;</a></h5>
 <table>
 <thead>
@@ -1959,7 +1977,7 @@ with value csrftoken=token to work proparly</p>
 <tr>
 <td><code>200</code></td>
 <td><code>application/json</code></td>
-<td><code>{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}</code></td>
+<td><code>[recipe.Tag objects list]</code></td>
 </tr>
 <tr>
 <td><code>403</code></td>
@@ -1970,85 +1988,13 @@ with value csrftoken=token to work proparly</p>
 </table>
 <h5 id="example-curl_13">Example cURL<a class="headerlink" href="#example-curl_13" title="Permanent link">&para;</a></h5>
 <blockquote>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a> curl --location &#39;host/api/recipe/tag/&lt;int:pk&gt;/recipes&#39; --header &#39;X-Auth-Header: X_AUTH_HEADER&#39;
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="w"> </span>curl<span class="w"> </span>--location<span class="w"> </span><span class="s1">&#39;host/api/recipe/tags&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;X-Auth-Header: X_AUTH_HEADER&#39;</span>
 </span></code></pre></div>
 </blockquote>
 </details>
-<h4 id="create-tag">Create tag<a class="headerlink" href="#create-tag" title="Permanent link">&para;</a></h4>
-<details class="pied-piper">
-<summary>POST /api/recipe/tag/add</summary>
-<h5 id="payload_6">Payload<a class="headerlink" href="#payload_6" title="Permanent link">&para;</a></h5>
-<div class="language-json highlight"><span class="filename">recipe.Tag object</span><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="p">{</span>
-</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span>
-</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="p">}</span>
-</span></code></pre></div>
-<h5 id="headers_14">Headers<a class="headerlink" href="#headers_14" title="Permanent link">&para;</a></h5>
-<table>
-<thead>
-<tr>
-<th>name</th>
-<th>type</th>
-<th>data type</th>
-<th>description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>Authorization</code></td>
-<td><code>required</code></td>
-<td><code>Access Token</code></td>
-<td><code>Token obtained from login endpoint example "token 443c104be8c6daeeaf86df634e69b97668b99900"</code></td>
-</tr>
-<tr>
-<td><code>Content-Type</code></td>
-<td><code>application/json</code></td>
-<td></td>
-<td>`Applicaton Json content header</td>
-</tr>
-</tbody>
-</table>
-<h5 id="responses_14">Responses<a class="headerlink" href="#responses_14" title="Permanent link">&para;</a></h5>
-<table>
-<thead>
-<tr>
-<th>http code</th>
-<th>content-type</th>
-<th>response</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>201</code></td>
-<td><code>application/json</code></td>
-<td><code>{recipe.Category object}</code></td>
-</tr>
-<tr>
-<td><code>400</code></td>
-<td><code>application/json</code></td>
-<td><code>{"tag":["Incorrect type. message"]}</code></td>
-</tr>
-<tr>
-<td><code>401</code></td>
-<td><code>application/json</code></td>
-<td><code>{"detail":"Authentication credentials were not provided."}</code></td>
-</tr>
-</tbody>
-</table>
-<h5 id="example-curl_14">Example cURL<a class="headerlink" href="#example-curl_14" title="Permanent link">&para;</a></h5>
-<blockquote>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="w"> </span>curl<span class="w"> </span>--location<span class="w"> </span><span class="s1">&#39;host/api/recipe/tag/add&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;Authorization: token 443c104be8c6daeeaf86df634e69b97668b99900&#39;</span><span class="w"> </span>--data<span class="w"> </span><span class="s1">&#39;{&quot;name&quot;:&quot;Summer vibes&quot;}&#39;</span>
-</span></code></pre></div>
-</blockquote>
-</details>
-<h4 id="update-tag">Update tag<a class="headerlink" href="#update-tag" title="Permanent link">&para;</a></h4>
-<details class="pied-piper-put">
-<summary>PUT /api/recipe/tag/int:pk</summary>
-<h5 id="payload_7">Payload<a class="headerlink" href="#payload_7" title="Permanent link">&para;</a></h5>
-<div class="language-json highlight"><span class="filename">recipe.Category object</span><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="p">{</span>
-</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span><span class="p">,</span>
-</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>
-</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="p">}</span>
-</span></code></pre></div>
+<h4 id="get-all-recipes-from-tag">Get all recipes from tag<a class="headerlink" href="#get-all-recipes-from-tag" title="Permanent link">&para;</a></h4>
+<details class="pied-piper-get">
+<summary>GET /api/recipe/tag/int:pk/recipes</summary>
 <h5 id="parameters_6">Parameters<a class="headerlink" href="#parameters_6" title="Permanent link">&para;</a></h5>
 <table>
 <thead>
@@ -2068,6 +2014,61 @@ with value csrftoken=token to work proparly</p>
 </tr>
 </tbody>
 </table>
+<h5 id="headers_14">Headers<a class="headerlink" href="#headers_14" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>type</th>
+<th>data type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>X-Auth-Header</code></td>
+<td><code>required</code></td>
+<td><code>UUID</code></td>
+<td><code>Header used for authentication with the API</code></td>
+</tr>
+</tbody>
+</table>
+<h5 id="responses_14">Responses<a class="headerlink" href="#responses_14" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>http code</th>
+<th>content-type</th>
+<th>response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>200</code></td>
+<td><code>application/json</code></td>
+<td><code>{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}</code></td>
+</tr>
+<tr>
+<td><code>403</code></td>
+<td><code>application/json</code></td>
+<td><code>{"detail":"You must use authentication header"}</code></td>
+</tr>
+</tbody>
+</table>
+<h5 id="example-curl_14">Example cURL<a class="headerlink" href="#example-curl_14" title="Permanent link">&para;</a></h5>
+<blockquote>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="w"> </span>curl<span class="w"> </span>--location<span class="w"> </span><span class="s1">&#39;host/api/recipe/tag/&lt;int:pk&gt;/recipes&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;X-Auth-Header: X_AUTH_HEADER&#39;</span>
+</span></code></pre></div>
+</blockquote>
+</details>
+<h4 id="create-tag">Create tag<a class="headerlink" href="#create-tag" title="Permanent link">&para;</a></h4>
+<details class="pied-piper">
+<summary>POST /api/recipe/tag/add</summary>
+<h5 id="payload_6">Payload<a class="headerlink" href="#payload_6" title="Permanent link">&para;</a></h5>
+<div class="language-json highlight"><span class="filename">recipe.Tag object</span><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="p">{</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="p">}</span>
+</span></code></pre></div>
 <h5 id="headers_15">Headers<a class="headerlink" href="#headers_15" title="Permanent link">&para;</a></h5>
 <table>
 <thead>
@@ -2104,46 +2105,36 @@ with value csrftoken=token to work proparly</p>
 </thead>
 <tbody>
 <tr>
-<td><code>200</code></td>
+<td><code>201</code></td>
 <td><code>application/json</code></td>
-<td><code>{recipe.Tag object}</code></td>
+<td><code>{recipe.Category object}</code></td>
+</tr>
+<tr>
+<td><code>400</code></td>
+<td><code>application/json</code></td>
+<td><code>{"tag":["Incorrect type. message"]}</code></td>
 </tr>
 <tr>
 <td><code>401</code></td>
 <td><code>application/json</code></td>
 <td><code>{"detail":"Authentication credentials were not provided."}</code></td>
 </tr>
-<tr>
-<td><code>404</code></td>
-<td><code>application/json</code></td>
-<td><code>{"detail":"No Category matches the given query."}</code></td>
-</tr>
 </tbody>
 </table>
 <h5 id="example-curl_15">Example cURL<a class="headerlink" href="#example-curl_15" title="Permanent link">&para;</a></h5>
 <blockquote>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="w"> </span>curl<span class="w"> </span>--location<span class="w"> </span>--request<span class="w"> </span>PUT<span class="w"> </span><span class="s1">&#39;host/api/recipe/tag/1&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;Authorization: token 443c104be8c6daeeaf86df634e69b97668b99900&#39;</span><span class="w">  </span>--header<span class="w"> </span><span class="s1">&#39;Content-Type: application/json&#39;</span><span class="w">  </span>--data<span class="w"> </span><span class="s1">&#39;{&quot;name&quot;:&quot;Summer Vibes&quot;}&#39;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="w"> </span>curl<span class="w"> </span>--location<span class="w"> </span><span class="s1">&#39;host/api/recipe/tag/add&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;Authorization: token 443c104be8c6daeeaf86df634e69b97668b99900&#39;</span><span class="w"> </span>--data<span class="w"> </span><span class="s1">&#39;{&quot;name&quot;:&quot;Summer vibes&quot;}&#39;</span>
 </span></code></pre></div>
 </blockquote>
 </details>
-<hr />
-<h1 id="ingredients">Ingredients<a class="headerlink" href="#ingredients" title="Permanent link">&para;</a></h1>
-<details class="pied-piper">
-<summary>POST /api/recipe/int:pk/ingredients</summary>
-<h5 id="payload_8">Payload<a class="headerlink" href="#payload_8" title="Permanent link">&para;</a></h5>
-<div class="language-json highlight"><span class="filename">recipe.Igredient object list</span><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="p">[</span>
-</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string,</span>
-</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="s2">        &quot;</span><span class="err">qua</span><span class="kc">nt</span><span class="err">i</span><span class="kc">t</span><span class="err">y</span><span class="s2">&quot;: string,</span>
-</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="s2">        &quot;</span><span class="err">me</span><span class="kc">tr</span><span class="err">ic</span><span class="s2">&quot;: &quot;</span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span>
-</span><span id="__span-24-6"><a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-24-7"><a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-24-8"><a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a><span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string,</span>
-</span><span id="__span-24-9"><a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a><span class="s2">        &quot;</span><span class="err">qua</span><span class="kc">nt</span><span class="err">i</span><span class="kc">t</span><span class="err">y</span><span class="s2">&quot;: string,</span>
-</span><span id="__span-24-10"><a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a><span class="s2">        &quot;</span><span class="err">me</span><span class="kc">tr</span><span class="err">ic</span><span class="s2">&quot;: &quot;</span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span>
-</span><span id="__span-24-11"><a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-24-12"><a id="__codelineno-24-12" name="__codelineno-24-12" href="#__codelineno-24-12"></a><span class="err">....</span>
-</span><span id="__span-24-13"><a id="__codelineno-24-13" name="__codelineno-24-13" href="#__codelineno-24-13"></a><span class="p">]</span>
+<h4 id="update-tag">Update tag<a class="headerlink" href="#update-tag" title="Permanent link">&para;</a></h4>
+<details class="pied-piper-put">
+<summary>PUT /api/recipe/tag/int:pk</summary>
+<h5 id="payload_7">Payload<a class="headerlink" href="#payload_7" title="Permanent link">&para;</a></h5>
+<div class="language-json highlight"><span class="filename">recipe.Category object</span><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="p">{</span>
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span><span class="p">,</span>
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="p">}</span>
 </span></code></pre></div>
 <h5 id="parameters_7">Parameters<a class="headerlink" href="#parameters_7" title="Permanent link">&para;</a></h5>
 <table>
@@ -2160,7 +2151,7 @@ with value csrftoken=token to work proparly</p>
 <td><code>&lt;int:pk&gt;</code></td>
 <td><code>path (required)</code></td>
 <td><code>int</code></td>
-<td><code>Recipe primary key to which to link the ingredients</code></td>
+<td><code>Tag primary key</code></td>
 </tr>
 </tbody>
 </table>
@@ -2200,42 +2191,50 @@ with value csrftoken=token to work proparly</p>
 </thead>
 <tbody>
 <tr>
-<td><code>201</code></td>
+<td><code>200</code></td>
 <td><code>application/json</code></td>
-<td><code>[{recipe.Ingrediant object}]</code></td>
-</tr>
-<tr>
-<td><code>400</code></td>
-<td><code>application/json</code></td>
-<td><code>{"tag":["Incorrect type. message"]}</code></td>
+<td><code>{recipe.Tag object}</code></td>
 </tr>
 <tr>
 <td><code>401</code></td>
 <td><code>application/json</code></td>
 <td><code>{"detail":"Authentication credentials were not provided."}</code></td>
 </tr>
+<tr>
+<td><code>404</code></td>
+<td><code>application/json</code></td>
+<td><code>{"detail":"No Category matches the given query."}</code></td>
+</tr>
 </tbody>
 </table>
 <h5 id="example-curl_16">Example cURL<a class="headerlink" href="#example-curl_16" title="Permanent link">&para;</a></h5>
 <blockquote>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="w"> </span>curl<span class="w"> </span>--location<span class="w"> </span><span class="s1">&#39;host/api/recipe/ingredients&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;Authorization: token 443c104be8c6daeeaf86df634e69b97668b99900&#39;</span><span class="w"> </span>--data<span class="w"> </span><span class="s1">&#39;[{&quot;name&quot;:&quot;Kasher salt&quot;,&quot;quantity&quot;:&quot;1/5&quot;,&quot;metric&quot;:&quot;tbsp&quot;,&quot;recipe&quot;:24}]&#39;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="w"> </span>curl<span class="w"> </span>--location<span class="w"> </span>--request<span class="w"> </span>PUT<span class="w"> </span><span class="s1">&#39;host/api/recipe/tag/1&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;Authorization: token 443c104be8c6daeeaf86df634e69b97668b99900&#39;</span><span class="w">  </span>--header<span class="w"> </span><span class="s1">&#39;Content-Type: application/json&#39;</span><span class="w">  </span>--data<span class="w"> </span><span class="s1">&#39;{&quot;name&quot;:&quot;Summer Vibes&quot;}&#39;</span>
 </span></code></pre></div>
 </blockquote>
 </details>
 <hr />
-<h1 id="steps">Steps<a class="headerlink" href="#steps" title="Permanent link">&para;</a></h1>
+<h1 id="ingredients">Ingredients<a class="headerlink" href="#ingredients" title="Permanent link">&para;</a></h1>
 <details class="pied-piper">
-<summary>POST /api/recipe/int:pk/steps</summary>
-<h5 id="payload_9">Payload<a class="headerlink" href="#payload_9" title="Permanent link">&para;</a></h5>
-<div class="language-json highlight"><span class="filename">recipe.Step object list</span><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="p">[</span>
-</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">        </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span>
-</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-26-6"><a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a><span class="w">        </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span>
-</span><span id="__span-26-7"><a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-26-8"><a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a><span class="err">....</span>
-</span><span id="__span-26-9"><a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a><span class="p">]</span>
+<summary>POST /api/recipe/int:pk/ingredients</summary>
+<details class="info" open="open">
+<summary>Info</summary>
+<p>Override already existing ingredients for the recipe</p>
+</details>
+<h5 id="payload_8">Payload<a class="headerlink" href="#payload_8" title="Permanent link">&para;</a></h5>
+<div class="language-json highlight"><span class="filename">recipe.Igredient object list</span><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="p">[</span>
+</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string,</span>
+</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="s2">        &quot;</span><span class="err">qua</span><span class="kc">nt</span><span class="err">i</span><span class="kc">t</span><span class="err">y</span><span class="s2">&quot;: string,</span>
+</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="s2">        &quot;</span><span class="err">me</span><span class="kc">tr</span><span class="err">ic</span><span class="s2">&quot;: &quot;</span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span>
+</span><span id="__span-25-6"><a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-25-7"><a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-25-8"><a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a><span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string,</span>
+</span><span id="__span-25-9"><a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a><span class="s2">        &quot;</span><span class="err">qua</span><span class="kc">nt</span><span class="err">i</span><span class="kc">t</span><span class="err">y</span><span class="s2">&quot;: string,</span>
+</span><span id="__span-25-10"><a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a><span class="s2">        &quot;</span><span class="err">me</span><span class="kc">tr</span><span class="err">ic</span><span class="s2">&quot;: &quot;</span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span>
+</span><span id="__span-25-11"><a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-25-12"><a id="__codelineno-25-12" name="__codelineno-25-12" href="#__codelineno-25-12"></a><span class="err">....</span>
+</span><span id="__span-25-13"><a id="__codelineno-25-13" name="__codelineno-25-13" href="#__codelineno-25-13"></a><span class="p">]</span>
 </span></code></pre></div>
 <h5 id="parameters_8">Parameters<a class="headerlink" href="#parameters_8" title="Permanent link">&para;</a></h5>
 <table>
@@ -2252,7 +2251,7 @@ with value csrftoken=token to work proparly</p>
 <td><code>&lt;int:pk&gt;</code></td>
 <td><code>path (required)</code></td>
 <td><code>int</code></td>
-<td><code>Recipe primary key to which to link the steps</code></td>
+<td><code>Recipe primary key to which to link the ingredients</code></td>
 </tr>
 </tbody>
 </table>
@@ -2294,7 +2293,7 @@ with value csrftoken=token to work proparly</p>
 <tr>
 <td><code>201</code></td>
 <td><code>application/json</code></td>
-<td><code>[{recipe.Step object}]</code></td>
+<td><code>[{recipe.Ingrediant object}]</code></td>
 </tr>
 <tr>
 <td><code>400</code></td>
@@ -2310,7 +2309,103 @@ with value csrftoken=token to work proparly</p>
 </table>
 <h5 id="example-curl_17">Example cURL<a class="headerlink" href="#example-curl_17" title="Permanent link">&para;</a></h5>
 <blockquote>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="w"> </span>curl<span class="w"> </span>--location<span class="w"> </span><span class="s1">&#39;host/api/recipe/ingredients&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;Authorization: token 443c104be8c6daeeaf86df634e69b97668b99900&#39;</span><span class="w"> </span>--data<span class="w"> </span><span class="s1">&#39;[{&quot;text&quot;:&quot;Heat the oven&quot;,&quot;recipe&quot;:1}]&#39;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="w"> </span>curl<span class="w"> </span>--location<span class="w"> </span><span class="s1">&#39;host/api/recipe/ingredients&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;Authorization: token 443c104be8c6daeeaf86df634e69b97668b99900&#39;</span><span class="w"> </span>--data<span class="w"> </span><span class="s1">&#39;[{&quot;name&quot;:&quot;Kasher salt&quot;,&quot;quantity&quot;:&quot;1/5&quot;,&quot;metric&quot;:&quot;tbsp&quot;,&quot;recipe&quot;:24}]&#39;</span>
+</span></code></pre></div>
+</blockquote>
+</details>
+<hr />
+<h1 id="steps">Steps<a class="headerlink" href="#steps" title="Permanent link">&para;</a></h1>
+<details class="pied-piper">
+<summary>POST /api/recipe/int:pk/steps</summary>
+<details class="info" open="open">
+<summary>Info</summary>
+<p>Override already existing steps for the recipe</p>
+</details>
+<h5 id="payload_9">Payload<a class="headerlink" href="#payload_9" title="Permanent link">&para;</a></h5>
+<div class="language-json highlight"><span class="filename">recipe.Step object list</span><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="p">[</span>
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="w">        </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span>
+</span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-27-5"><a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-27-6"><a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a><span class="w">        </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span>
+</span><span id="__span-27-7"><a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-27-8"><a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a><span class="err">....</span>
+</span><span id="__span-27-9"><a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a><span class="p">]</span>
+</span></code></pre></div>
+<h5 id="parameters_9">Parameters<a class="headerlink" href="#parameters_9" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>type</th>
+<th>data type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&lt;int:pk&gt;</code></td>
+<td><code>path (required)</code></td>
+<td><code>int</code></td>
+<td><code>Recipe primary key to which to link the steps</code></td>
+</tr>
+</tbody>
+</table>
+<h5 id="headers_18">Headers<a class="headerlink" href="#headers_18" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>type</th>
+<th>data type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Authorization</code></td>
+<td><code>required</code></td>
+<td><code>Access Token</code></td>
+<td><code>Token obtained from login endpoint example "token 443c104be8c6daeeaf86df634e69b97668b99900"</code></td>
+</tr>
+<tr>
+<td><code>Content-Type</code></td>
+<td><code>application/json</code></td>
+<td></td>
+<td>`Applicaton Json content header</td>
+</tr>
+</tbody>
+</table>
+<h5 id="responses_18">Responses<a class="headerlink" href="#responses_18" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>http code</th>
+<th>content-type</th>
+<th>response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>201</code></td>
+<td><code>application/json</code></td>
+<td><code>[{recipe.Step object}]</code></td>
+</tr>
+<tr>
+<td><code>400</code></td>
+<td><code>application/json</code></td>
+<td><code>{"tag":["Incorrect type. message"]}</code></td>
+</tr>
+<tr>
+<td><code>401</code></td>
+<td><code>application/json</code></td>
+<td><code>{"detail":"Authentication credentials were not provided."}</code></td>
+</tr>
+</tbody>
+</table>
+<h5 id="example-curl_18">Example cURL<a class="headerlink" href="#example-curl_18" title="Permanent link">&para;</a></h5>
+<blockquote>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="w"> </span>curl<span class="w"> </span>--location<span class="w"> </span><span class="s1">&#39;host/api/recipe/ingredients&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;Authorization: token 443c104be8c6daeeaf86df634e69b97668b99900&#39;</span><span class="w"> </span>--data<span class="w"> </span><span class="s1">&#39;[{&quot;text&quot;:&quot;Heat the oven&quot;,&quot;recipe&quot;:1}]&#39;</span>
 </span></code></pre></div>
 </blockquote>
 </details>
