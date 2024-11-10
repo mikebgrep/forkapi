@@ -12,7 +12,8 @@ services:
       - web_media:/forkapi/media/
       - cert:/forkapi/nginx/ssl/:ro
     ports:
-      - "8000:80"
+      - "80:80"
+      - "443:443"
     networks:
       - foodie_network
     depends_on:
