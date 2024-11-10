@@ -65,7 +65,7 @@ For Raspberry Pi with Raspbian OS make sure to uncomment the packages in the mai
 * First steps is setting up the ``fullchain.pem`` and ``privkey.pem``
 files needed for the ssl settings in ``nginx`` used as reverse proxy.
 * After you obtain ssl certificates for your domain you need to copy them in the ``nginx/ssl`` folder.
-* Replace the ``localhost`` value for ``server_name`` on lines ``8`` and ``14``  with your actual domain name in the ``forkapi/forkapi.nginx.conf`` configuration file.
+* Replace the ``localhost`` value for ``server_name`` on lines ``8`` and ``15``  with your actual domain name in the ``forkapi/forkapi.nginx.conf`` configuration file.
 * That all you need to run the ``docker compose`` command and the API will be deployed on the server instance or locally on your machine.
 ```commandline
 Depends of the available package
