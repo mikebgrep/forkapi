@@ -635,3 +635,47 @@ def test_get_recipe_return_full_info(api_client):
 
     assert len(ingredients) == len([x for x in response_data['results'][0]['ingredients']])
     assert len(steps) == len([x for x in response_data['results'][0]['steps']])
+
+
+@pytest.mark.django_db
+def test_delete_recipe(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+
+    response = api_client.delete(f"/api/recipe/{recipe.pk}/", format="json")
+    assert response.status_code == 204
+
+    with pytest.raises(Recipe.DoesNotExist):
+        Recipe.objects.get(pk=recipe.pk)
+
+@pytest.mark.django_db
+def test_delete_recipe_without_access_token_header(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+
+    remove_access_token_header_and_add_header_secret(api_client)
+    response = api_client.delete(f"/api/recipe/{recipe.pk}/", format="json")
+
+    assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_create_ingredients_second_time_rewrite_existing(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    ingredients, ingredients_data = create_ingredients_for_recipe(recipe, api_client)
+    second_ingredients, second_ingredients_data = create_ingredients_for_recipe(recipe, api_client)
+
+    assert len(second_ingredients) == len(second_ingredients_data)
+    assert len([x for x in ingredients if x.name not in [y.name for y in second_ingredients]]) == 0
+
+
+@pytest.mark.django_db
+def test_create_steps_second_time_rewrite_existing(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    steps, steps_data = create_steps_for_recipe(recipe, api_client)
+    second_steps, second_steps_data = create_steps_for_recipe(recipe, api_client)
+
+    assert len(second_steps) == len(second_steps_data)
+    assert len([x for x in steps if x.text not in [y.text for y in second_steps]]) == 0
