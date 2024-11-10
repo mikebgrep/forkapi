@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Raspberry Pi packages
+# Raspberry Pi packages 📦
 # RUN apt update && apt install -y \
 #    libjpeg-dev \
 #    zlib1g-dev \
@@ -42,16 +42,13 @@ COPY ./nginx/ssl /forkapi/nginx/ssl
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Privilege sql folder and containing files
-RUN mkdir /forkapi/sql
-RUN chown -R www-data:www-data /foodie_be/sql
-RUN echo 'umask 002' >> /etc/profile
 
 # Collect static files
 RUN python manage.py makemigrations authentication
-RUN python manage.py makemigrations foodie
+RUN python manage.py makemigrations recipe
 RUN python manage.py migrate
 RUN python manage.py collectstatic --noinput
 
-# Run uWSGI
-CMD ["uwsgi", "--ini", "uwsgi.ini"]
+# Give permissions around and add www-data to staff
+RUN chmod 660 /forkapi/sql/db.sqlite3
+RUN usermod -g staff www-data
