@@ -323,7 +323,7 @@ hide:
 
 #### Get all categories
 
-??? pied-piper-get "GET /api/recipe/trending"
+??? pied-piper-get "GET /api/recipe/category"
 
     ##### Headers
     
