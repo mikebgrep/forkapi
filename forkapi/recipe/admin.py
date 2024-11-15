@@ -26,10 +26,10 @@ class StepsInline(admin.StackedInline):
 
 class RecipeAdmin(admin.ModelAdmin):
     fieldsets = [
-        ("Recipe Name", {"fields": ['name']}),
+        ("Recipe Name", {"fields": ['name', 'difficulty']}),
         ("Recipe Group", {"fields": ['category', 'tag']}),
         ("Created date", {"fields": ['created_at']}),
-        ("Additional Info", {"fields": ['serves', 'prep_time']}),
+        ("Additional Info", {"fields": ['servings', 'prep_time', 'cook_time']}),
         ("Image", {"fields": ['image']}),
         ("Video", {"fields": ['video']}),
 

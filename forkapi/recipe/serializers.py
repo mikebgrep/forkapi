@@ -33,6 +33,7 @@ class IngredientsSerializer(serializers.ModelSerializer):
             "recipe_id"
         )
 
+
 class StepsSerializer(serializers.ModelSerializer):
     recipe_id = serializers.PrimaryKeyRelatedField(
         queryset=Recipe.objects.all(),
@@ -58,14 +59,31 @@ class RecipesSerializer(serializers.ModelSerializer):
             "pk",
             "image",
             "name",
-            "serves",
+            "servings",
             "video",
             "category",
             "tag",
             "prep_time",
+            "cook_time",
+            "total_time",
+            "difficulty",
             "is_favorite",
             "ingredients",
             "steps"
+        )
+
+
+class RecipePreviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = (
+            "pk",
+            "image",
+            "name",
+            "servings",
+            "total_time",
+            "difficulty",
+            "is_favorite",
         )
 
 

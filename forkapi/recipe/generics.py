@@ -28,10 +28,12 @@ class ListModelViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         return super().list(self, request, *args, **kwargs)
 
 
-class CreateDestroyAPIView(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class RetrieveCreateDestroyViewSet(mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
     """
-    Concrete view for deleting and creating a model instance.
+    Concrete view for get by id, deleting and creating a model instance.
     """
+    def get(self, request, *args, **kwargs):
+        return super().retrieve(self, request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)

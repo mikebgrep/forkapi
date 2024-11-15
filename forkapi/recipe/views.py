@@ -6,11 +6,13 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
+from urllib3 import request
 
 from .HeaderAuthentication import HeaderAuthentication
-from .generics import UpdateAPIView, PatchAPIView, ListModelViewSet, CreateDestroyAPIView
+from .generics import UpdateAPIView, PatchAPIView, ListModelViewSet, RetrieveCreateDestroyViewSet
 from .models import Category, Recipe, Tag, Ingredient, Step
-from .serializers import RecipesSerializer, CategorySerializer, TagsSerializer, IngredientsSerializer, StepsSerializer
+from .serializers import RecipesSerializer, CategorySerializer, TagsSerializer, IngredientsSerializer, StepsSerializer, \
+    RecipePreviewSerializer
 
 
 class SearchRecipies(ListModelViewSet):
@@ -33,6 +35,13 @@ class SearchRecipies(ListModelViewSet):
         serializer = self.get_serializer(page, many=True)
         return self.get_paginated_response(serializer.data)
 
+    @action(detail=False, serializer_class=RecipePreviewSerializer)
+    def preview(self, request, *args, **kwargs):
+        preview_recipes = get_list_or_404(Recipe)
+        preview_recipes.sort()
+        page = self.paginate_queryset(preview_recipes)
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
 
 class Categories(generics.ListAPIView):
     authentication_classes = [HeaderAuthentication]
@@ -123,15 +132,25 @@ class UpdateTag(UpdateAPIView):
     queryset = Tag.objects.all()
 
 
-class CreateDestroyRecipe(CreateDestroyAPIView):
+class RetrieveCreateDestroyRecipeSet(RetrieveCreateDestroyViewSet):
     """
     View for creating a recipe (only main info without ingredients and steps)
     and delete (steps and ingredients inclusive)
     """
-    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = RecipesSerializer
     queryset = Recipe.objects.all()
+
+    def get_authenticators(self):
+        """
+        Instantiates and returns the list of authentication_classes that this view requires.
+        """
+        if self.request.method == 'GET':
+            authentication_classes = [HeaderAuthentication]
+        else:
+            authentication_classes = [TokenAuthentication]
+
+        return [auth() for auth in authentication_classes]
 
 
 class CreateIngredients(generics.CreateAPIView):
@@ -158,6 +177,7 @@ class CreateIngredients(generics.CreateAPIView):
             ingredient['recipe_id'] = recipe_id
 
         serializer.save()
+
 
 class CreateSteps(generics.CreateAPIView):
     """

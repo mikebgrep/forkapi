@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 import uuid
+from email.policy import default
+
 import django
 from django.db import models
 
@@ -27,19 +29,39 @@ class Category(models.Model):
 
 
 class Recipe(models.Model):
+
+    DIFFICULTY_CHOICES = [
+        ('Easy', 'Easy'),
+        ('Intermediate', 'Intermediate'),
+        ('Advanced', 'Advanced'),
+        ('Expert', 'Expert'),
+    ]
+
+
     name = models.CharField(max_length=170)
-    serves = models.IntegerField()
+    servings = models.IntegerField()
+    description = models.TextField(blank=False, null="False")
     is_favorite = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=django.utils.timezone.now)
     image = models.ImageField(upload_to=upload_to, blank=False, null=False)
     video = models.FileField(upload_to=upload_vide_to, blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="recipies", blank=True, null=True)
-    tag = models.ForeignKey(Tag, on_delete=models.CASCADE, related_name="recipes", default=None)
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE, related_name="recipes", default=None, blank=True, null=True)
+    difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, default=None, blank=True, null=True)
+
+    # prep_time & cook_time in minutes
     prep_time = models.IntegerField(default=None, null=True)
+    cook_time = models.IntegerField(default=120, null=True)
 
     @property
     def is_trending(self):
         return self.created_at.date() >= (datetime.now() - timedelta(days=30)).date()
+
+    # total_time calculated to hours
+    @property
+    def total_time(self):
+        return float("{:.2f}".format((int(self.prep_time.__repr__()) + int(self.cook_time.__repr__())) / 60)) \
+        if self.cook_time is not None else "{:.2f}".format((int(self.prep_time.__repr__()) / 60))
 
     def __lt__(self, other):
         return self.pk > other.pk

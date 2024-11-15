@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import SimpleRouter
 
 from .views import Categories, TrendingRecipies, CategoryRecipes, FavoriteRecipes, Tags, TagsRecipies, SearchRecipies, \
-    CreateCategory, UpdateCategory, CreateDestroyRecipe, CreateIngredients, CreateSteps, UpdateRecipe, CreateTag, \
+    CreateCategory, UpdateCategory, RetrieveCreateDestroyRecipeSet, CreateIngredients, CreateSteps, UpdateRecipe, CreateTag, \
     UpdateTag
 
 app_name = "recipe"
@@ -10,7 +10,7 @@ app_name = "recipe"
 router_search = SimpleRouter()
 router_search.register(r"home", SearchRecipies)
 router_recipe = SimpleRouter()
-router_recipe.register(r"", CreateDestroyRecipe)
+router_recipe.register(r"", RetrieveCreateDestroyRecipeSet)
 
 urlpatterns = [
     path("category", Categories.as_view()),
