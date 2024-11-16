@@ -37,8 +37,7 @@ class SearchRecipies(ListModelViewSet):
 
     @action(detail=False, serializer_class=RecipePreviewSerializer)
     def preview(self, request, *args, **kwargs):
-        preview_recipes = get_list_or_404(Recipe)
-        preview_recipes.sort()
+        preview_recipes = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(preview_recipes)
         serializer = self.get_serializer(page, many=True)
         return self.get_paginated_response(serializer.data)
@@ -213,3 +212,4 @@ class UpdateRecipe(UpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = RecipesSerializer
     queryset = Recipe.objects.all()
+

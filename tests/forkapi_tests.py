@@ -90,15 +90,17 @@ def create_recipe(api_client):
 
     recipe_data = {
         "name": f"Recipe-{uuid.uuid4()}",
-        "serves": int(random.uniform(0, 20)),
+        "servings": int(random.uniform(0, 20)),
         "category": category.pk,
         "tag": tag.pk,
         "prep_time": int(random.uniform(1, 60)),
+        "description": f"Description-{uuid.uuid4()}",
         "image": open("tests/uploads/upload-image.png", 'rb'),
         "video": open("tests/uploads/upload-video.mp4", 'rb')
     }
 
     response = api_client.post("/api/recipe/", recipe_data, format="multipart")
+    print(response.content)
     assert response.status_code == 201
     recipe = Recipe.objects.get(name=recipe_data['name'])
 
@@ -260,7 +262,7 @@ def test_create_recipe(api_client):
     recipe, recipe_data = create_recipe(api_client)
 
     assert recipe.name == recipe_data['name']
-    assert recipe.serves == recipe_data['serves']
+    assert recipe.servings == recipe_data['servings']
     assert recipe.is_favorite == False
     assert recipe.tag.pk == recipe_data['tag']
     assert recipe.category.pk == recipe_data['category']
@@ -278,7 +280,7 @@ def test_create_recipe_with_wrong_access_token(api_client):
 
     recipe_data = {
         "name": f"Recipe-{uuid.uuid4()}",
-        "serves": int(random.uniform(0, 20)),
+        "servings": int(random.uniform(0, 20)),
         "category": category.pk,
         "tag": tag.pk,
         "prep_time": int(random.uniform(1, 60)),
@@ -299,7 +301,7 @@ def test_create_recipe_with_wrong_data(api_client):
 
     recipe_data = {
         "name": f"Recipe-{uuid.uuid4()}",
-        "serves": int(random.uniform(0, 20)),
+        "servings": int(random.uniform(0, 20)),
         "category": "Category",
         "tag": tag.pk,
         "prep_time": int(random.uniform(1, 60)),
@@ -321,9 +323,10 @@ def test_update_recipe_main_info(api_client):
 
     update_recipe_data = {
         "name": f"Recipe-{uuid.uuid4()}",
-        "serves": int(random.uniform(0, 20)),
+        "servings": int(random.uniform(0, 20)),
         "category": category.pk,
         "tag": tag.pk,
+        "description": f"Description{uuid.uuid4()}",
         "prep_time": int(random.uniform(1, 60)),
         "image": open("tests/uploads/upload-image.png", 'rb'),
         "video": open("tests/uploads/upload-video.mp4", 'rb')
@@ -333,8 +336,9 @@ def test_update_recipe_main_info(api_client):
     assert response.status_code == 200
 
     updated_recipe = Recipe.objects.get(name=update_recipe_data['name'])
-    assert updated_recipe.serves == update_recipe_data['serves']
+    assert updated_recipe.servings == update_recipe_data['servings']
     assert updated_recipe.tag.pk == tag.pk
+    assert updated_recipe.description == update_recipe_data['description']
     assert updated_recipe.category.pk == category.pk
     assert updated_recipe.prep_time == update_recipe_data['prep_time']
     assert updated_recipe.image != recipe.image
@@ -350,7 +354,7 @@ def test_update_recipe_main_info_with_invalid_access_token(api_client):
 
     update_recipe_data = {
         "name": f"Recipe-{uuid.uuid4()}",
-        "serves": int(random.uniform(0, 20)),
+        "servings": int(random.uniform(0, 20)),
         "category": category.pk,
         "tag": tag.pk,
         "prep_time": int(random.uniform(1, 60)),
@@ -602,7 +606,7 @@ def test_get_recipe_return_recipe_main_info(api_client):
 
     response_data = json.loads(response.content)
     assert recipe.name == response_data['results'][0]['name']
-    assert recipe.serves == response_data['results'][0]['serves']
+    assert recipe.servings == response_data['results'][0]['servings']
     assert recipe.prep_time == response_data['results'][0]['prep_time']
     assert recipe.video is not None
     assert recipe.image is not None
@@ -625,7 +629,7 @@ def test_get_recipe_return_full_info(api_client):
     response_data = json.loads(response.content)
 
     assert recipe.name == response_data['results'][0]['name']
-    assert recipe.serves == response_data['results'][0]['serves']
+    assert recipe.servings == response_data['results'][0]['servings']
     assert recipe.prep_time == response_data['results'][0]['prep_time']
     assert recipe.video is not None
     assert recipe.image is not None
