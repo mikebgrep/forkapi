@@ -21,3 +21,6 @@ class UserSerializer(serializers.ModelSerializer):
             return self.Meta.model.objects.create_superuser(**validated_data)
         return self.Meta.model.objects.create_user(**validated_data)
 
+
+class ResetPasswordRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)

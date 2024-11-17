@@ -1,13 +1,16 @@
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.status import HTTP_400_BAD_REQUEST
 
 from forkapi.recipe.HeaderAuthentication import HeaderAuthentication
 from . import models, password_validation
-from .serializers import UserSerializer
+from .models import PasswordResetToken
+from .serializers import UserSerializer, ResetPasswordRequestSerializer
 
 
 class SignUpView(generics.CreateAPIView):
@@ -71,3 +74,55 @@ class UpdateUserPasswordUsernameAndEmail(generics.UpdateAPIView):
         self.perform_update(serializer)
 
         return Response(serializer.data)
+
+
+class RequestPasswordReset(generics.GenericAPIView):
+    """
+        View to handle creating of password reset token request
+    """
+    authentication_classes = [HeaderAuthentication]
+    permission_classes = (AllowAny,)
+    serializer_class = ResetPasswordRequestSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            email = request.data['email']
+            user = models.User.objects.get(email=email)
+
+            if user:
+                token_generator = PasswordResetTokenGenerator()
+                token = token_generator.make_token(user)
+                current_token = models.PasswordResetToken.objects.filter(email=email).first()
+                password_reset_token = PasswordResetToken(email=email,
+                                                          token=token) if not current_token else current_token
+                password_reset_token.save()
+
+                return Response(data={"token": password_reset_token.token}, status=status.HTTP_201_CREATED)
+
+        return Response({"error": "User with credentials not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ResetPassword(generics.GenericAPIView):
+    """
+        View to reset the password if their available reset token
+        The token got deleted after usage
+    """
+    permission_classes = (AllowAny,)
+    authentication_classes = []
+
+    def post(self, request, *args, **kwargs):
+        password = request.data.get('password')
+        confirm_password = request.data.get('confirm_password')
+
+        if password != confirm_password:
+            return Response(data={"message": "Confirm password does not match the password value."},
+                            status=HTTP_400_BAD_REQUEST)
+
+        token_value = request.query_params.get("token")
+
+        token = get_object_or_404(models.PasswordResetToken, token=token_value)
+        if token:
+            user = get_object_or_404(models.User, email=token.email)
+            token.delete()
+            return password_validation.validate_password(password, user=user)

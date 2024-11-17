@@ -10,3 +10,9 @@ class User(AbstractUser):
     email = models.EmailField(_("email address"), blank=False, null=False, unique=True, max_length=100)
     is_superuser = BooleanField(default=True)
     is_staff = BooleanField(default=True)
+
+
+class PasswordResetToken(models.Model):
+    email = models.EmailField()
+    token = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)

@@ -1,12 +1,15 @@
 from django.urls import path
 
-from .views import SignUpView, LoginView, DeleteAccountView, UpdateUserPasswordUsernameAndEmail
+from . import views
 
 app_name = "authentication"
 
 urlpatterns = [
-    path("signup", SignUpView.as_view()),
-    path("token", LoginView.as_view()),
-    path("delete-account", DeleteAccountView.as_view()),
-    path('', UpdateUserPasswordUsernameAndEmail.as_view()),
+    path("signup", views.SignUpView.as_view()),
+    path("token", views.LoginView.as_view()),
+    path("delete-account", views.DeleteAccountView.as_view()),
+    path("user", views.UpdateUserPasswordUsernameAndEmail.as_view()),
+    path("password_reset", views.RequestPasswordReset.as_view()),
+    path("password_reset/reset", views.ResetPassword.as_view())
+
 ]
