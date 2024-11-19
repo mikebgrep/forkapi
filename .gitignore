@@ -12,3 +12,4 @@ forkapi/media/*
 fullchain.pem
 privkey.pem
 .tox
+forkapi-docs/site/*
