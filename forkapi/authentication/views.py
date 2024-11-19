@@ -46,6 +46,7 @@ class DeleteAccountView(generics.DestroyAPIView):
 
 class UpdateUserPasswordUsernameAndEmail(generics.UpdateAPIView):
     authentication_classes = [TokenAuthentication]
+    permission_classes = (IsAuthenticated, )
     queryset = models.User.objects.all()
 
     def put(self, request, *args, **kwargs):
