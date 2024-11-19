@@ -12,6 +12,7 @@ router_search.register(r"home", SearchRecipies)
 router_recipe = SimpleRouter()
 router_recipe.register(r"", RetrieveCreateDestroyRecipeSet)
 
+
 urlpatterns = [
     path("category", Categories.as_view()),
     path("trending", TrendingRecipies.as_view()),
