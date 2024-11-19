@@ -1,10 +1,13 @@
 import os, uuid, random, pytest, json
+import shutil
 
-from authentication.models import User
+from authentication.models import User, PasswordResetToken
 from recipe.models import Category, Tag, Recipe, Ingredient
+from .models import UserUpdateDetailsEnum
 from rest_framework.authtoken.models import Token
 from dotenv import load_dotenv
 from rest_framework.test import APIClient
+from django.test import override_settings
 
 load_dotenv()
 
@@ -13,15 +16,20 @@ load_dotenv()
 def api_client():
     client = APIClient()
     client.credentials(HTTP_X_AUTH_HEADER=os.getenv('X_AUTH_HEADER'))
+    yield client
 
-    return client
-
+    #  Clean media from recipe creation after test, override location
+    try:
+        shutil.rmtree('tests/media')
+    except OSError:
+        pass
 
 @pytest.mark.django_db
 def create_user(api_client):
     admin_user_data = {
         "username": f"admin-{random.uniform(0, 10000)}",
         "password": "test123",
+        "email": f"email-{uuid.uuid4()}@email.com",
         "is_superuser": True
     }
 
@@ -55,6 +63,64 @@ def remove_access_token_header_and_add_header_secret(api_client):
     api_client.credentials(HTTP_X_AUTH_HEADER=os.getenv('X_AUTH_HEADER'))
 
 
+def request_password_reset_token(api_client):
+    token, admin_user, admin_user_data = get_token_and_admin_user(api_client)
+
+    data = {
+        "email": admin_user.email
+    }
+
+    response = api_client.post("/api/auth/password_reset", data=data, format="json")
+    assert response.status_code == 201
+
+    response_data = json.loads(response.content)
+    return response_data, data
+
+def request_password_reset_for_user(api_client):
+    token, admin_user, admin_user_data = get_token_and_admin_user(api_client)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
+
+    password_data = {
+        "old_password": admin_user_data['password'],
+        "new_password": f"password-{uuid.uuid4()}"
+    }
+
+    response = api_client.put("/api/auth/user", data=password_data, format="json")
+    assert response.status_code == 204
+
+    new_user_data = {
+        "username": admin_user.username,
+        "password": password_data['new_password']
+    }
+
+    return admin_user, new_user_data, password_data
+
+#TODO: Find a better way
+def request_user_patch_request(api_client, change_type:UserUpdateDetailsEnum):
+    token, admin_user, admin_user_data = get_token_and_admin_user(api_client)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
+    user_data = {}
+
+    match change_type:
+        case change_type.BOTH:
+            user_data = {
+                "username": f"admin-{uuid.uuid4()}",
+                "email": f"email-{uuid.uuid4()}@email.com"
+            }
+        case change_type.EMAIL:
+            user_data = {
+                "email": f"email-{uuid.uuid4()}@email.com",
+            }
+        case change_type.USERNAME:
+            user_data = {
+                    "username": f"admin-{uuid.uuid4()}",
+                }
+
+    response = api_client.patch("/api/auth/user", data=user_data, format="json")
+    assert response.status_code == 200
+
+    return user_data, admin_user
+
 @pytest.mark.django_db
 def create_category(api_client):
     category_data = {
@@ -84,6 +150,7 @@ def create_tag(api_client):
 
 
 @pytest.mark.django_db
+@override_settings(MEDIA_ROOT='tests/media')
 def create_recipe(api_client):
     tag, tag_data = create_tag(api_client)
     category, category_data = create_category(api_client)
@@ -100,7 +167,6 @@ def create_recipe(api_client):
     }
 
     response = api_client.post("/api/recipe/", recipe_data, format="multipart")
-    print(response.content)
     assert response.status_code == 201
     recipe = Recipe.objects.get(name=recipe_data['name'])
 
@@ -592,7 +658,9 @@ def test_get_recipe_without_query_parameter(api_client):
 
     response_data = json.loads(response.content)
     assert response_data['count'] == 2
-    assert len([x for x in response_data['results'] if x['name'] == recipe.name or x['name'] == second_recipe.name]) == 2
+    assert len(
+        [x for x in response_data['results'] if x['name'] == recipe.name or x['name'] == second_recipe.name]) == 2
+
 
 @pytest.mark.django_db
 def test_get_recipe_return_recipe_main_info(api_client):
@@ -652,6 +720,7 @@ def test_delete_recipe(api_client):
     with pytest.raises(Recipe.DoesNotExist):
         Recipe.objects.get(pk=recipe.pk)
 
+
 @pytest.mark.django_db
 def test_delete_recipe_without_access_token_header(api_client):
     add_access_token_header(api_client)
@@ -683,3 +752,143 @@ def test_create_steps_second_time_rewrite_existing(api_client):
 
     assert len(second_steps) == len(second_steps_data)
     assert len([x for x in steps if x.text not in [y.text for y in second_steps]]) == 0
+
+
+@pytest.mark.django_db
+def test_delete_user_account(api_client):
+    token, admin_user, admin_user_data = get_token_and_admin_user(api_client)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
+
+    response = api_client.delete("/api/auth/delete-account")
+    assert response.status_code == 204
+
+    with pytest.raises(User.DoesNotExist):
+        User.objects.get(pk=admin_user.pk)
+
+
+@pytest.mark.django_db
+def test_delete_user_non_existing_token(api_client):
+    get_token_and_admin_user(api_client)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token f6ecfd953ab8b1f2e0c6ab866ab4c62e24c24c9d")
+
+    response = api_client.delete("/api/auth/delete-account")
+    assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_update_user_password(api_client):
+    admin_user, new_user_data, password_data = request_password_reset_for_user(api_client)
+    remove_access_token_header_and_add_header_secret(api_client)
+
+    response = api_client.post("/api/auth/token", new_user_data, format="json")
+    assert response.status_code == 200
+
+    token = Token.objects.get(user=admin_user)
+    assert token is not None
+
+
+@pytest.mark.django_db
+def test_update_password_user_cant_login_with_old_password(api_client):
+    admin_user, new_user_data, password_data = request_password_reset_for_user(api_client)
+    remove_access_token_header_and_add_header_secret(api_client)
+
+    old_password_data = {
+        "username": admin_user.username,
+        "password": password_data['old_password']
+    }
+
+    response = api_client.post("/api/auth/token", old_password_data, format="json")
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_update_user_username_and_email(api_client):
+    user_data, admin_user = request_user_patch_request(api_client, UserUpdateDetailsEnum.BOTH)
+
+    user_by_username = User.objects.get(username=user_data['username'])
+    user_by_email = User.objects.get(email=user_data['email'])
+
+    assert user_by_username == user_by_email
+
+
+@pytest.mark.django_db
+def test_old_username_is_not_available_when_change_it(api_client):
+    user_data, admin_user = request_user_patch_request(api_client, UserUpdateDetailsEnum.USERNAME)
+
+    with pytest.raises(User.DoesNotExist):
+        User.objects.get(username=admin_user.username)
+
+
+@pytest.mark.django_db
+def test_old_email_is_not_available_when_change_it(api_client):
+    user_data, admin_user = request_user_patch_request(api_client, UserUpdateDetailsEnum.EMAIL)
+
+    with pytest.raises(User.DoesNotExist):
+        User.objects.get(username=admin_user.email)
+
+
+@pytest.mark.django_db
+def test_request_change_password_token(api_client):
+    response_data, data = request_password_reset_token(api_client)
+    token = PasswordResetToken.objects.get(email=data['email'])
+
+    assert token.email == data['email']
+    assert token.token == response_data['token']
+    assert token.created_at is not None
+
+
+@pytest.mark.django_db
+def test_request_change_password_invalid_email(api_client):
+    data = {
+        "email": f"email-{uuid.uuid4()}@email.com"
+    }
+
+    response = api_client.post("/api/auth/password_reset", data=data, format="json")
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_change_password_with_token(api_client):
+    response_data, data = request_password_reset_token(api_client)
+    api_client.credentials()
+
+    new_password = f"password-{uuid.uuid4()}"
+
+    change_password_data = {
+        "password": new_password,
+        "confirm_password": new_password
+    }
+
+    response = api_client.post(f"/api/auth/password_reset/reset?token={response_data['token']}", data=change_password_data, format="json")
+    assert response.status_code == 204
+
+@pytest.mark.django_db
+def test_change_password_with_token_passwords_does_not_match(api_client):
+    response_data, data = request_password_reset_token(api_client)
+    api_client.credentials()
+
+    change_password_data = {
+        "password": f"password-{uuid.uuid4()}",
+        "confirm_password": f"password-{uuid.uuid4()}"
+    }
+
+    response = api_client.post(f"/api/auth/password_reset/reset?token={response_data['token']}", data=change_password_data, format="json")
+    assert response.status_code == 400
+
+@pytest.mark.django_db
+def test_change_password_invalid_token(api_client):
+    request_password_reset_token(api_client)
+    api_client.credentials()
+    new_password = f"password-{uuid.uuid4()}"
+
+    change_password_data = {
+        "password": new_password,
+        "confirm_password": new_password
+    }
+
+    response = api_client.post(f"/api/auth/password_reset/reset?token={uuid.uuid4()}",  data=change_password_data, format="json")
+    assert response.status_code == 404
+
+
+# TODO:// Implement test about password validation on change password
+#  with authenticated user and change password for reset password

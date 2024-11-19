@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 
@@ -60,7 +60,7 @@ class UpdateUserPasswordUsernameAndEmail(generics.UpdateAPIView):
             return Response(data={"message": "Old password does not match current password"},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        return password_validation.validate_password(new_password, user=user)
+        return password_validation.validate_password_and_save_it(new_password, user=user)
 
     def patch(self, request, *args, **kwargs):
         """
@@ -81,14 +81,14 @@ class RequestPasswordReset(generics.GenericAPIView):
         View to handle creating of password reset token request
     """
     authentication_classes = [HeaderAuthentication]
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
     serializer_class = ResetPasswordRequestSerializer
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             email = request.data['email']
-            user = models.User.objects.get(email=email)
+            user = models.User.objects.filter(email=email).first()
 
             if user:
                 token_generator = PasswordResetTokenGenerator()
@@ -100,7 +100,7 @@ class RequestPasswordReset(generics.GenericAPIView):
 
                 return Response(data={"token": password_reset_token.token}, status=status.HTTP_201_CREATED)
 
-        return Response({"error": "User with credentials not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"error": "User with provided email not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
 class ResetPassword(generics.GenericAPIView):
@@ -110,13 +110,14 @@ class ResetPassword(generics.GenericAPIView):
     """
     permission_classes = (AllowAny,)
     authentication_classes = []
+    
 
     def post(self, request, *args, **kwargs):
         password = request.data.get('password')
         confirm_password = request.data.get('confirm_password')
 
         if password != confirm_password:
-            return Response(data={"message": "Confirm password does not match the password value."},
+            return Response(data={"message": "Confirm new password and the new password does not match"},
                             status=HTTP_400_BAD_REQUEST)
 
         token_value = request.query_params.get("token")
@@ -125,4 +126,4 @@ class ResetPassword(generics.GenericAPIView):
         if token:
             user = get_object_or_404(models.User, email=token.email)
             token.delete()
-            return password_validation.validate_password(password, user=user)
+            return password_validation.validate_password_and_save_it(password, user=user)
