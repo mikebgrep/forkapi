@@ -19,10 +19,8 @@ def api_client():
     yield client
 
     #  Clean media from recipe creation after test, override location
-    try:
-        shutil.rmtree('tests/media')
-    except OSError:
-        pass
+    shutil.rmtree('tests/media', ignore_errors=True)
+
 
 @pytest.mark.django_db
 def create_user(api_client):
