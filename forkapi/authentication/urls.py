@@ -9,6 +9,7 @@ urlpatterns = [
     path("token", views.LoginView.as_view()),
     path("delete-account", views.DeleteAccountView.as_view()),
     path("user", views.UpdateUserPasswordUsernameAndEmail.as_view()),
+    path("user/info", views.UserProfileInfo.as_view()),
     path("password_reset", views.RequestPasswordReset.as_view()),
     path("password_reset/reset", views.ResetPassword.as_view())
 

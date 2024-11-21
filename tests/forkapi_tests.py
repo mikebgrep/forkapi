@@ -87,7 +87,7 @@ def request_password_reset_for_user(api_client):
     assert response.status_code == 204
 
     new_user_data = {
-        "username": admin_user.username,
+        "email": admin_user.email,
         "password": password_data['new_password']
     }
 
@@ -214,7 +214,7 @@ def test_create_admin_user(api_client):
 @pytest.mark.django_db
 def test_login_with_non_existing_user(api_client):
     login_data = {
-        "username": "non_existing_user",
+        "email": "non_existing_user@email.com",
         "password": f"password-{random.uniform(1000, 100000)}"
     }
     response = api_client.post("/api/auth/token", login_data, format="json")
@@ -791,7 +791,7 @@ def test_update_password_user_cant_login_with_old_password(api_client):
     remove_access_token_header_and_add_header_secret(api_client)
 
     old_password_data = {
-        "username": admin_user.username,
+        "email": admin_user.email,
         "password": password_data['old_password']
     }
 

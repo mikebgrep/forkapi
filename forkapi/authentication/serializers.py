@@ -16,10 +16,22 @@ class UserSerializer(serializers.ModelSerializer):
             "is_superuser"
         )
 
+    # TODO:// Add password validation on create
     def create(self, validated_data):
         if self.validated_data.get("is_superuser"):
             return self.Meta.model.objects.create_superuser(**validated_data)
         return self.Meta.model.objects.create_user(**validated_data)
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (
+            "username",
+            "email",
+            "date_joined"
+        )
 
 
 class ResetPasswordRequestSerializer(serializers.Serializer):

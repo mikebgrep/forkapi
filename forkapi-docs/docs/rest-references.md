@@ -61,7 +61,7 @@ hide:
         ##### Payload
         ``` json title="authentication.UserSerializer"
         {
-            "username": "username",
+            "email": "email",
             "password": "password"
         }
         ```
@@ -76,14 +76,14 @@ hide:
         
         | http code     | content-type                      | response                                                              |
         |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"token":"token","user":{"username":"username","is_superuser":true}}`|
+        | `200`         | `application/json`                | `{"token":"token","user":{"username":"username","email":"email","is_superuser":true}}`|
         | `404`         | `application/json`                | `{"detail":"No User matches the given query."}`                       |
         | `403`         | `application/json`                | `{"detail": "You must use authentication header"}`                    |
     
         ##### Example cURL
         
         > ``` bash
-        >  `curl --location 'host/api/auth/token' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"username":"username","password":"password"}''
+        >  `curl --location 'host/api/auth/token' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"email":"email","password":"password"}''
         > ```
 
     #### Change user password
@@ -205,7 +205,8 @@ hide:
         |---------------|-----------------------------------|-----------------------------------------------------------------------|
         | `201`         | `application/json`                | `{"token":"token_value"}`                                             |
         | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
-    
+        | `404`         | `application/json`                | `{"error":"User with provided email not found"}`                      |
+
         ##### Example cURL
         
         > ``` bash

@@ -1,7 +1,5 @@
 from django.contrib.auth.password_validation import get_default_password_validators
 from django.core.exceptions import ValidationError
-from rest_framework.response import Response
-from rest_framework import status
 
 
 def validate_password_and_save_it(password, user=None, password_validators=None):
@@ -20,8 +18,7 @@ def validate_password_and_save_it(password, user=None, password_validators=None)
         except ValidationError as error:
             errors.append(error)
     if errors:
-        return Response(data={"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
+        raise ValidationError(errors)
 
     user.set_password(password)
     user.save()
-    return Response(status=status.HTTP_204_NO_CONTENT)
