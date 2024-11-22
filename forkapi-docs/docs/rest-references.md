@@ -86,6 +86,30 @@ hide:
         >  `curl --location 'host/api/auth/token' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"email":"email","password":"password"}''
         > ```
 
+    #### Get user profile info
+    
+    ??? pied-piper-get "GET /api/auth/user/info"
+    
+    
+        ##### Headers
+        
+        | name          |  type     | data type               | description                                                           |
+        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
+    
+        ##### Responses
+        
+        | http code     | content-type                      | response                                                            |
+        |---------------|-----------------------------------|---------------------------------------------------------------------|
+        | `200`         | `application/json`                | `{"username":"username","email":"email","date_joined":"date"}`                                |
+        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`        |
+    
+        ##### Example cURL
+        
+        > ``` bash
+        >  curl --location 'localhost:8080/api/auth/user/info' --header 'Authorization: Token token_value' 
+        > ```
+
     #### Change user password
         
     ??? pied-piper-put "PUT /api/auth/user"
