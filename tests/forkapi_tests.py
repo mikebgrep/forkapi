@@ -1,6 +1,5 @@
 import os, uuid, random, pytest, json
 import shutil
-from http.client import responses
 
 from authentication.models import User, PasswordResetToken
 from recipe.models import Category, Tag, Recipe, Ingredient
