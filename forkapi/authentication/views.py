@@ -63,7 +63,7 @@ class UpdateUserPasswordUsernameAndEmail(generics.UpdateAPIView):
 
     def put(self, request, *args, **kwargs):
         """
-               Update password action
+            Update password action
         """
         user = request.user
         new_password = request.data.get('new_password')

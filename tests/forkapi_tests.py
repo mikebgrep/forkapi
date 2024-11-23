@@ -1,9 +1,13 @@
 import os, uuid, random, pytest, json
 import shutil
+from http.client import responses
 
 from authentication.models import User, PasswordResetToken
 from recipe.models import Category, Tag, Recipe, Ingredient
-from .models import UserUpdateDetailsEnum
+from .models import UserUpdateDetailsEnum, PasswordResetChoice
+from .constants import LENGTH_PASSWORD_ERROR_MESSAGE, PASSWORD_TO_COMMON_ERROR_MESSAGE, \
+    OLD_PASSWORD_DOES_NOT_MATCH_ERROR_MESSAGE, NUMERIC_PASSWORD_ERROR_MESSAGE, \
+    CONFIRM_AND_NEW_PASSWORD_DOES_NOT_MATCH_ERROR_MESSAGE
 from rest_framework.authtoken.models import Token
 from dotenv import load_dotenv
 from rest_framework.test import APIClient
@@ -74,6 +78,38 @@ def request_password_reset_token(api_client):
     response_data = json.loads(response.content)
     return response_data, data
 
+
+def request_change_password_validation(api_client, password_reset_choice: PasswordResetChoice):
+    response_data, data = request_password_reset_token(api_client)
+    api_client.credentials()
+    password = None
+    confirm_password = None
+
+    match password_reset_choice:
+        case PasswordResetChoice.NUMERIC:
+            password = "12345678910111210"
+            confirm_password = "12345678910111210"
+
+        case PasswordResetChoice.SHORT_ENTRY:
+            password = "admin"
+            confirm_password = "admin"
+
+        case PasswordResetChoice.NON_MATCHING:
+            password = f"password-{uuid.uuid4()}",
+            confirm_password = f"password-{uuid.uuid4()}"
+
+    change_password_data = {
+        "password": password,
+        "confirm_password": confirm_password
+    }
+
+    response = api_client.post(f"/api/auth/password_reset/reset?token={response_data['token']}",
+                               data=change_password_data, format="json")
+    response_data = json.loads(response.content)
+
+    return response, response_data
+
+
 def request_password_reset_for_user(api_client):
     token, admin_user, admin_user_data = get_token_and_admin_user(api_client)
     api_client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
@@ -93,8 +129,34 @@ def request_password_reset_for_user(api_client):
 
     return admin_user, new_user_data, password_data
 
-#TODO: Find a better way
-def request_user_patch_request(api_client, change_type:UserUpdateDetailsEnum):
+
+def password_change_for_validation(api_client, password_reset_choice: PasswordResetChoice):
+    token, admin_user, admin_user_data = get_token_and_admin_user(api_client)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
+
+    old_password = admin_user_data['password']
+    new_password = None
+    match password_reset_choice:
+        case PasswordResetChoice.NUMERIC:
+            new_password = "12345678910111210"
+        case PasswordResetChoice.NON_MATCHING:
+            old_password = f"password-{uuid.uuid4()}"
+            new_password = f"password-{uuid.uuid4()}"
+        case PasswordResetChoice.SHORT_ENTRY:
+            new_password = "admin"
+
+    password_data = {
+        "old_password": old_password,
+        "new_password": new_password
+    }
+
+    response = api_client.put("/api/auth/user", data=password_data, format="json")
+    response_data = json.loads(response.content)
+
+    return response, response_data
+
+
+def request_user_patch_request(api_client, change_type: UserUpdateDetailsEnum):
     token, admin_user, admin_user_data = get_token_and_admin_user(api_client)
     api_client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
     user_data = {}
@@ -111,13 +173,14 @@ def request_user_patch_request(api_client, change_type:UserUpdateDetailsEnum):
             }
         case change_type.USERNAME:
             user_data = {
-                    "username": f"admin-{uuid.uuid4()}",
-                }
+                "username": f"admin-{uuid.uuid4()}",
+            }
 
     response = api_client.patch("/api/auth/user", data=user_data, format="json")
     assert response.status_code == 200
 
     return user_data, admin_user
+
 
 @pytest.mark.django_db
 def create_category(api_client):
@@ -857,8 +920,10 @@ def test_change_password_with_token(api_client):
         "confirm_password": new_password
     }
 
-    response = api_client.post(f"/api/auth/password_reset/reset?token={response_data['token']}", data=change_password_data, format="json")
+    response = api_client.post(f"/api/auth/password_reset/reset?token={response_data['token']}",
+                               data=change_password_data, format="json")
     assert response.status_code == 204
+
 
 @pytest.mark.django_db
 def test_change_password_with_token_passwords_does_not_match(api_client):
@@ -870,8 +935,10 @@ def test_change_password_with_token_passwords_does_not_match(api_client):
         "confirm_password": f"password-{uuid.uuid4()}"
     }
 
-    response = api_client.post(f"/api/auth/password_reset/reset?token={response_data['token']}", data=change_password_data, format="json")
+    response = api_client.post(f"/api/auth/password_reset/reset?token={response_data['token']}",
+                               data=change_password_data, format="json")
     assert response.status_code == 400
+
 
 @pytest.mark.django_db
 def test_change_password_invalid_token(api_client):
@@ -884,9 +951,61 @@ def test_change_password_invalid_token(api_client):
         "confirm_password": new_password
     }
 
-    response = api_client.post(f"/api/auth/password_reset/reset?token={uuid.uuid4()}",  data=change_password_data, format="json")
+    response = api_client.post(f"/api/auth/password_reset/reset?token={uuid.uuid4()}", data=change_password_data,
+                               format="json")
     assert response.status_code == 404
 
 
-# TODO:// Implement test about password validation on change password
-#  with authenticated user and change password for reset password
+@pytest.mark.django_db
+def test_change_password_password_validation_logged_user(api_client):
+    response, response_data = password_change_for_validation(api_client, PasswordResetChoice.SHORT_ENTRY)
+
+    assert response.status_code == 400
+    assert LENGTH_PASSWORD_ERROR_MESSAGE in response_data['errors']
+    assert PASSWORD_TO_COMMON_ERROR_MESSAGE in response_data['errors']
+    assert len(response_data['errors']) == 2
+
+
+@pytest.mark.django_db
+def test_change_password_password_validation_old_password_does_not_match_logged_user(api_client):
+    response, response_data = password_change_for_validation(api_client, PasswordResetChoice.NON_MATCHING)
+
+    assert response.status_code == 400
+    assert OLD_PASSWORD_DOES_NOT_MATCH_ERROR_MESSAGE in response_data['errors']
+    assert len(response_data['errors']) == 1
+
+
+@pytest.mark.django_db
+def test_change_password_password_validation_number_only_logged_user(api_client):
+    response, response_data = password_change_for_validation(api_client, PasswordResetChoice.NUMERIC)
+
+    assert response.status_code == 400
+    assert NUMERIC_PASSWORD_ERROR_MESSAGE in response_data['errors']
+    assert len(response_data['errors']) == 1
+
+
+@pytest.mark.django_db
+def test_change_password_numeric_validation_request_reset(api_client):
+    response, response_data = request_change_password_validation(api_client, PasswordResetChoice.NUMERIC)
+
+    assert response.status_code == 400
+    assert NUMERIC_PASSWORD_ERROR_MESSAGE in response_data['errors']
+    assert len(response_data['errors']) == 1
+
+
+@pytest.mark.django_db
+def test_change_password_on_reset_validations_length(api_client):
+    response, response_data = request_change_password_validation(api_client, PasswordResetChoice.SHORT_ENTRY)
+
+    assert LENGTH_PASSWORD_ERROR_MESSAGE in response_data['errors']
+    assert PASSWORD_TO_COMMON_ERROR_MESSAGE in response_data['errors']
+    assert len(response_data['errors']) == 2
+
+
+@pytest.mark.django_db
+def test_change_password_on_reset_passwords_does_not_match(api_client):
+    response, response_data = request_change_password_validation(api_client, PasswordResetChoice.NON_MATCHING)
+
+    assert response.status_code == 400
+    assert CONFIRM_AND_NEW_PASSWORD_DOES_NOT_MATCH_ERROR_MESSAGE in response_data['errors']
+    assert len(response_data['errors']) == 1
