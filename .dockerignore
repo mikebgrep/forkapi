@@ -1,0 +1,5 @@
+forkapi/sql/db.sqlite3
+forkapi/recipe/migrations/*
+forkapi/authentication/migrations/*
+forkapi/media/*
+forkapi/static/*

@@ -36,7 +36,6 @@ WORKDIR /forkapi
 COPY /forkapi /forkapi
 
 COPY ./requirements.txt /forkapi/requirements.txt
-COPY ./nginx/ssl /forkapi/nginx/ssl
 
 # Install dependencies
 RUN pip install --upgrade pip
