@@ -21,7 +21,7 @@ You can sneek peek into  the [documentation](https://mikebgrep.github.io/forkapi
 By default the installation is without SSL you can follow the instructions how to enable it.
 ## 
 
-### Docker iamge 
+### Docker image 
 ( must be used with nginx folder and .env file together to work) 
 ```
 docker pull mikebgrep/forkapi:latest
