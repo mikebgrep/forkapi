@@ -1,5 +1,3 @@
-
-
 server {
     listen 80;
     server_name ${DOMAIN_NAME_NGINX};
@@ -34,8 +32,8 @@ server {
 #     charset utf-8;
 #     client_max_body_size 100M;
 #
-#     ssl_certificate /nginx/ssl/fullchain.pem;
-#     ssl_certificate_key /nginx/ssl/privkey.pem;
+#     ssl_certificate /ssl/fullchain.pem;
+#     ssl_certificate_key /ssl/privkey.pem;
 #
 #     location / {
 #         include /etc/nginx/uwsgi_params;
