@@ -91,7 +91,7 @@ class UpdateUserPasswordUsernameAndEmail(generics.UpdateAPIView):
         #  "{'username': [ErrorDetail(string='user with this username already exists.', code='unique')], 'email': [ErrorDetail(string='user with this email address already exists.', code='unique')]}"
         if not serializer.is_valid():
             errors = serializer.errors
-            error_msg = "This email address already exists.Please choice another."  if "email" in errors and \
+            error_msg = "This email address already exists or is invalid.Please choice another."  if "email" in errors and \
                         "username" not in errors else "This username already exists.Please choice another." if "email" \
                         not in errors and "username" in errors else "This username and the email already exists.Please choice another."
 
