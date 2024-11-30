@@ -478,9 +478,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#installing-in-docker-container-production" class="md-nav__link">
+  <a href="#installing-in-docker-container-production-ssl" class="md-nav__link">
     <span class="md-ellipsis">
-      Installing in Docker container (Production)
+      Installing in Docker container (Production SSL)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installing-in-docker-container-production-no-ssl" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing in Docker container (Production No SSL)
     </span>
   </a>
   
@@ -601,9 +610,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#installing-in-docker-container-production" class="md-nav__link">
+  <a href="#installing-in-docker-container-production-ssl" class="md-nav__link">
     <span class="md-ellipsis">
-      Installing in Docker container (Production)
+      Installing in Docker container (Production SSL)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installing-in-docker-container-production-no-ssl" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing in Docker container (Production No SSL)
     </span>
   </a>
   
@@ -640,7 +658,7 @@ In linux
 <div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$ cd forkapi
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>$ mv .env.example .env 
 </span></code></pre></div>
-Enter the environment variables in <code>.env</code> file.</p>
+Enter all needed environment variables in <code>.env</code> file.</p>
 <ul>
 <li><code>PAGINATION_PAGE_SIZE</code> is used for pagination used in the API certain endpoint.</li>
 <li><code>DJANGO_SECRET</code> you can generate the secret online -&gt; <a href="https://djecrety.ir/">link</a> <br />
@@ -667,23 +685,21 @@ Note replace the 3.x with actual Python version
 </span></code></pre></div>
 You can access the dashboard admin panel on <code>localhost:8000</code>.
 In this mode you can use it locally if in debug mode which you can change in <code>/forkapi/settings.py</code> file line <code>27</code></p>
-<h2 id="installing-in-docker-container-production">Installing in Docker container (Production)<a class="headerlink" href="#installing-in-docker-container-production" title="Permanent link">&para;</a></h2>
-<p>To installing in Docker container follow the steps bellow. <br />
-For Raspberry Pi with Raspbian OS make sure to uncomment the packages in the main Dockerfile on line <code>16</code></p>
+<h2 id="installing-in-docker-container-production-ssl">Installing in Docker container (Production SSL)<a class="headerlink" href="#installing-in-docker-container-production-ssl" title="Permanent link">&para;</a></h2>
+<p>To installing in Docker container follow the steps bellow. <br /></p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>For Raspberry Pi with Raspbian OS make sure to uncomment the packages in the main Dockerfile in line <code>16</code> and replace the method from <code>pull</code> from registry to <code>build</code> from Dockerfile located at the root folder. This should be happen in the <code>docker-compose.yml</code> file line <code>25</code>.</p>
+</div>
 <ul>
-<li>First steps is setting up the <code>fullchain.pem</code> and <code>privkey.pem</code>
-files needed for the ssl settings in <code>nginx</code> used as reverse proxy.</li>
+<li>Fist step is to clone the repo. The needed files are in <code>nginx</code> folder, <code>.env</code> file and <code>docker-compose.yml</code> file.</li>
+<li>Second step is to uncomment the configuration files for ssl connection in <code>nginx/forkapi.nginx.template</code> file make sure to remove all commented lines and align with the file.</li>
+<li>Next step is setting up the <code>fullchain.pem</code> and <code>privkey.pem</code> files needed for the ssl settings in <code>nginx</code>.</li>
 <li>After you obtain ssl certificates for your domain you need to copy them in the <code>nginx/ssl</code> folder.</li>
-<li>Replace the <code>localhost</code> value for <code>server_name</code> on lines <code>8</code> and <code>15</code>  with your actual domain name in the <code>forkapi/forkapi.nginx.conf</code> configuration file.</li>
+<li>Then add environment variable (if you didn't add it already) in <code>.env</code> file for <code>DOMAIN_NAME_NGINX</code> that should be used  with your actual domain name in the <code>nginx/forkapi.nginx.template</code> configuration file.</li>
 <li>
-<p>That all you need to run the <code>docker compose</code> command and the API will be deployed on the server instance or locally on your machine.
-<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>Depends of the available package
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>$ docker compose up
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>or 
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>$ docker-compose up
+<p>That all you need to run the <code>docker compose up</code> command and the API will be deployed on the server instance or locally on your machine.
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>$<span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>up
 </span></code></pre></div></p>
 </li>
 <li>
@@ -694,7 +710,19 @@ files needed for the ssl settings in <code>nginx</code> used as reverse proxy.</
 <p class="admonition-title">Info</p>
 <p>I will not include steps for setting the domain name servers on this as you can follow the official documentation on your server or the Raspberry Pi documentation.</p>
 </div>
-<p>Follow next step to check how you can and must made your first request.</p>
+<h2 id="installing-in-docker-container-production-no-ssl">Installing in Docker container (Production No SSL)<a class="headerlink" href="#installing-in-docker-container-production-no-ssl" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Fist step is to clone the repo. The needed files are in <code>nginx</code> folder, <code>.env</code> file and <code>docker-compose.yml</code> file.</li>
+<li>Add environment variable (if you didn't add it already) in <code>.env</code> file for <code>DOMAIN_NAME_NGINX</code> that should be used  with your actual domain name in the <code>nginx/forkapi.nginx.template</code> configuration file.</li>
+<li>That all you need to run the <code>docker compose up</code> command and the API will be deployed on the server instance or locally on your machine.
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>$<span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>up
+</span></code></pre></div></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method is the prefered choice if your server already provide ssl connection by default as Digital ocean do for their apps.</p>
+</div>
+<p>Follow next step to check how you can and must be made your first request.</p>
 
 
 
