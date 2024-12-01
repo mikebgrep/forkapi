@@ -15,6 +15,7 @@ services:
       - uwsgi_data:/tmp/uwsgi/
       - web_static:/forkapi/static/:ro
       - web_media:/forkapi/media/
+      - ./nginx/ssl:/forkapi/nginx/ssl
     command: /bin/sh -c "envsubst < /etc/nginx/sites-enabled/forkapi.nginx.template > /etc/nginx/sites-enabled/forkapi.nginx.conf && nginx -g 'daemon off;'"
     networks:
       - forkapi_network
