@@ -17,7 +17,7 @@ services:
       - web_media:/forkapi/media/
     command: /bin/sh -c "envsubst < /etc/nginx/sites-enabled/forkapi.nginx.template > /etc/nginx/sites-enabled/forkapi.nginx.conf && nginx -g 'daemon off;'"
     networks:
-      - foodie_network
+      - forkapi_network
     depends_on:
       - web
 
@@ -35,7 +35,7 @@ services:
       - web_media:/forkapi/media/
       - web_static:/forkapi/static/
     networks:
-      - foodie_network
+      - forkapi_network
 
 volumes:
   data:
@@ -44,5 +44,5 @@ volumes:
   web_media:
 
 networks:
-  foodie_network:
+  forkapi_network:
     driver: bridge
