@@ -418,8 +418,40 @@ hide:
         > ``` bash
         >  curl --location --request PATCH 'host/api/recipe/1/favorite' --header 'X-Auth-Header: X_AUTH_HEADER'
         > ```
+
+    #### Get recipe by pk
+
+    ??? pied-piper-get "GET /api/recipe/int:pk/"
+    
+        ##### Parameters
+        
+        | name      |  type     | data type               | description                                                           |
+        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
+        
+        
+        ##### Headers
+        
+        | name          |  type     | data type               | description                                                           |
+        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
     
     
+        ##### Responses
+        
+        | http code     | content-type                      | response                                                              |
+        |---------------|-----------------------------------|-----------------------------------------------------------------------|
+        | `200`         | `application/json`                | `{recipe.Recipe object}`                                              | 
+        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
+        | `404`         | `application/json`                |                                                                       |
+
+        ##### Example cURL
+        
+        > ``` bash
+        >  curl --location --request GET 'host/api/recipe/1/' --header 'X-Auth-Header: X_AUTH_HEADER
+        > ```
+
+
     #### Create recipe
     
     ??? pied-piper "POST /api/recipe/"
