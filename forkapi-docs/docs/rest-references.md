@@ -443,7 +443,7 @@ hide:
         |---------------|-----------------------------------|-----------------------------------------------------------------------|
         | `200`         | `application/json`                | `{recipe.Recipe object}`                                              | 
         | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
-        | `404`         | `application/json`                |                                                                       |
+        | `404`         | `application/json`                |  {"detail":"No Recipe matches the given query."}                      |
 
         ##### Example cURL
         
