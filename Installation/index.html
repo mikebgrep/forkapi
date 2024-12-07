@@ -697,7 +697,6 @@ In this mode you can use it locally if in debug mode which you can change in <co
 <li>Next step is setting up the <code>fullchain.pem</code> and <code>privkey.pem</code> files needed for the ssl settings in <code>nginx</code>.</li>
 <li>After you obtain ssl certificates for your domain you need to copy them in the <code>nginx/ssl</code> folder.</li>
 <li>Then add environment variable (if you didn't add it already) in <code>.env</code> file for <code>DOMAIN_NAME_NGINX</code> that should be used  with your actual domain name in the <code>nginx/forkapi.nginx.template</code> configuration file.</li>
-<li>Last step is to uncomment line <code>11</code> in the <code>docker-compose.yml</code> file for the port <code>443</code></li>
 <li>
 <p>That all you need to run the <code>docker compose up</code> command and the API will be deployed on the server instance or locally on your machine.
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>$<span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>up
