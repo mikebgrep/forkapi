@@ -32,7 +32,7 @@ docker pull mikebgrep/forkapi:latest
 ![admin](https://github.com/mikebgrep/foodie/blob/master/assets/admin.gif)
 
 ### Front End application
-You can benefit from already build dockerized FE web application fork.recipes.Than can be deployed together with the API.
+You can benefit from already build dockerized FE web application fork.recipes.That can be deployed together with the API.
 All instructions are added in the documentations ➡ [docs](https://mikebgrep.github.io/forkapi/clients/)
 
 ## Support 
