@@ -13,6 +13,7 @@ ForkApi is a Lightweight RestAPI with admin panel to manage food recipes easily.
    - 🔐 Header authentication for easy access management to the API read endpoints
    - 🔐 Token authentication for create and update endpoints
    - 🪶 SQLite database support.
+   - 🌐︎ FE ready made web application [fork.recipes](https://github.com/mikebgrep/fork.recipes)
    - 🔎 Search endpoints supporting pagination
    - 🤖 (AI Scrape page to recipe soon will be added ..)
 
@@ -29,6 +30,10 @@ docker pull mikebgrep/forkapi:latest
 
 ### Admin panel 
 ![admin](https://github.com/mikebgrep/foodie/blob/master/assets/admin.gif)
+
+### Front End application
+You can benefit from already build dockerized FE web application fork.recipes.Than can be deployed together with the API.
+All instructions are added in the documentations ➡ [docs](https://mikebgrep.github.io/forkapi/clients/)
 
 ## Support 
 You can support the repo as clicking on the sponsorship button.
