@@ -34,7 +34,6 @@ WORKDIR /forkapi
 
 # Copy the project
 COPY /forkapi /forkapi
-
 COPY ./requirements.txt /forkapi/requirements.txt
 
 # Install dependencies

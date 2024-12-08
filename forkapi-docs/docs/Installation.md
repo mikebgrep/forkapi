@@ -66,10 +66,10 @@ To installing in Docker container follow the steps bellow. <br />
     For Raspberry Pi with Raspbian OS make sure to uncomment the packages in the main Dockerfile in line ``16`` and replace the method from `pull` from registry to `build` from Dockerfile located at the root folder. This should be happen in the `docker-compose.yml` file line `25`.
 
 * Fist step is to clone the repo. The needed files are in `nginx` folder, `.env` file and `docker-compose.yml` file.
-* Second step is to uncomment the configuration files for ssl connection in `nginx/forkapi.nginx.template` file make sure to remove all commented lines and align with the file.
 * Next step is setting up the ``fullchain.pem`` and ``privkey.pem`` files needed for the ssl settings in ``nginx``.
 * After you obtain ssl certificates for your domain you need to copy them in the ``nginx/ssl`` folder.
-* Then add environment variable (if you didn't add it already) in `.env` file for `DOMAIN_NAME_NGINX` that should be used  with your actual domain name in the ``nginx/forkapi.nginx.template`` configuration file.
+* Then add environment variable (if you didn't add it already) in `.env` file for `DOMAIN_NAME_NGINX` that should be used  with your actual domain name in the ``nginx/forkapi-ssl.nginx.template`` configuration file.
+* Next uncomment the commented lines `8`, `12` and `21` in the `docker-compose.yml` and comment lines `7` and `22`.
 * That all you need to run the ``docker compose up`` command and the API will be deployed on the server instance or locally on your machine.
 ``` bash
 $ docker compose up
