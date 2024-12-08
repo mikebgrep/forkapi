@@ -23,7 +23,7 @@ You can follow the link of the official GitHub repository of the project here âž
       * To install the application you can use the SSL certificates that you own for your domain or just using domain without SSL. 
       * The no SSL method can be handy when there an SSL certs setup by default by the hosting service or you just use the application locally.
 
-#### Lets begin
+##### Lets begin
 
 1. You need to add all environment variables in `.env` file after you copied it from `.env.example`.
 ??? tip ".env"
@@ -93,3 +93,6 @@ You can follow the link of the official GitHub repository of the project here âž
 
 3.You can access the API admin panel and the FE from the links `DOMAIN_NAME_NGINX` and `DOMAIN_NAME_NGINX_API` that was setup  in the `.env` file 
 
+## Final thoughts
+There a number of different options you can do as using different domain for the BE that is not subdomain of the FE domain name.
+At this stage you can use the application and if you have any questions you can ask them in the repository. [fork.recipes](https://github.com/mikebgrep/fork.recipes)
