@@ -3,3 +3,4 @@ forkapi/recipe/migrations/*
 forkapi/authentication/migrations/*
 forkapi/media/*
 forkapi/static/*
+.env
