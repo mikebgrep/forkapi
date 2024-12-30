@@ -3,6 +3,7 @@ import shutil
 
 from authentication.models import User, PasswordResetToken
 from recipe.models import Category, Tag, Recipe, Ingredient
+from recipe.util import calculate_recipe_total_time
 from .models import UserUpdateDetailsEnum, PasswordResetChoice
 from .constants import LENGTH_PASSWORD_ERROR_MESSAGE, PASSWORD_TO_COMMON_ERROR_MESSAGE, \
     OLD_PASSWORD_DOES_NOT_MATCH_ERROR_MESSAGE, NUMERIC_PASSWORD_ERROR_MESSAGE, \
@@ -220,7 +221,8 @@ def create_recipe(api_client):
         "servings": int(random.uniform(0, 20)),
         "category": category.pk,
         "tag": tag.pk,
-        "prep_time": int(random.uniform(1, 60)),
+        "prep_time": random.randrange(1, 60),
+        "cook_time": random.randrange(1, 40),
         "description": f"Description-{uuid.uuid4()}",
         "image": open("tests/uploads/upload-image.png", 'rb'),
         "video": open("tests/uploads/upload-video.mp4", 'rb')
@@ -386,6 +388,8 @@ def test_update_tag_name(api_client):
 def test_create_recipe(api_client):
     add_access_token_header(api_client)
     recipe, recipe_data = create_recipe(api_client)
+    total = (int(recipe_data['prep_time']) + int(recipe_data['cook_time']))
+    result_total_time = calculate_recipe_total_time(total)
 
     assert recipe.name == recipe_data['name']
     assert recipe.servings == recipe_data['servings']
@@ -396,6 +400,8 @@ def test_create_recipe(api_client):
     assert recipe.image is not None
     assert recipe.video is not None
     assert recipe.prep_time == recipe_data['prep_time']
+    assert recipe.cook_time == recipe_data['cook_time']
+    assert recipe.total_time == result_total_time
 
 
 @pytest.mark.django_db
