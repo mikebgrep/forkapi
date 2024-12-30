@@ -1,11 +1,9 @@
-from datetime import datetime, timedelta
 import uuid
-from email.policy import default
+from datetime import datetime, timedelta
 
 import django
 from django.db import models
-from rest_framework.exceptions import ValidationError
-
+from recipe.util import calculate_recipe_total_time
 
 def upload_to(instance, filename):
     return 'images/{uuid}_{filename}'.format(uuid=str(uuid.uuid4()), filename=filename)
@@ -50,8 +48,8 @@ class Recipe(models.Model):
     chef = models.CharField(max_length=100, default=None, blank=True, null=True)
 
     # prep_time & cook_time in minutes
-    prep_time = models.IntegerField(default=None, null=True)
-    cook_time = models.IntegerField(default=120, null=True)
+    prep_time = models.IntegerField(default=0, null=True)
+    cook_time = models.IntegerField(default=0, null=True)
 
     @property
     def is_trending(self):
@@ -59,9 +57,15 @@ class Recipe(models.Model):
 
     # total_time calculated to hours
     @property
-    def total_time(self):
-        return float("{:.2f}".format((int(self.prep_time.__repr__()) + int(self.cook_time.__repr__())) / 60)) \
-            if self.cook_time is not None else "{:.2f}".format((int(self.prep_time.__repr__()) / 60))
+    def total_time(self) -> str | None:
+        prep_time = int(self.prep_time.__repr__())
+        cook_time = int(self.cook_time.__repr__())
+        total = prep_time + cook_time
+
+        if total == 0:
+            return None
+
+        return calculate_recipe_total_time(total)
 
     def __lt__(self, other):
         return self.pk > other.pk
