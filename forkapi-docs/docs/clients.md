@@ -63,15 +63,17 @@ You can follow the link of the official GitHub repository of the project here âž
   * `SERVICE_BASE_URL` is the url that is used from the front end to communicate with the BE it's same as `DOMAIN_NAME_NGINX_API` but with `http://` or `https://` protocol.
   * Next are `SMTP settings` you can follow your email provider for the values I can say that only is used for reset password functionality so you may be will not need it
   * `Domains` section is for the `NGINX` proxy configuration files `DOMAIN_NAME_NGINX` should be the base url of the fork.recipes application, `DOMAIN_NAME_NGINX_API` should be the subdomain normally starting with `api.` for the BE `forkapi` service.
- 
-!!! note
-  
+
+!!! warning 
+    
     `DOMAIN_NAME_NGINX` and `DOMAIN_NAME_NGINX_API` shouldn't include protocol as `http://` or `https://` they should be plain.
-    If you want to setup the application only for local use and you doesn't have a domain you can add subdomain in `/etc/hosts` for the local host like this (for Linux):
-    ```commandline
-        127.0.0.1    example.com
-        127.0.0.1    subdomain.example.com 
-    ```
+
+ 
+!!! info "Read for local deploy without domain name"
+
+    If you want to setup the application only for local use and you doesn't have a domain you can edit the `forkrecipes.nginx.template` file and  change the port for `listen` at line `21` for the API, 
+    after this you need to add the port in `nginx` service in the `docker-compose.yml` file.This way you can login to admin from the localhost and the port number. 
+    Keep in mind that `SERVICE_BASE_URL` envirument variable should be also with the newly added port.
 
 2.Run docker compose
 === "No SSL"
