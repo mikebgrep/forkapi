@@ -723,20 +723,22 @@
 <li>Next are <code>SMTP settings</code> you can follow your email provider for the values I can say that only is used for reset password functionality so you may be will not need it</li>
 <li><code>Domains</code> section is for the <code>NGINX</code> proxy configuration files <code>DOMAIN_NAME_NGINX</code> should be the base url of the fork.recipes application, <code>DOMAIN_NAME_NGINX_API</code> should be the subdomain normally starting with <code>api.</code> for the BE <code>forkapi</code> service.</li>
 </ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><code>DOMAIN_NAME_NGINX</code> and <code>DOMAIN_NAME_NGINX_API</code> shouldn't include protocol as <code>http://</code> or <code>https://</code> they should be plain.
-If you want to setup the application only for local use and you doesn't have a domain you can add subdomain in <code>/etc/hosts</code> for the local host like this (for Linux):
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>    127.0.0.1    example.com
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    127.0.0.1    subdomain.example.com 
-</span></code></pre></div></p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><code>DOMAIN_NAME_NGINX</code> and <code>DOMAIN_NAME_NGINX_API</code> shouldn't include protocol as <code>http://</code> or <code>https://</code> they should be plain.</p>
+</div>
+<div class="admonition info">
+<p class="admonition-title">Read for local deploy without domain name</p>
+<p>If you want to setup the application only for local use and you doesn't have a domain you can edit the <code>forkrecipes.nginx.template</code> file and  change the port for <code>listen</code> at line <code>21</code> for the API, 
+after this you need to add the port in <code>nginx</code> service in the <code>docker-compose.yml</code> file.This way you can login to admin from the localhost and the port number. 
+Keep in mind that <code>SERVICE_BASE_URL</code> envirument variable should be also with the newly added port.</p>
 </div>
 <p>2.Run docker compose</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">No SSL</label><label for="__tabbed_1_2">SSL</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>You are all set for setup without SSL installation you just need to run the docker compose file with the following command in the root of the project.
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>$<span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>up
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$<span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>up
 </span></code></pre></div>
 This command will install NGINX, ForkAPI and the Fork.Recipes.</p>
 </div>
@@ -745,7 +747,7 @@ This command will install NGINX, ForkAPI and the Fork.Recipes.</p>
 At this step you must open the <code>docker-compose.yml</code> file and uncomment all commented sections on lines <code>6</code>, <code>10</code> and <code>14</code>.
 Don't forget to comment the others on lines <code>5</code> and <code>15</code>. <br>
 That all run the docker compose and wait the docker do his job.
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>$<span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>up
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>$<span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>up
 </span></code></pre></div></p>
 </div>
 </div>
