@@ -25,7 +25,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-SESSION_COOKIE_NAME = 'tokenname_sessionid'
+SESSION_COOKIE_NAME = 'tokenadmin_sessionid'
 
 ALLOWED_HOSTS = ['*']
 # Application definition
