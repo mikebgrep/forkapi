@@ -73,7 +73,11 @@ You can follow the link of the official GitHub repository of the project here âž
 
     If you want to setup the application only for local use and you doesn't have a domain you can edit the `forkrecipes.nginx.template` file and  change the port for `listen` at line `21` for the API, 
     after this you need to add the port in `nginx` service in the `docker-compose.yml` file.This way you can login to admin from the localhost and the port number. 
-    Keep in mind that `SERVICE_BASE_URL` envirument variable should be also with the newly added port.
+    Keep in mind that `SERVICE_BASE_URL` envirument variable should be also with the newly added port and the local ip of the host eg. `http://192.168.x.x:port`.
+    
+    !!! note
+    
+        This setup is tested for installation without SSL
 
 2.Run docker compose
 === "No SSL"
