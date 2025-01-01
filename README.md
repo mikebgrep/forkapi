@@ -26,7 +26,7 @@ By default the installation is without SSL you can follow the instructions how t
 ### Docker image 
 ( must be used with nginx folder and .env file together to work) 
 ```
-docker pull mikebgrep/forkapi:latest
+docker pull mikebgrep/forkapi
 ```
 
 ### Admin panel 
