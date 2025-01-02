@@ -1,17 +1,19 @@
-from django.shortcuts import get_list_or_404, get_object_or_404
+from django.shortcuts import get_list_or_404, get_object_or_404, redirect
 from rest_framework import generics, filters
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
+from rest_framework.generics import RetrieveAPIView, CreateAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
 
 from .HeaderAuthentication import HeaderAuthentication
-from .generics import UpdateAPIView, PatchAPIView, ListModelViewSet, RetrieveCreateDestroyViewSet
-from .models import Category, Recipe, Tag, Ingredient, Step
+from .generics import UpdateAPIView, PatchAPIView, ListModelViewSet, RetrieveCreateDestroyViewSet, RetrieveAPIViewOpenAI
+from .models import Category, Recipe, Tag, Ingredient, Step, RecipeLink
 from .serializers import RecipesSerializer, CategorySerializer, TagsSerializer, IngredientsSerializer, StepsSerializer, \
     RecipePreviewSerializer
+from .openai_util import get_page_content, scrape_recipe, save_scraped_recipe
 
 
 class SearchRecipies(ListModelViewSet):
@@ -211,4 +213,18 @@ class UpdateRecipe(UpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = RecipesSerializer
     queryset = Recipe.objects.all()
+
+
+class ScrapeView(CreateAPIView):
+    serializer_class = RecipeLink
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        page_address = request.data['url']
+        page_content = get_page_content(page_address)
+        recipe, ingredients, steps = scrape_recipe(page_content)
+        recipe = save_scraped_recipe(recipe, ingredients, steps, page_address)
+        serializer = RecipesSerializer(recipe)
+        return Response(data=serializer.data, content_type="application/json")
 

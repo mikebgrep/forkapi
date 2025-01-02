@@ -39,6 +39,7 @@ COPY ./requirements.txt /forkapi/requirements.txt
 # Install dependencies
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
+RUN playwright install --with-deps chromium
 
 
 # Collect static files

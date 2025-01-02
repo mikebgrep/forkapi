@@ -74,6 +74,7 @@ class RecipesSerializer(serializers.ModelSerializer):
             "ingredients",
             "steps",
             "clear_video",
+            "reference",
         )
 
     def create(self, validated_data):

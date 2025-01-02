@@ -1,4 +1,6 @@
 from rest_framework import mixins, generics, viewsets
+from rest_framework.generics import GenericAPIView
+from rest_framework.response import Response
 
 
 class UpdateAPIView(mixins.UpdateModelMixin, generics.GenericAPIView):
@@ -41,3 +43,12 @@ class RetrieveCreateDestroyViewSet(mixins.RetrieveModelMixin, mixins.CreateModel
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
+
+
+class RetrieveAPIViewOpenAI(mixins.RetrieveModelMixin, GenericAPIView):
+
+    def retrieve(self, request, *args, **kwargs):
+        print(kwargs)
+        instance = self.get_object() # TODO:// created object
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)

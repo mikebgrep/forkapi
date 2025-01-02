@@ -1,15 +1,18 @@
 import uuid
 from datetime import datetime, timedelta
+from enum import Enum
 
 import django
 from django.db import models
+from django.db.models import TextField, ForeignKey
 from recipe.util import calculate_recipe_total_time
+
 
 def upload_to(instance, filename):
     return 'images/{uuid}_{filename}'.format(uuid=str(uuid.uuid4()), filename=filename)
 
 
-def upload_vide_to(instance, filename):
+def upload_video_to(instance, filename):
     return 'videos/{uuid}_{filename}'.format(uuid=str(uuid.uuid4()), filename=filename)
 
 
@@ -28,6 +31,9 @@ class Category(models.Model):
 
 
 class Recipe(models.Model):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     DIFFICULTY_CHOICES = [
         ('Easy', 'Easy'),
         ('Intermediate', 'Intermediate'),
@@ -41,12 +47,12 @@ class Recipe(models.Model):
     is_favorite = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=django.utils.timezone.now)
     image = models.ImageField(upload_to=upload_to, blank=True, null=True)
-    video = models.FileField(upload_to=upload_vide_to, blank=True, null=True)
+    video = models.FileField(upload_to=upload_video_to, blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="recipies", blank=True, null=True)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE, related_name="recipes", default=None, blank=True, null=True)
     difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, default=None, blank=True, null=True)
     chef = models.CharField(max_length=100, default=None, blank=True, null=True)
-
+    reference = models.TextField(max_length=170, blank=True, null=True)
     # prep_time & cook_time in minutes
     prep_time = models.IntegerField(default=0, null=True)
     cook_time = models.IntegerField(default=0, null=True)
@@ -75,15 +81,37 @@ class Recipe(models.Model):
 
 
 class Ingredient(models.Model):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     name = models.CharField(max_length=120)
     quantity = models.CharField(max_length=20)
     metric = models.CharField(max_length=10)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="ingredients")
 
+    def __str__(self):
+        return self.name
+
 
 class Step(models.Model):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     text = models.CharField(max_length=2000)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="steps")
 
     def __lt__(self, other):
         return self.pk > other.pk
+
+    def __str__(self):
+        return self.pk
+
+class RecipeLink(models.Model):
+    url = TextField(max_length=200)
+    recipe = ForeignKey(Recipe, on_delete=models.CASCADE, related_name="url")
+
+
+class PromptType(Enum):
+    MAIN_INFO = 0,
+    INGREDIENTS = 1,
+    INSTRUCTIONS = 2
