@@ -31,8 +31,6 @@ class Category(models.Model):
 
 
 class Recipe(models.Model):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
     DIFFICULTY_CHOICES = [
         ('Easy', 'Easy'),
@@ -64,8 +62,8 @@ class Recipe(models.Model):
     # total_time calculated to hours
     @property
     def total_time(self) -> str | None:
-        prep_time = int(self.prep_time.__repr__())
-        cook_time = int(self.cook_time.__repr__())
+        prep_time = int(self.prep_time.__repr__()) if self.prep_time is not None else 0
+        cook_time = int(self.cook_time.__repr__()) if self.cook_time is not None else 0
         total = prep_time + cook_time
 
         if total == 0:
@@ -81,9 +79,6 @@ class Recipe(models.Model):
 
 
 class Ingredient(models.Model):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     name = models.CharField(max_length=120)
     quantity = models.CharField(max_length=20)
     metric = models.CharField(max_length=10)
@@ -94,9 +89,6 @@ class Ingredient(models.Model):
 
 
 class Step(models.Model):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     text = models.CharField(max_length=2000)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="steps")
 
@@ -104,7 +96,8 @@ class Step(models.Model):
         return self.pk > other.pk
 
     def __str__(self):
-        return self.pk
+        steps = list(self.recipe.steps.all().order_by('pk'))
+        return str(steps.index(self) + 1)
 
 class RecipeLink(models.Model):
     url = TextField(max_length=200)

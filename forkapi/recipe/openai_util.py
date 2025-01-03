@@ -96,6 +96,7 @@ def __parse_recipe_info(json_response:str):
 
 def manage_media(json_content_main_info, is_video: bool):
     image_url = json_content_main_info['image'] if not is_video else json_content_main_info['video']
+    print(image_url)
     file_path = download_media_files(address=image_url, recipe_name=json_content_main_info['name'], is_video=is_video)
     if not is_video:
         del json_content_main_info['image']
@@ -111,17 +112,16 @@ def scrape_recipe(content: str):
 
     recipe = Recipe(**json_content_main_info)
     with open(file_path, 'rb') as doc_file:
-        recipe.image.save("test", File(doc_file), save=True)
+        recipe.image.save(f'{json_content_main_info['name']}.png', File(doc_file), save=True)
+        delete_media_file(file_path)
+
+    if json_content_main_info['video'] and not 'youtube' in json_content_main_info['video']:
+        file_path = manage_media(json_content_main_info, True)
+        with open(file_path, 'rb') as doc_file:
+            recipe.video.save(f'{json_content_main_info['name']}.mp4', File(doc_file), save=True)
+            delete_media_file(file_path)
 
     recipe.save()
-
-    delete_media_file(file_path)
-
-    if json_content_main_info['video']:
-        file_path = manage_media(json_content_main_info, True)
-        recipe.video = open(file_path, 'rb')
-        recipe.save()
-        delete_media_file(file_path)
 
     # Instruction of the recipe
     json_response = __open_ai_message(content, PromptType.INSTRUCTIONS)
