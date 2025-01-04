@@ -23,9 +23,9 @@ services:
     networks:
       - forkapi_network
     depends_on:
-      - web
+      - be
 
-  web:
+  be:
     image: mikebgrep/forkapi:latest
     container_name: forkapi-from-image
     env_file:
