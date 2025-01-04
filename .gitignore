@@ -8,7 +8,8 @@ forkapi/authentication/migrations/*
 forkapi/recipe/migrations/*
 __pycache__
 forkapi/static/*
-forkapi/media/*
+forkapi/media/images
+forkapi/media/videos
 fullchain.pem
 privkey.pem
 .tox
