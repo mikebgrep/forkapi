@@ -666,19 +666,24 @@
 
 <h1 id="clients">Clients<a class="headerlink" href="#clients" title="Permanent link">&para;</a></h1>
 <hr />
+<figure>
+  <img alt="Image title" src="../assets/preview.png" width="710" />
+</figure>
 <p>You can use already build FE clients together with the API. Currently, there are only a Web Application FE written in Python that can be deployed with Docker.</p>
 <h2 id="web-application-overview">Web application overview<a class="headerlink" href="#web-application-overview" title="Permanent link">&para;</a></h2>
 <p>You can follow the link of the official GitHub repository of the project here ➡ <a href="https://github.com/mikebgrep/fork.recipes">follow me</a></p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The FE client installation is independant from the ForkApi installation you don't need to follow the API installation instructions!</p>
+<p>The FE client installation is independant from the ForkApi installation you don't need to follow the API installation instructions! <br></p>
 </div>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
 <ul>
-<li>To install the application you can use the SSL certificates that you own for your domain or just using domain without SSL. </li>
+<li>To install the application you can use the SSL certificates that you own for your domain or just using domain without SSL.</li>
+<li>To install on a home local server follwo the local deploy method.</li>
 <li>The no SSL method can be handy when there an SSL certs setup by default by the hosting service or you just use the application locally.</li>
+<li><em>For installing on RaspberyPi you need to change in the docker compose file for the image for the <code>be</code> service to <code>mikebgrep/forkapi:arm64</code></em></li>
 </ul>
 </div>
 <h5 id="lets-begin">Lets begin<a class="headerlink" href="#lets-begin" title="Permanent link">&para;</a></h5>
@@ -714,6 +719,13 @@
 </span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>
 </span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a># Pagination for the recipe search endpoints
 </span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>PAGINATION_PAGE_SIZE=
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a># Host address for the frontend to access media with protocol eg. https:.. (minimum two) with separated by comma
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>CORS_ALLOWED_HOSTS=https://localhost,http://localhost
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a># Scrape functionality make sure to add &#39;&#39; for the API KEY
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>OPENAI_API_KEY=
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>OPENAI_MODEL=gpt-4o-mini
 </span></code></pre></div>
 </details>
 <p>There are comments for each section, but I will explain quick.</p>
@@ -727,14 +739,78 @@
 <p class="admonition-title">Warning</p>
 <p><code>DOMAIN_NAME_NGINX</code> and <code>DOMAIN_NAME_NGINX_API</code> shouldn't include protocol as <code>http://</code> or <code>https://</code> they should be plain.</p>
 </div>
+<ul>
+<li><code>CORS_ALLOWED_HOSTS</code> are the front end domain names</li>
+<li><code>OPENAI_API_KEY</code> is the API KEY from OpenAI for the scraping recipe functionality</li>
+<li><code>OPENAI_MODEL</code> is the default model at this stage the <code>gpt-4o-mini</code> is most cost-efficient and is working ok for the scraping task</li>
+</ul>
 <div class="admonition info">
 <p class="admonition-title">Read for local deploy without domain name</p>
 <p>If you want to setup the application only for local use and you doesn't have a domain you can edit the <code>forkrecipes.nginx.template</code> file and  change the port for <code>listen</code> at line <code>21</code> for the API, 
 after this you need to add the port in <code>nginx</code> service in the <code>docker-compose.yml</code> file.This way you can login to admin from the localhost and the port number. 
 Keep in mind that <code>SERVICE_BASE_URL</code> envirument variable should be also with the newly added port and the local ip of the host eg. <code>http://192.168.x.x:port</code>.</p>
+<details class="tip">
+<summary>docer-compose.yml nginx service</summary>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>nginx:
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  build:
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    context: .
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    dockerfile: nginx/Dockerfile
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  container_name: nginx-fork-recipes
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>  ports:
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    - &quot;port-number:80&quot;
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    - &quot;port-number:81&quot;
+</span></code></pre></div>
+</details>
+<details class="tip">
+<summary>forkrecipes.nginx.template</summary>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>server {
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    listen 80;
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    server_name ${DOMAIN_NAME_NGINX};
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    client_max_body_size 100M;
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    location / {
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>        include /etc/nginx/uwsgi_params;
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>        uwsgi_pass unix:/tmp/uwsgi/uwsgi_recipes.sock;
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    }
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    location /static {
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>        autoindex on;
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>        alias /fork_recipes/static;
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    }
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    error_log /var/log/nginx/error.log;
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    access_log /var/log/nginx/access.log;
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>}
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>server {
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>    listen 81;
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>    server_name ${DOMAIN_NAME_NGINX_API};
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>    client_max_body_size 100M;
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>    location / {
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>        include /etc/nginx/uwsgi_params;
+</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>        uwsgi_pass unix:/tmp/uwsgi/uwsgi.sock;
+</span><span id="__span-2-28"><a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>    }
+</span><span id="__span-2-29"><a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>
+</span><span id="__span-2-30"><a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>    location /static {
+</span><span id="__span-2-31"><a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>        autoindex on;
+</span><span id="__span-2-32"><a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>        alias /forkapi/static;
+</span><span id="__span-2-33"><a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>    }
+</span><span id="__span-2-34"><a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a>
+</span><span id="__span-2-35"><a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a>    location /media {
+</span><span id="__span-2-36"><a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a>        autoindex on;
+</span><span id="__span-2-37"><a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a>        alias /forkapi/media;
+</span><span id="__span-2-38"><a id="__codelineno-2-38" name="__codelineno-2-38" href="#__codelineno-2-38"></a>    }
+</span><span id="__span-2-39"><a id="__codelineno-2-39" name="__codelineno-2-39" href="#__codelineno-2-39"></a>
+</span><span id="__span-2-40"><a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a>    error_log /var/log/nginx/error.log;
+</span><span id="__span-2-41"><a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a>    access_log /var/log/nginx/access.log;
+</span><span id="__span-2-42"><a id="__codelineno-2-42" name="__codelineno-2-42" href="#__codelineno-2-42"></a>}
+</span></code></pre></div>
+</details>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This setup is tested for installation without SSL</p>
+<p>This setup is valid for installation without SSL
+This setup is only for local use on home server!</p>
 </div>
 </div>
 <p>2.Run docker compose</p>
@@ -742,16 +818,20 @@ Keep in mind that <code>SERVICE_BASE_URL</code> envirument variable should be al
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>You are all set for setup without SSL installation you just need to run the docker compose file with the following command in the root of the project.
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$<span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>up
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>$<span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>up
 </span></code></pre></div>
 This command will install NGINX, ForkAPI and the Fork.Recipes.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This setup is working only if you have domain name for <code>DOMAIN_NAME_NGINX</code> and sub domain for <code>DOMAIN_NAME_NGINX_API</code></p>
+</div>
 </div>
 <div class="tabbed-block">
 <p>You need to have valid certificates for your domain and subdomain.This files should be copied in the <code>nginx/ssl</code> folder. The files are <code>fullchain.pem</code> and <code>privkey.pem</code> (names need to be the same).<br />
-At this step you must open the <code>docker-compose.yml</code> file and uncomment all commented sections on lines <code>6</code>, <code>10</code> and <code>14</code>.
-Don't forget to comment the others on lines <code>5</code> and <code>15</code>. <br>
+At this step you must open the <code>docker-compose.yml</code> file and uncomment all commented sections on lines <code>6</code>, <code>11</code> and <code>15</code>.
+Don't forget to comment the others on lines <code>5</code> and <code>16</code>. <br>
 That all run the docker compose and wait the docker do his job.
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>$<span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>up
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>$<span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>up
 </span></code></pre></div></p>
 </div>
 </div>

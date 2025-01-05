@@ -495,6 +495,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#raspberry-pi" class="md-nav__link">
+    <span class="md-ellipsis">
+      Raspberry Pi
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#installing-in-docker-container-production-ssl" class="md-nav__link">
     <span class="md-ellipsis">
       Installing in Docker container (Production SSL)
@@ -647,6 +656,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#raspberry-pi" class="md-nav__link">
+    <span class="md-ellipsis">
+      Raspberry Pi
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#installing-in-docker-container-production-ssl" class="md-nav__link">
     <span class="md-ellipsis">
       Installing in Docker container (Production SSL)
@@ -702,9 +720,18 @@ Enter all needed environment variables in <code>.env</code> file.</p>
 or with the following command if you have installed django on the machine
 <div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>$ python -c &#39;from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())&#39;
 </span></code></pre></div></li>
+<li><code>DOMAIN_NAME_NGINX</code> the domain which will serve the api</li>
 <li><code>X_AUTH_HEADER</code> also you can generate random UUID online that will be used for authentication <br />
 for the read only endpoint. Example header <code>261ec18d-0e81-4073-8d9e-b34a7a1e5e06</code> (Don`t use it this is for demo purpose)</li>
+<li><code>CORS_ALLOWED_HOSTS</code> are the front end domain names</li>
+<li><code>OPENAI_API_KEY</code> is the API KEY from OpenAI for the scraping recipe functionality</li>
+<li><code>OPENAI_MODEL</code> is the default model at this stage the <code>gpt-4o-mini</code> is most cost-efficient and is working ok for the scraping task</li>
 </ul>
+<details class="info">
+<summary>Scrape functionality dependencies</summary>
+<p>The API use playwright python package to open the scrape url recipe link.
+The docker images in Docker Hub include the dependancy there no need of manaul installation.</p>
+</details>
 <h2 id="installing-locally-debug-mode">Installing locally (Debug mode)<a class="headerlink" href="#installing-locally-debug-mode" title="Permanent link">&para;</a></h2>
 <p>You can create a virtual environment and click of the API.
 Note replace the 3.x with actual Python version
@@ -722,12 +749,16 @@ Note replace the 3.x with actual Python version
 </span></code></pre></div>
 You can access the dashboard admin panel on <code>localhost:8000</code>.
 In this mode you can use it locally if in debug mode which you can change in <code>/forkapi/settings.py</code> file line <code>27</code></p>
+<h2 id="raspberry-pi">Raspberry Pi<a class="headerlink" href="#raspberry-pi" title="Permanent link">&para;</a></h2>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<ul>
+<li>For Raspberry Pi with Raspbian OS make sure to uncomment the packages in the main Dockerfile in line <code>16</code> and replace the method from <code>pull</code> from registry to <code>build</code> from Dockerfile located at the root folder. This should be happen in the <code>docker-compose.yml</code> file line <code>25</code>. <br></li>
+<li>If you pull from Docker hub make sure to change the image in compose with <code>mikebgrep/forkapi:arm64</code> this image is tested for Raspberry Pi with Ubuntu server.</li>
+</ul>
+</div>
 <h2 id="installing-in-docker-container-production-ssl">Installing in Docker container (Production SSL)<a class="headerlink" href="#installing-in-docker-container-production-ssl" title="Permanent link">&para;</a></h2>
 <p>To installing in Docker container follow the steps bellow. <br /></p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>For Raspberry Pi with Raspbian OS make sure to uncomment the packages in the main Dockerfile in line <code>16</code> and replace the method from <code>pull</code> from registry to <code>build</code> from Dockerfile located at the root folder. This should be happen in the <code>docker-compose.yml</code> file line <code>25</code>.</p>
-</div>
 <ul>
 <li>Fist step is to clone the repo. The needed files are in <code>nginx</code> folder, <code>.env</code> file and <code>docker-compose.yml</code> file.</li>
 <li>Next step is setting up the <code>fullchain.pem</code> and <code>privkey.pem</code> files needed for the ssl settings in <code>nginx</code>.</li>
