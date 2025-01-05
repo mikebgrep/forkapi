@@ -589,8 +589,12 @@ hide:
     #### Scrape recipes
     
     ??? pied-piper "POST /api/recipe/scrape"
+
+        ???+ Info 
+            
+            Valid OpenAI API Key is nedded for this endpoint
         
-         ##### Payload
+        ##### Payload
         ``` json title="recipe.RecipeLink object"
         {
             "url": file

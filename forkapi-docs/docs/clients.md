@@ -5,7 +5,9 @@ hide:
 
 # Clients
 ---
-
+<figure markdown="span">
+  ![Image title](assets/preview.png){ width="710" }
+</figure>
 You can use already build FE clients together with the API. Currently, there are only a Web Application FE written in Python that can be deployed with Docker.
 
 ## Web application overview
@@ -13,15 +15,17 @@ You can follow the link of the official GitHub repository of the project here âž
 
 !!! note
 
-    The FE client installation is independant from the ForkApi installation you don't need to follow the API installation instructions!
+    The FE client installation is independant from the ForkApi installation you don't need to follow the API installation instructions! <br>
 
 
 ## Installation
 
 !!! info
     
-      * To install the application you can use the SSL certificates that you own for your domain or just using domain without SSL. 
+      * To install the application you can use the SSL certificates that you own for your domain or just using domain without SSL.
+      * To install on a home local server follwo the local deploy method.
       * The no SSL method can be handy when there an SSL certs setup by default by the hosting service or you just use the application locally.
+      * *For installing on RaspberyPi you need to change in the docker compose file for the image for the `be` service to `mikebgrep/forkapi:arm64`*
 
 ##### Lets begin
 
@@ -56,6 +60,13 @@ You can follow the link of the official GitHub repository of the project here âž
     
     # Pagination for the recipe search endpoints
     PAGINATION_PAGE_SIZE=
+   
+    # Host address for the frontend to access media with protocol eg. https:.. (minimum two) with separated by comma
+    CORS_ALLOWED_HOSTS=https://localhost,http://localhost
+    
+    # Scrape functionality make sure to add '' for the API KEY
+    OPENAI_API_KEY=
+    OPENAI_MODEL=gpt-4o-mini
     ```
   There are comments for each section, but I will explain quick.
 
@@ -68,16 +79,80 @@ You can follow the link of the official GitHub repository of the project here âž
     
     `DOMAIN_NAME_NGINX` and `DOMAIN_NAME_NGINX_API` shouldn't include protocol as `http://` or `https://` they should be plain.
 
+  * `CORS_ALLOWED_HOSTS` are the front end domain names
+  * `OPENAI_API_KEY` is the API KEY from OpenAI for the scraping recipe functionality
+  * `OPENAI_MODEL` is the default model at this stage the `gpt-4o-mini` is most cost-efficient and is working ok for the scraping task
  
 !!! info "Read for local deploy without domain name"
 
     If you want to setup the application only for local use and you doesn't have a domain you can edit the `forkrecipes.nginx.template` file and  change the port for `listen` at line `21` for the API, 
     after this you need to add the port in `nginx` service in the `docker-compose.yml` file.This way you can login to admin from the localhost and the port number. 
     Keep in mind that `SERVICE_BASE_URL` envirument variable should be also with the newly added port and the local ip of the host eg. `http://192.168.x.x:port`.
+
+    ??? tip "docer-compose.yml nginx service"
+            
+          ```
+          nginx:
+            build:
+              context: .
+              dockerfile: nginx/Dockerfile
+            container_name: nginx-fork-recipes
+            ports:
+              - "port-number:80"
+              - "port-number:81"
+          ```
     
+    ??? tip "forkrecipes.nginx.template"
+            
+        ```
+        server {
+            listen 80;
+            server_name ${DOMAIN_NAME_NGINX};
+            client_max_body_size 100M;
+        
+            location / {
+                include /etc/nginx/uwsgi_params;
+                uwsgi_pass unix:/tmp/uwsgi/uwsgi_recipes.sock;
+            }
+        
+            location /static {
+                autoindex on;
+                alias /fork_recipes/static;
+            }
+        
+            error_log /var/log/nginx/error.log;
+            access_log /var/log/nginx/access.log;
+        }
+
+        server {
+            listen 81;
+            server_name ${DOMAIN_NAME_NGINX_API};
+            client_max_body_size 100M;
+        
+            location / {
+                include /etc/nginx/uwsgi_params;
+                uwsgi_pass unix:/tmp/uwsgi/uwsgi.sock;
+            }
+        
+            location /static {
+                autoindex on;
+                alias /forkapi/static;
+            }
+        
+            location /media {
+                autoindex on;
+                alias /forkapi/media;
+            }
+        
+            error_log /var/log/nginx/error.log;
+            access_log /var/log/nginx/access.log;
+        }
+        ```
+
     !!! note
     
-        This setup is tested for installation without SSL
+        This setup is valid for installation without SSL
+        This setup is only for local use on home server!
 
 2.Run docker compose
 === "No SSL"
@@ -88,10 +163,14 @@ You can follow the link of the official GitHub repository of the project here âž
     ```
     This command will install NGINX, ForkAPI and the Fork.Recipes.
 
+    !!! note
+    
+        This setup is working only if you have domain name for `DOMAIN_NAME_NGINX` and sub domain for `DOMAIN_NAME_NGINX_API`
+
 === "SSL"
     You need to have valid certificates for your domain and subdomain.This files should be copied in the `nginx/ssl` folder. The files are `fullchain.pem` and `privkey.pem` (names need to be the same).  
-    At this step you must open the `docker-compose.yml` file and uncomment all commented sections on lines `6`, `10` and `14`.
-    Don't forget to comment the others on lines `5` and `15`. <br>
+    At this step you must open the `docker-compose.yml` file and uncomment all commented sections on lines `6`, `11` and `15`.
+    Don't forget to comment the others on lines `5` and `16`. <br>
     That all run the docker compose and wait the docker do his job.
     ``` bash
     $ docker compose up
