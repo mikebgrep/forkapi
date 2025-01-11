@@ -2,8 +2,9 @@ from django.urls import path, include
 from rest_framework.routers import SimpleRouter
 
 from .views import Categories, TrendingRecipies, CategoryRecipes, FavoriteRecipes, Tags, TagsRecipies, SearchRecipies, \
-    CreateCategory, UpdateCategory, RetrieveCreateDestroyRecipeSet, CreateIngredients, CreateSteps, UpdateRecipe, CreateTag, \
-    UpdateTag, ScrapeView
+    CreateCategory, UpdateCategory, RetrieveCreateDestroyRecipeSet, CreateIngredients, CreateSteps, UpdateRecipe, \
+    CreateTag, \
+    UpdateTag, ScrapeView, GenerateRecipeView
 
 app_name = "recipe"
 
@@ -32,4 +33,5 @@ urlpatterns = [
     path("<int:pk>/ingredients", CreateIngredients.as_view()),
     path("<int:pk>/steps", CreateSteps.as_view()),
     path("scrape", ScrapeView.as_view()),
+    path("generate", GenerateRecipeView.as_view()),
 ]

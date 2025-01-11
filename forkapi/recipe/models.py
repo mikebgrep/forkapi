@@ -31,7 +31,6 @@ class Category(models.Model):
 
 
 class Recipe(models.Model):
-
     DIFFICULTY_CHOICES = [
         ('Easy', 'Easy'),
         ('Intermediate', 'Intermediate'),
@@ -99,12 +98,9 @@ class Step(models.Model):
         steps = list(self.recipe.steps.all().order_by('pk'))
         return str(steps.index(self) + 1)
 
-class RecipeLink(models.Model):
-    url = TextField(max_length=200)
-    recipe = ForeignKey(Recipe, on_delete=models.CASCADE, related_name="url")
-
 
 class PromptType(Enum):
     MAIN_INFO = 0,
     INGREDIENTS = 1,
-    INSTRUCTIONS = 2
+    INSTRUCTIONS = 2,
+    GENERATE = 3,

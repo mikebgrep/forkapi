@@ -129,3 +129,21 @@ class TagsSerializer(serializers.ModelSerializer):
         instance.name = validated_data['name']
         instance.save()
         return instance
+
+
+class RecipeLinkSerializer(serializers.Serializer):
+    url = serializers.URLField()
+    class Meta:
+        fields = (
+            "url",
+        )
+
+
+class GenerateRecipeSerializer(serializers.Serializer):
+    ingredients = serializers.ListField(child=serializers.CharField(), allow_empty=False)
+
+    class Meta:
+        fields = (
+            "ingredients",
+        )
+

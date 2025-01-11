@@ -10,10 +10,10 @@ from rest_framework.status import HTTP_201_CREATED
 
 from .HeaderAuthentication import HeaderAuthentication
 from .generics import UpdateAPIView, PatchAPIView, ListModelViewSet, RetrieveCreateDestroyViewSet, RetrieveAPIViewOpenAI
-from .models import Category, Recipe, Tag, Ingredient, Step, RecipeLink
+from .models import Category, Recipe, Tag, Ingredient, Step
 from .serializers import RecipesSerializer, CategorySerializer, TagsSerializer, IngredientsSerializer, StepsSerializer, \
-    RecipePreviewSerializer
-from .openai_util import get_page_content, scrape_recipe, save_scraped_recipe
+    RecipePreviewSerializer, GenerateRecipeSerializer, RecipeLinkSerializer
+from .openai_util import scrape_recipe, save_scraped_recipe, generate_recipes
 
 
 class SearchRecipies(ListModelViewSet):
@@ -42,6 +42,7 @@ class SearchRecipies(ListModelViewSet):
         page = self.paginate_queryset(preview_recipes)
         serializer = self.get_serializer(page, many=True)
         return self.get_paginated_response(serializer.data)
+
 
 class Categories(generics.ListAPIView):
     authentication_classes = [HeaderAuthentication]
@@ -216,15 +217,27 @@ class UpdateRecipe(UpdateAPIView):
 
 
 class ScrapeView(CreateAPIView):
-    serializer_class = RecipeLink
+    serializer_class = RecipeLinkSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        page_address = request.data['url']
-        page_content = get_page_content(page_address)
-        recipe, ingredients, steps = scrape_recipe(page_content)
-        recipe = save_scraped_recipe(recipe, ingredients, steps, page_address)
-        serializer = RecipesSerializer(recipe)
-        return Response(data=serializer.data, content_type="application/json")
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            page_address = serializer.validated_data['url']
+            recipe, ingredients, steps = scrape_recipe(page_address)
+            recipe = save_scraped_recipe(recipe, ingredients, steps, page_address)
+            serializer = RecipesSerializer(recipe)
+            return Response(data=serializer.data, content_type="application/json")
 
+
+class GenerateRecipeView(CreateAPIView):
+    serializer_class = GenerateRecipeSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            ingredients = serializer.validated_data['ingredients']
+            return Response(generate_recipes(ingredients))

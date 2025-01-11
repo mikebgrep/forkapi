@@ -1,7 +1,8 @@
 import os
+from typing import List
 
 import requests
-
+from urllib.parse import unquote
 
 def calculate_recipe_total_time(total: int) -> str:
     if total < 60:
@@ -29,3 +30,36 @@ def download_media_files(address: str, recipe_name: str, is_video: bool):
 
 def delete_media_file(file_path: str):
     os.remove(file_path)
+
+
+def get_first_matching_link(words: str, strings: List[str]) -> str | None:
+    """
+        Used to get the first link that contains all the matching recipe words
+    """
+    for string in strings:
+        if all(word.lower() in string for word in words):
+            return string
+
+    return None
+
+
+def remove_stop_words(text: str):
+    stop_words = {
+        "a", "an", "the", "and", "or", "but", "if", "then", "of", "on",
+        "in", "to", "with", "at", "by", "from", "for", "about", "as",
+        "into", "like", "through", "over", "between", "out", "against",
+        "during", "without", "within", "along", "around", "before",
+        "after", "above", "below", "up", "down", "under", "again",
+        "further", "once"
+    }
+    words = text.split()
+    filtered_words = [word for word in words if word.lower() not in stop_words]
+
+    return filtered_words
+
+
+def extract_link_from_duckduck_go_url_result(url: str) -> str:
+    link_with_ext = url.split("?uddg=")[1]
+    encoded_url = link_with_ext.split("&rut")[0]
+
+    return unquote(encoded_url)
