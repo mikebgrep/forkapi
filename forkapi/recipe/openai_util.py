@@ -1,13 +1,15 @@
 from typing import List, Tuple
 
 from django.core.files import File
-from playwright.sync_api import sync_playwright
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
+
+from playwright.sync_api import sync_playwright, TimeoutError
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
 from markdownify import markdownify as md
 import json
-
 from playwright_stealth import stealth_sync
 
 from .models import PromptType, Recipe, Ingredient, Step
@@ -82,16 +84,22 @@ prompt_generate_recipe = """
             """
 
 
-def get_page_content_recipe(url: str) -> Tuple[str, str] | None:
+def get_page_content_recipe(url: str) -> Tuple[str | None, str | None] | None:
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         stealth_sync(page)
-        response = page.goto(url=url)
-        # Get thumbnail for recipies without image
-        meta_content_thumbnail = page.locator('meta[property="og:image"]').get_attribute('content')
-        content = response.text()
-        browser.close()
+
+        try:
+            response = page.goto(url=url, timeout=7000)
+            # Get thumbnail for recipies without image
+            meta_content_thumbnail = page.locator('meta[property="og:image"]').nth(0).get_attribute('content',
+                                                                                                    timeout=7000)
+            content = response.text()
+            browser.close()
+        except TimeoutError as ex:
+            print(ex)
+            return None, None
 
         return content, meta_content_thumbnail
 
@@ -176,27 +184,37 @@ def __manage_media(json_content_main_info, is_video: bool):
 def generate_recipes(ingredients: List[str]):
     json_response = __open_ai_generate_recipe_message(ingredients)
     json_content_recipes = __parse_recipe_info(json_response)
+    filtered_recipes = []
 
-    for index, single_recipe_json in enumerate(json_content_recipes):
+    for single_recipe_json in json_content_recipes:
         recipe_name = single_recipe_json['name']
         hrefs = get_duckduckgo_result(url=f"https://duckduckgo.com/html/?q={recipe_name}")
         recipe_words = remove_stop_words(recipe_name)
-        link_with_recipe =  get_first_matching_link(recipe_words, hrefs)
-        try:
-            # TODO:// May be edge case when no exception and the link is missing
-            url = extract_link_from_duckduck_go_url_result(link_with_recipe)
-            single_recipe_json['url'] = url
+        link_with_recipe = get_first_matching_link(recipe_words, hrefs)
 
-            content, meta_content_thumbnail = get_page_content_recipe(url)
-            if not meta_content_thumbnail:
-                raise AttributeError("No thumbnail found")
+        if link_with_recipe:
+            val = URLValidator()
+            try:
+                url = extract_link_from_duckduck_go_url_result(link_with_recipe)
+                val(url)
+                single_recipe_json['url'] = url
+            except (ValidationError, AttributeError) as ex:
+                print(ex)
+                continue
 
-            single_recipe_json['thumbnail'] = meta_content_thumbnail
-        except AttributeError as ex:
-            print(ex)
-            del json_content_recipes[index]
+            if url:
+                content, meta_content_thumbnail = get_page_content_recipe(url)
+                try:
+                    val(meta_content_thumbnail)
+                    single_recipe_json['thumbnail'] = meta_content_thumbnail
+                except ValidationError as ex:
+                    print(ex)
+                    continue
+        else:
+            continue
+        filtered_recipes.append(single_recipe_json)
 
-    return json_content_recipes
+    return filtered_recipes
 
 
 def scrape_recipe(url: str):

@@ -12,7 +12,8 @@ from .HeaderAuthentication import HeaderAuthentication
 from .generics import UpdateAPIView, PatchAPIView, ListModelViewSet, RetrieveCreateDestroyViewSet, RetrieveAPIViewOpenAI
 from .models import Category, Recipe, Tag, Ingredient, Step
 from .serializers import RecipesSerializer, CategorySerializer, TagsSerializer, IngredientsSerializer, StepsSerializer, \
-    RecipePreviewSerializer, GenerateRecipeSerializer, RecipeLinkSerializer
+    RecipePreviewSerializer, GenerateRecipeSerializer, RecipeLinkSerializer, \
+    GenerateRecipeResultSerializer
 from .openai_util import scrape_recipe, save_scraped_recipe, generate_recipes
 
 
@@ -240,4 +241,7 @@ class GenerateRecipeView(CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             ingredients = serializer.validated_data['ingredients']
-            return Response(generate_recipes(ingredients))
+            json_content_recipes = generate_recipes(ingredients)
+            print(json_content_recipes)
+            serializer = GenerateRecipeResultSerializer(json_content_recipes, many=True)
+            return Response(data=serializer.data, content_type="application/json")

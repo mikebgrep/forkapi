@@ -147,3 +147,14 @@ class GenerateRecipeSerializer(serializers.Serializer):
             "ingredients",
         )
 
+
+class GenerateRecipeResultSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    url = serializers.URLField()
+    thumbnail = serializers.URLField()
+    class Meta:
+        fields = (
+            "name",
+            "url",
+            "thumbnail"
+        )
