@@ -1,6 +1,6 @@
 # ForkAPI
 
-![version](https://img.shields.io/badge/version-2.1.0-green) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)  <a aria-label="Build" href="https://github.com/mikebgrep/forkapi/actions?query=Build%20and%20Push%20to%20Docker%20Registry">
+![version](https://img.shields.io/badge/version-2.2.0-green) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)  <a aria-label="Build" href="https://github.com/mikebgrep/forkapi/actions?query=Build%20and%20Push%20to%20Docker%20Registry">
     <img alt="build" src="https://img.shields.io/github/actions/workflow/status/mikebgrep/forkapi/run-tests.yml?label=Build&logo=github&style=flat-quare&labelColor=000000" />
 
 <img align="right" src="https://github.com/mikebgrep/foodie/blob/master/assets/logo.png" height="170px" alt="Logo">
@@ -17,7 +17,7 @@ ForkApi is a Lightweight RestAPI with admin panel to manage food recipes easily.
    - 🌐︎ FE ready made web application [fork.recipes](https://github.com/mikebgrep/fork.recipes)
    - 🔎 Search endpoints supporting pagination
    - 🤖 AI Scrape page to recipe (scrape functionality that save a recipe by given a valid url)
-   - 🤖 ( More coming soon...)
+   - 🤖 AI Generate recipe from a given ingredients (returns valid links with the generated recipe)
 
 ### Documentation
 You can sneek peek into  the [documentation](https://mikebgrep.github.io/forkapi/) of the API. \
