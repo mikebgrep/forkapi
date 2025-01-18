@@ -6,7 +6,7 @@ from rest_framework.generics import RetrieveAPIView, CreateAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import HTTP_201_CREATED
+from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 from .HeaderAuthentication import HeaderAuthentication
 from .generics import UpdateAPIView, PatchAPIView, ListModelViewSet, RetrieveCreateDestroyViewSet, RetrieveAPIViewOpenAI
@@ -227,6 +227,9 @@ class ScrapeView(CreateAPIView):
         if serializer.is_valid(raise_exception=True):
             page_address = serializer.validated_data['url']
             recipe, ingredients, steps = scrape_recipe(page_address)
+            if any(item is None for item in (recipe, ingredients, steps)):
+                return Response(status=HTTP_400_BAD_REQUEST, content_type="application/json")
+
             recipe = save_scraped_recipe(recipe, ingredients, steps, page_address)
             serializer = RecipesSerializer(recipe)
             return Response(data=serializer.data, content_type="application/json")

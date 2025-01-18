@@ -84,6 +84,9 @@ prompt_generate_recipe = """
             """
 
 
+
+blacklist = ['foodnetwork.co.uk', 'foodnetwork.com', 'foodnetwork']
+
 def get_page_content_recipe(url: str) -> Tuple[str | None, str | None] | None:
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -231,6 +234,9 @@ def generate_recipes(ingredients: List[str]):
 
 
 def scrape_recipe(url: str):
+    if any(item in url for item in blacklist):
+        return None, None, None
+
     content, meta_content_thumbnail = get_page_content_recipe(url)
     if not content:
         return None, None, None
