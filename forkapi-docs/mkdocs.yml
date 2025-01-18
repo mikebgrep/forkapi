@@ -39,6 +39,7 @@ nav:
   - Installation: Installation.md
   - Make Your First Request: first-request.md
   - Rest Reference: rest-references.md
+  - OpenAI: open-ai.md
   - Clients: clients.md
   - Contribution: contribution.md
 

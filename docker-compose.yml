@@ -27,7 +27,7 @@ services:
       - be
 
   be:
-#    image: mikebgrep/forkapi:latest  # change with mikebgrep/forkapi:arm64 for RaspberryPI
+    image: mikebgrep/forkapi:latest  # change with mikebgrep/forkapi:arm64 for RaspberryPI
     container_name: forkapi-from-image
     env_file:
       - .env
