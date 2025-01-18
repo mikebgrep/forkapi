@@ -100,11 +100,11 @@ def get_page_content_recipe(url: str) -> Tuple[str | None, str | None] | None:
         )
         page = context.new_page()
         stealth_sync(page)
-        response = None
         try:
             response = page.goto(url=url, timeout=7000)
         except TimeoutError as ex:
             print(ex)
+            return None, None
 
         try:
             # Get page content to be sure is captured regarding and issue with Chrome
