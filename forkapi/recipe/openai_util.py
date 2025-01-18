@@ -23,7 +23,7 @@ prompt_recipe_main_info = """
             Output json:
             
             ```json
-            { "name": "The title or name of the recipe as string", "servings": "The servings (only number as integer)", "description": "The description of the recipe", "image": "Image src path", "video" "Video source path (if available), "difficulty": "string one of 'Easy', 'Intermediate', 'Advanced' or 'Expert'", "chef": "The chef of the recipe", "prep_time": "preparation time in minutes integer value", "cook_time": "The cook time in minutes integer" }
+            { "name": "The title or name of the recipe as string", "servings": "The servings (only number as integer must not be null)", "description": "The description of the recipe", "image": "Image src path", "video" "Video source path (if available), "difficulty": "string one of 'Easy', 'Intermediate', 'Advanced' or 'Expert'", "chef": "The chef of the recipe", "prep_time": "preparation time in minutes integer value", "cook_time": "The cook time in minutes integer" }
             ```
             
             Make sure to return a plain json dict object with the values found on the page source as described.
@@ -31,7 +31,7 @@ prompt_recipe_main_info = """
             ```json
             {}
             ```
-            Or if field is missing return null for value.
+            Or if field is missing return null for value except the servings.Make sure the image url pointing to a image file not blob or else.
             !Note return only the json not conversions!
             """
 
@@ -88,18 +88,31 @@ def get_page_content_recipe(url: str) -> Tuple[str | None, str | None] | None:
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
-        stealth_sync(page)
 
+        # Changing user agent to Chrome as Cloudflare look for it
+        user_agent = page.evaluate("navigator.userAgent")
+        user_agent_replaced = user_agent.replace("HeadlessChrome/", "Chrome/")
+        context = browser.new_context(
+            user_agent=user_agent_replaced
+        )
+        page = context.new_page()
+        stealth_sync(page)
+        response = None
         try:
             response = page.goto(url=url, timeout=7000)
-            # Get thumbnail for recipies without image
-            meta_content_thumbnail = page.locator('meta[property="og:image"]').nth(0).get_attribute('content',
-                                                                                                    timeout=7000)
+        except TimeoutError as ex:
+            print(ex)
+
+        try:
+            # Get page content to be sure is captured regarding and issue with Chrome
             content = response.text()
+            # Get thumbnail for recipies without image
+            meta_content_thumbnail = page.locator('meta[property="og:image"]').nth(0).get_attribute('content', timeout=3700)
             browser.close()
         except TimeoutError as ex:
             print(ex)
-            return None, None
+            browser.close()
+            return content, None
 
         return content, meta_content_thumbnail
 
@@ -219,6 +232,9 @@ def generate_recipes(ingredients: List[str]):
 
 def scrape_recipe(url: str):
     content, meta_content_thumbnail = get_page_content_recipe(url)
+    if not content:
+        return None, None, None
+
     # Main info of the recipe
     json_response = __open_ai_scrape_message(content, PromptType.MAIN_INFO)
     json_content_main_info = __parse_recipe_info(json_response)
