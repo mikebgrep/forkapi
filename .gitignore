@@ -6,6 +6,7 @@ media/*
 forkapi/sql/db.sqlite3
 forkapi/authentication/migrations/*
 forkapi/recipe/migrations/*
+forkapi/schedule/migrations/*
 __pycache__
 forkapi/static/*
 forkapi/media/images

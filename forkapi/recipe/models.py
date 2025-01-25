@@ -4,7 +4,6 @@ from enum import Enum
 
 import django
 from django.db import models
-from django.db.models import TextField, ForeignKey
 from recipe.util import calculate_recipe_total_time
 
 

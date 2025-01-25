@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_409_CONFLICT
 
-from forkapi.recipe.HeaderAuthentication import HeaderAuthentication
+from forkapi.authentication.HeaderAuthentication import HeaderAuthentication
 from . import models, password_validation
 from .models import PasswordResetToken
 from .serializers import UserSerializer, ResetPasswordRequestSerializer, UserProfileSerializer

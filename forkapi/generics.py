@@ -43,12 +43,15 @@ class RetrieveCreateDestroyViewSet(mixins.RetrieveModelMixin, mixins.CreateModel
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
+class ListCreateDestroyViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    """
+    Concrete view for list a model, deleting and creating a model instance.
+    """
+    def get(self, request, *args, **kwargs):
+        pass
 
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
 
-class RetrieveAPIViewOpenAI(mixins.RetrieveModelMixin, GenericAPIView):
-
-    def retrieve(self, request, *args, **kwargs):
-        print(kwargs)
-        instance = self.get_object() # TODO:// created object
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)

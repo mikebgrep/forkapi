@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django_cleanup.apps.CleanupConfig',
     'authentication.apps.AuthenticationConfig',
     'recipe.apps.RecipeConfig',
+    'schedule.apps.ScheduleConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
