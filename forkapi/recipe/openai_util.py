@@ -83,9 +83,8 @@ prompt_generate_recipe = """
             !Note return only the json not conversions!
             """
 
-
-
 blacklist = ['foodnetwork.co.uk', 'foodnetwork.com', 'foodnetwork']
+
 
 def get_page_content_recipe(url: str) -> Tuple[str | None, str | None] | None:
     with sync_playwright() as p:
@@ -110,7 +109,8 @@ def get_page_content_recipe(url: str) -> Tuple[str | None, str | None] | None:
             # Get page content to be sure is captured regarding and issue with Chrome
             content = response.text()
             # Get thumbnail for recipies without image
-            meta_content_thumbnail = page.locator('meta[property="og:image"]').nth(0).get_attribute('content', timeout=3700)
+            meta_content_thumbnail = page.locator('meta[property="og:image"]').nth(0).get_attribute('content',
+                                                                                                    timeout=3700)
             browser.close()
         except TimeoutError as ex:
             print(ex)
@@ -238,6 +238,8 @@ def scrape_recipe(url: str):
         return None, None, None
 
     content, meta_content_thumbnail = get_page_content_recipe(url)
+    # TODO: meta_content_thumbnail sometimes return 404 on download retry for original image when scraping the recipe
+    # https://sweetcaramelsunday.com/beef-pesto-pasta/
     if not content:
         return None, None, None
 
