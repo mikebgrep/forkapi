@@ -117,6 +117,16 @@ class RecipePreviewSerializer(serializers.ModelSerializer):
         )
 
 
+class RecipeScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = (
+            "pk",
+            "image",
+            "name",
+        )
+
+
 class TagsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -133,6 +143,7 @@ class TagsSerializer(serializers.ModelSerializer):
 
 class RecipeLinkSerializer(serializers.Serializer):
     url = serializers.URLField()
+
     class Meta:
         fields = (
             "url",
@@ -152,6 +163,7 @@ class GenerateRecipeResultSerializer(serializers.Serializer):
     name = serializers.CharField()
     url = serializers.URLField()
     thumbnail = serializers.URLField()
+
     class Meta:
         fields = (
             "name",

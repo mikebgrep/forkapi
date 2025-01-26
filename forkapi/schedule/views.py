@@ -32,7 +32,7 @@ class ScheduleView(ListCreateDestroyViewSet):
         try:
             valid_date = datetime.strptime(date, "%Y-%m-%d").date()
             queryset = Schedule.objects.filter(date=valid_date)
-            serializer = ScheduleSerializer(queryset, many=True)
+            serializer = ScheduleSerializer(queryset, many=True, context={"request": request})
             return Response(serializer.data)
 
         except ValueError:
