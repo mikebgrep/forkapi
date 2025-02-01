@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'authentication.apps.AuthenticationConfig',
     'recipe.apps.RecipeConfig',
     'schedule.apps.ScheduleConfig',
+    'background_jobs_app',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
