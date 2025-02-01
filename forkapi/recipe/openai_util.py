@@ -10,7 +10,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from markdownify import markdownify as md
 import json
-from playwright_stealth import stealth_sync
+from playwright_stealth import stealth_sync, StealthConfig
 
 from .models import PromptType, Recipe, Ingredient, Step
 from .util import download_media_files, delete_media_file, get_first_matching_link, remove_stop_words, \
@@ -97,8 +97,16 @@ def get_page_content_recipe(url: str) -> Tuple[str | None, str | None] | None:
         context = browser.new_context(
             user_agent=user_agent_replaced
         )
+
+        # Disable navigator configs affect cloudflare with this we are not blocked
+        config = StealthConfig(
+            navigator_user_agent=False,
+            navigator_plugins=False,
+            navigator_vendor=False,
+        )
+
         page = context.new_page()
-        stealth_sync(page)
+        stealth_sync(page, config=config)
         try:
             response = page.goto(url=url, timeout=7000)
         except TimeoutError as ex:
@@ -202,6 +210,7 @@ def generate_recipes(ingredients: List[str]):
     json_content_recipes = __parse_recipe_info(json_response)
     filtered_recipes = []
 
+    # TODO:// Return multiple recipes from json_content_recipes if have more than one link per recipe name
     for single_recipe_json in json_content_recipes:
         recipe_name = single_recipe_json['name']
         hrefs = get_duckduckgo_result(url=f"https://duckduckgo.com/html/?q={recipe_name}")
