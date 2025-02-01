@@ -18,7 +18,7 @@ ForkApi is a Lightweight RestAPI with admin panel to manage food recipes easily.
    - 🔎 Search endpoints supporting pagination
    - 📋 Schedule Meal plan application
    - 🤖 AI Scrape page to recipe (scrape functionality that save a recipe by given a valid url)
-   - 🤖 AI Generate recipe from a given ingredients (returns valid links with the generated recipe)
+   - 🤖 AI Generate recipe from a given ingredients (returns valid links with the generated recipes)
 
 ### Documentation
 You can sneek peek into  the [documentation](https://mikebgrep.github.io/forkapi/) of the API. \
