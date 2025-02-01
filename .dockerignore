@@ -1,6 +1,7 @@
 forkapi/sql/db.sqlite3
 forkapi/recipe/migrations/*
 forkapi/authentication/migrations/*
+forkapi/schedule/migrations/*
 forkapi/media/images
 forkapi/media/videos
 forkapi/static/*
