@@ -75,6 +75,7 @@ class RecipesSerializer(serializers.ModelSerializer):
             "steps",
             "clear_video",
             "reference",
+            "language",
         )
 
     def create(self, validated_data):
@@ -173,11 +174,16 @@ class GenerateRecipeResultSerializer(serializers.Serializer):
 
 
 class TranslateRecipeSerializer(serializers.Serializer):
+    """
+    Translate recipe serializer used in views
+    language is on of the LANGUAGES_CHOICES
+    pk is the recipe pk that it's been translated
+    """
     language = serializers.ChoiceField(choices=LANGUAGES_CHOICES)
-    recipe_id = serializers.IntegerField()
+    pk = serializers.IntegerField()
 
     class Meta:
         fields = (
             "language",
-            "recipe_id"
+            "pk"
         )

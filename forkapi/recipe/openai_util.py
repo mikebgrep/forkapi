@@ -354,10 +354,12 @@ def translate_and_save_recipe(recipe: Recipe, language: str) -> Recipe:
     new_recipe.pk = None
     new_recipe.name = name_translated
     new_recipe.description = description_translated
+    new_recipe.original_recipe_pk = recipe.pk
+    new_recipe.language = language
 
-    recipe = save_recipe(new_recipe, ingredients, steps)
+    translated_recipe = save_recipe(new_recipe, ingredients, steps)
 
-    return recipe
+    return translated_recipe
 
 
 

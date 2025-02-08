@@ -68,6 +68,7 @@ class Recipe(models.Model):
     chef = models.CharField(max_length=100, default=None, blank=True, null=True)
     reference = models.TextField(max_length=170, blank=True, null=True)
     language = models.CharField(max_length=20, choices=LANGUAGES_CHOICES, default='English')
+    original_recipe_pk = models.IntegerField(default=None, blank=False, null=True)
     # prep_time & cook_time in minutes
     prep_time = models.IntegerField(default=0, null=True)
     cook_time = models.IntegerField(default=0, null=True)
@@ -75,6 +76,28 @@ class Recipe(models.Model):
     @property
     def is_trending(self):
         return self.created_at.date() >= (datetime.now() - timedelta(days=30)).date()
+
+    @property
+    def is_translated(self):
+        return self.original_recipe_pk is not None
+
+    @property
+    def get_variations(self):
+        """
+        Get original recipe before the last translation
+        """
+        variations = []
+        original_recipe_pk = self.original_recipe_pk
+        is_last_variation = False
+        while not is_last_variation:
+            recipe = Recipe.objects.get(pk=original_recipe_pk)
+            variations.append(recipe)
+            if not recipe.is_translated:
+                break
+
+            original_recipe_pk = recipe.original_recipe_pk
+
+        return variations
 
     # total_time calculated to hours
     @property

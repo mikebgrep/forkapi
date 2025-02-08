@@ -6,15 +6,16 @@ from rest_framework.generics import CreateAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import HTTP_201_CREATED, HTTP_204_NO_CONTENT
+from rest_framework.status import HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
 
 from forkapi.authentication.HeaderAuthentication import HeaderAuthentication
 from forkapi.generics import UpdateAPIView, PatchAPIView, ListModelViewSet, RetrieveCreateDestroyViewSet
+from .filters import FilterRecipeByLanguage
 from .models import Category, Recipe, Tag, Ingredient, Step
 from .serializers import RecipesSerializer, CategorySerializer, TagsSerializer, IngredientsSerializer, StepsSerializer, \
     RecipePreviewSerializer, GenerateRecipeSerializer, RecipeLinkSerializer, \
     GenerateRecipeResultSerializer, TranslateRecipeSerializer
-from .openai_util import scrape_recipe, save_recipe, generate_recipes, translate_recipe_to_language, \
+from .openai_util import scrape_recipe, save_recipe, generate_recipes, \
     translate_and_save_recipe
 
 
@@ -25,15 +26,16 @@ class SearchRecipies(ListModelViewSet):
     authentication_classes = [HeaderAuthentication]
     pagination_class = PageNumberPagination
     serializer_class = RecipesSerializer
+    permission_classes = [IsAuthenticated]
 
     queryset = Recipe.objects.all().order_by('created_at')
-    filter_backends = [filters.SearchFilter]
+    filter_backends = [FilterRecipeByLanguage, filters.SearchFilter]
     search_fields = ['name']
 
     @action(detail=False)
     def favorites(self, request, *args, **kwargs):
         favorite_recipes = get_list_or_404(Recipe, is_favorite=True)
-        favorite_recipes.sort()
+        favorite_recipes = self.filter_queryset(favorite_recipes)
         page = self.paginate_queryset(favorite_recipes)
         serializer = self.get_serializer(page, many=True)
         return self.get_paginated_response(serializer.data)
@@ -48,6 +50,7 @@ class SearchRecipies(ListModelViewSet):
 
 class Categories(generics.ListAPIView):
     authentication_classes = [HeaderAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = CategorySerializer
     queryset = Category.objects.all()
     pagination_class = None
@@ -55,8 +58,10 @@ class Categories(generics.ListAPIView):
 
 class CategoryRecipes(generics.ListAPIView):
     authentication_classes = [HeaderAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = RecipesSerializer
     pagination_class = None
+    filter_backends = [FilterRecipeByLanguage]
 
     def get_queryset(self):
         return Recipe.objects.select_related('category').filter(category_id=self.kwargs['pk'])
@@ -64,8 +69,10 @@ class CategoryRecipes(generics.ListAPIView):
 
 class TrendingRecipies(generics.ListAPIView):
     authentication_classes = [HeaderAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = RecipesSerializer
     pagination_class = None
+    filter_backends = [FilterRecipeByLanguage]
 
     def get_queryset(self):
         results_pks = [x.pk for x in Recipe.objects.all() if x.is_trending == True][:15]
@@ -78,6 +85,7 @@ class TrendingRecipies(generics.ListAPIView):
 
 class FavoriteRecipes(PatchAPIView):
     authentication_classes = [HeaderAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = RecipesSerializer
     queryset = Recipe.objects.all()
 
@@ -95,6 +103,7 @@ class FavoriteRecipes(PatchAPIView):
 
 class Tags(generics.ListAPIView):
     authentication_classes = [HeaderAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = TagsSerializer
     queryset = Tag.objects.all()
     pagination_class = None
@@ -102,7 +111,9 @@ class Tags(generics.ListAPIView):
 
 class TagsRecipies(generics.ListAPIView):
     authentication_classes = [HeaderAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = RecipesSerializer
+    filter_backends = [FilterRecipeByLanguage]
 
     def get_queryset(self):
         recipies_pks = [x.pk for x in get_list_or_404(Recipe, tag__pk=self.kwargs['pk'])]
@@ -218,6 +229,20 @@ class UpdateRecipe(UpdateAPIView):
     queryset = Recipe.objects.all()
 
 
+class RetrieveRecipeLangVariations(generics.ListAPIView):
+    serializer_class = TranslateRecipeSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [HeaderAuthentication]
+    pagination_class = None
+
+
+    def get_queryset(self):
+        recipe = get_object_or_404(Recipe, pk=self.kwargs['recipe_pk'])
+        if recipe.is_translated:
+            variations = recipe.get_variations
+            return variations
+
+
 class ScrapeView(CreateAPIView):
     serializer_class = RecipeLinkSerializer
     authentication_classes = [TokenAuthentication]
@@ -260,7 +285,7 @@ class TranslateRecipeView(CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             language = serializer.validated_data['language']
-            recipe_id = serializer.validated_data['recipe_id']
+            recipe_id = serializer.validated_data['pk']
             recipe = Recipe.objects.get(pk=recipe_id)
             translated_recipe = translate_and_save_recipe(recipe, language)
             serializer = RecipesSerializer(translated_recipe)
