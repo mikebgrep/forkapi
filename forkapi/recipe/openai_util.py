@@ -256,7 +256,7 @@ def scrape_recipe(url: str):
     json_response = __open_ai_scrape_message(content, PromptType.MAIN_INFO)
     json_content_main_info = __parse_recipe_info(json_response)
 
-    if not json_content_main_info['image']:
+    if meta_content_thumbnail:
         json_content_main_info['image'] = meta_content_thumbnail.split("?")[0]
 
     file_path = __manage_media(json_content_main_info, False)
@@ -264,14 +264,14 @@ def scrape_recipe(url: str):
     recipe = Recipe(**json_content_main_info)
     file_name = json_content_main_info['name'].replace("/", "")
 
-    with open(file_path, 'rb') as doc_file:
-        recipe.image.save(f'{file_name}.png', File(doc_file), save=True)
+    with open(file_path, 'rb') as img_file:
+        recipe.image.save(f'{file_name}.png', File(img_file), save=True)
         delete_media_file(file_path)
 
     if json_content_main_info['video'] and not 'youtube' in json_content_main_info['video']:
         file_path = __manage_media(json_content_main_info, True)
-        with open(file_path, 'rb') as doc_file:
-            recipe.video.save(f'{file_name}.mp4', File(doc_file), save=True)
+        with open(file_path, 'rb') as video_file:
+            recipe.video.save(f'{file_name}.mp4', File(video_file), save=True)
             delete_media_file(file_path)
 
     recipe.save()
