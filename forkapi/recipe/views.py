@@ -229,7 +229,7 @@ class UpdateRecipe(UpdateAPIView):
     queryset = Recipe.objects.all()
 
 
-class RetrieveRecipeLangVariations(generics.ListAPIView):
+class RetrieveRecipeLangVariationsView(generics.ListAPIView):
     serializer_class = TranslateRecipeSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [HeaderAuthentication]
