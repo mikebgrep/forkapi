@@ -4,7 +4,7 @@ from enum import Enum
 
 import django
 from django.db import models
-from recipe.util import calculate_recipe_total_time
+from .util import calculate_recipe_total_time
 
 
 def upload_to(instance, filename):
@@ -13,6 +13,31 @@ def upload_to(instance, filename):
 
 def upload_video_to(instance, filename):
     return 'videos/{uuid}_{filename}'.format(uuid=str(uuid.uuid4()), filename=filename)
+
+
+DIFFICULTY_CHOICES = [
+    ('Easy', 'Easy'),
+    ('Intermediate', 'Intermediate'),
+    ('Advanced', 'Advanced'),
+    ('Expert', 'Expert'),
+]
+
+LANGUAGES_CHOICES = [
+    ('English', 'English'),
+    ('Spanish', 'Español'),
+    ('French', 'Français'),
+    ('German', 'Deutsch'),
+    ('Chinese', '中文'),
+    ('Russian', 'Русский'),
+    ('Italian', 'Italiano'),
+    ('Japanese', '日本語'),
+    ('Dutch', 'Nederlands'),
+    ('Polish', 'Polski'),
+    ('Greek', 'Ελληνικά'),
+    ('Swedish', 'Svenska'),
+    ('Czech', 'Čeština'),
+    ('Bulgarian', 'Български'),
+]
 
 
 class Tag(models.Model):
@@ -30,13 +55,6 @@ class Category(models.Model):
 
 
 class Recipe(models.Model):
-    DIFFICULTY_CHOICES = [
-        ('Easy', 'Easy'),
-        ('Intermediate', 'Intermediate'),
-        ('Advanced', 'Advanced'),
-        ('Expert', 'Expert'),
-    ]
-
     name = models.CharField(max_length=170)
     servings = models.IntegerField()
     description = models.TextField(blank=False, null=False)
@@ -49,6 +67,7 @@ class Recipe(models.Model):
     difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, default=None, blank=True, null=True)
     chef = models.CharField(max_length=100, default=None, blank=True, null=True)
     reference = models.TextField(max_length=170, blank=True, null=True)
+    language = models.CharField(max_length=20, choices=LANGUAGES_CHOICES, default='English')
     # prep_time & cook_time in minutes
     prep_time = models.IntegerField(default=0, null=True)
     cook_time = models.IntegerField(default=0, null=True)

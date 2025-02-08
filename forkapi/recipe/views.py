@@ -13,8 +13,9 @@ from forkapi.generics import UpdateAPIView, PatchAPIView, ListModelViewSet, Retr
 from .models import Category, Recipe, Tag, Ingredient, Step
 from .serializers import RecipesSerializer, CategorySerializer, TagsSerializer, IngredientsSerializer, StepsSerializer, \
     RecipePreviewSerializer, GenerateRecipeSerializer, RecipeLinkSerializer, \
-    GenerateRecipeResultSerializer
-from .openai_util import scrape_recipe, save_scraped_recipe, generate_recipes
+    GenerateRecipeResultSerializer, TranslateRecipeSerializer
+from .openai_util import scrape_recipe, save_recipe, generate_recipes, translate_recipe_to_language, \
+    translate_and_save_recipe
 
 
 class SearchRecipies(ListModelViewSet):
@@ -230,7 +231,7 @@ class ScrapeView(CreateAPIView):
             if any(item is None for item in (recipe, ingredients, steps)):
                 return Response(status=HTTP_204_NO_CONTENT, content_type="application/json")
 
-            recipe = save_scraped_recipe(recipe, ingredients, steps, page_address)
+            recipe = save_recipe(recipe, ingredients, steps, page_address)
             serializer = RecipesSerializer(recipe)
             return Response(data=serializer.data, content_type="application/json")
 
@@ -247,4 +248,20 @@ class GenerateRecipeView(CreateAPIView):
             json_content_recipes = generate_recipes(ingredients)
             print(json_content_recipes)
             serializer = GenerateRecipeResultSerializer(json_content_recipes, many=True)
+            return Response(data=serializer.data, content_type="application/json")
+
+
+class TranslateRecipeView(CreateAPIView):
+    serializer_class = TranslateRecipeSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            language = serializer.validated_data['language']
+            recipe_id = serializer.validated_data['recipe_id']
+            recipe = Recipe.objects.get(pk=recipe_id)
+            translated_recipe = translate_and_save_recipe(recipe, language)
+            serializer = RecipesSerializer(translated_recipe)
             return Response(data=serializer.data, content_type="application/json")

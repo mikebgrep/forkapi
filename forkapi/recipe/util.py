@@ -4,6 +4,7 @@ from typing import List
 import requests
 from urllib.parse import unquote
 
+
 def calculate_recipe_total_time(total: int) -> str:
     if total < 60:
         return f"{total / 100:.2f}"
@@ -63,3 +64,19 @@ def extract_link_from_duckduck_go_url_result(url: str) -> str:
     encoded_url = link_with_ext.split("&rut")[0]
 
     return unquote(encoded_url)
+
+
+def instructions_and_steps_json_to_lists(json_content_steps: dict, json_content_ingredients: dict):
+    from .models import Ingredient, Step
+    steps = []
+    ingredients = []
+
+    for instruction in json_content_steps:
+        step = Step(**instruction)
+        steps.append(step)
+
+    for ingredient in json_content_ingredients:
+        ingredient = Ingredient(**ingredient)
+        ingredients.append(ingredient)
+
+    return steps, ingredients

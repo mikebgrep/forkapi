@@ -4,7 +4,7 @@ from rest_framework.routers import SimpleRouter
 from .views import Categories, TrendingRecipies, CategoryRecipes, FavoriteRecipes, Tags, TagsRecipies, SearchRecipies, \
     CreateCategory, UpdateCategory, RetrieveCreateDestroyRecipeSet, CreateIngredients, CreateSteps, UpdateRecipe, \
     CreateTag, \
-    UpdateTag, ScrapeView, GenerateRecipeView
+    UpdateTag, ScrapeView, GenerateRecipeView, TranslateRecipeView
 
 app_name = "recipe"
 
@@ -34,4 +34,5 @@ urlpatterns = [
     path("<int:pk>/steps", CreateSteps.as_view()),
     path("scrape", ScrapeView.as_view()),
     path("generate", GenerateRecipeView.as_view()),
+    path("translate", TranslateRecipeView.as_view())
 ]

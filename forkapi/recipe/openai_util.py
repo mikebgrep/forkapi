@@ -14,7 +14,7 @@ from playwright_stealth import stealth_sync, StealthConfig
 
 from .models import PromptType, Recipe, Ingredient, Step
 from .util import download_media_files, delete_media_file, get_first_matching_link, remove_stop_words, \
-    extract_link_from_duckduck_go_url_result
+    extract_link_from_duckduck_go_url_result, instructions_and_steps_json_to_lists
 
 load_dotenv()
 
@@ -83,6 +83,16 @@ prompt_generate_recipe = """
             !Note return only the json not conversions!
             """
 
+prompt_translate_recipe = """
+            Your task is to translate the given recipe and return it in structured json format:
+            ```json
+            { "name": "Translated name string", "description": "Translated description string", "ingredients" : [ { "name": "Full text of the ingredient name", "quantity": "an string value of the quantity if in the ingredient", "metric": "the metric of the ingredient eg. g, ml, pcs etc."}, ... ], "steps" : [{ "text": "Instruction value start from first" }, { "text": "Second instruction value" }, {"text": "Third instruction value"} ]
+            ```
+            !Note you must translate only the: `name`, `description`, `ingredients` and `steps`
+            as described in the json example and the ingredients metrics and quantity should be the correct by the standard of the language.
+            """
+
+
 blacklist = ['foodnetwork.co.uk', 'foodnetwork.com', 'foodnetwork']
 
 
@@ -147,12 +157,12 @@ def __init_open_ai_client():
     return client
 
 
-def __openai_chat_completion(messages):
+def __openai_chat_completion(messages, model=os.getenv("OPENAI_MODEL")):
     client = __init_open_ai_client()
 
     chat_completion = client.chat.completions.create(
         messages=messages,
-        model=os.getenv("OPENAI_MODEL"),
+        model=model,
     )
 
     return chat_completion.choices[0].message.content
@@ -187,6 +197,18 @@ def __open_ai_generate_recipe_message(ingredients: List[str] = None):
     ]
 
     return __openai_chat_completion(messages)
+
+def __open_ai_translate_recipe_message(recipe: Recipe, language: str):
+    messages = [
+        {"role": "system",
+         "content": "Your are helpful assistant that translate recipes to foreign languages and return them to a valid json"},
+        {
+            "role": "user",
+            "content": f"With the provided name: {recipe.name}, description: {recipe.description}, ingredients: {json.dumps(list(recipe.ingredients.all().values()))} and instruction/steps: {json.dumps(list(recipe.steps.all().values()))}. Your task it to {prompt_translate_recipe} to the  provided language: {language}"
+        }
+    ]
+    #TODO: Change model if not performing well on translation , model="gpt-4-turbo"
+    return  __openai_chat_completion(messages)
 
 
 def __parse_recipe_info(json_response: str):
@@ -279,26 +301,32 @@ def scrape_recipe(url: str):
     # Instruction of the recipe
     json_response = __open_ai_scrape_message(content, PromptType.INSTRUCTIONS)
     json_content_instructions = __parse_recipe_info(json_response)
-    steps = []
-
-    for instruction in json_content_instructions:
-        step = Step(**instruction)
-        steps.append(step)
 
     # Ingredients of the recipe
     json_response = __open_ai_scrape_message(content, PromptType.INGREDIENTS)
     json_content_ingredients = __parse_recipe_info(json_response)
 
-    ingredients = []
-    for ingredient in json_content_ingredients:
-        ingredient = Ingredient(**ingredient)
-        ingredients.append(ingredient)
+    steps, ingredients = instructions_and_steps_json_to_lists(json_content_instructions, json_content_ingredients)
 
     return recipe, ingredients, steps
 
 
-def save_scraped_recipe(recipe: Recipe, ingredients: List[Ingredient], steps: List[Step], page_address: str):
-    recipe.reference = page_address
+def translate_recipe_to_language(recipe: Recipe, language: str):
+    json_response = __open_ai_translate_recipe_message(recipe, language)
+    json_content = __parse_recipe_info(json_response)
+
+    name_translated = json_content['name']
+    description_translated = json_content['description']
+    ingredients_translated = json_content['ingredients']
+    instructions_translated = json_content['steps']
+
+    return name_translated, description_translated, ingredients_translated, instructions_translated
+
+
+def save_recipe(recipe: Recipe, ingredients: List[Ingredient], steps: List[Step], page_address: str = None):
+    if page_address is not None:
+        recipe.reference = page_address
+
     recipe.save()
 
     for ingredient in ingredients:
@@ -314,3 +342,26 @@ def save_scraped_recipe(recipe: Recipe, ingredients: List[Ingredient], steps: Li
     recipe.ingredients.set(ingredients)
 
     return recipe
+
+def translate_and_save_recipe(recipe: Recipe, language: str) -> Recipe:
+    name_translated, description_translated, ingredients_translated, instructions_translated = \
+        translate_recipe_to_language(recipe, language)
+
+    steps, ingredients = instructions_and_steps_json_to_lists(instructions_translated, ingredients_translated)
+
+    from copy import deepcopy
+    new_recipe = deepcopy(recipe)
+    new_recipe.pk = None
+    new_recipe.name = name_translated
+    new_recipe.description = description_translated
+
+    recipe = save_recipe(new_recipe, ingredients, steps)
+
+    return recipe
+
+
+
+
+
+
+

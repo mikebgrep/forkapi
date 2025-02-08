@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Category, Recipe, Ingredient, Step, Tag
+from .models import Category, Recipe, Ingredient, Step, Tag, LANGUAGES_CHOICES
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -169,4 +169,15 @@ class GenerateRecipeResultSerializer(serializers.Serializer):
             "name",
             "url",
             "thumbnail"
+        )
+
+
+class TranslateRecipeSerializer(serializers.Serializer):
+    language = serializers.ChoiceField(choices=LANGUAGES_CHOICES)
+    recipe_id = serializers.IntegerField()
+
+    class Meta:
+        fields = (
+            "language",
+            "recipe_id"
         )
