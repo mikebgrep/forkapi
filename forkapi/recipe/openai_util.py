@@ -343,7 +343,10 @@ def save_recipe(recipe: Recipe, ingredients: List[Ingredient], steps: List[Step]
 
     return recipe
 
-def translate_and_save_recipe(recipe: Recipe, language: str) -> Recipe:
+def translate_and_save_recipe(recipe: Recipe, language: str) -> Recipe | None:
+    if any([x for x in recipe.get_variations if x.language == language]):
+        return None
+
     name_translated, description_translated, ingredients_translated, instructions_translated = \
         translate_recipe_to_language(recipe, language)
 

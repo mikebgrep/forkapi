@@ -1,3 +1,5 @@
+import os
+
 from django.shortcuts import get_list_or_404, get_object_or_404
 from rest_framework import generics, filters
 from rest_framework.authentication import TokenAuthentication
@@ -235,12 +237,10 @@ class RetrieveRecipeLangVariationsView(generics.ListAPIView):
     authentication_classes = [HeaderAuthentication]
     pagination_class = None
 
-
     def get_queryset(self):
         recipe = get_object_or_404(Recipe, pk=self.kwargs['recipe_pk'])
-        if recipe.is_translated:
-            variations = recipe.get_variations
-            return variations
+        variations = recipe.get_variations
+        return variations
 
 
 class ScrapeView(CreateAPIView):
@@ -282,11 +282,25 @@ class TranslateRecipeView(CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
+        if "None" in os.environ["DEFAULT_RECIPE_DISPLAY_LANGUAGE"]:
+            return Response(data={"errors": ["Default language for translation should be set"]},
+                            status=HTTP_400_BAD_REQUEST)
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            language = serializer.validated_data['language']
+            try:
+                language = serializer.validated_data['language']
+            except KeyError:
+                language = os.environ["DEFAULT_RECIPE_DISPLAY_LANGUAGE"]
             recipe_id = serializer.validated_data['pk']
             recipe = Recipe.objects.get(pk=recipe_id)
+            if not recipe.is_original:
+                return Response(data={"errors": ["Translation must be performed only on original recipes"]},
+                                status=HTTP_400_BAD_REQUEST)
+
             translated_recipe = translate_and_save_recipe(recipe, language)
-            serializer = RecipesSerializer(translated_recipe)
-            return Response(data=serializer.data, content_type="application/json")
+            if translated_recipe:
+                serializer = RecipesSerializer(translated_recipe)
+                return Response(data=serializer.data, content_type="application/json")
+            return Response(data={
+                "errors": ["Translation language is already used and there a recipe translated with that language."]},
+                            status=HTTP_400_BAD_REQUEST)

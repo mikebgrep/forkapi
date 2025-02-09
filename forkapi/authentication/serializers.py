@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import User
+from .models import User, UserSettings
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -36,3 +36,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class ResetPasswordRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
+
+
+class UserSettingsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserSettings
+        fields = (
+            "preferred_translate_language",
+        )

@@ -1,23 +1,32 @@
+import os
+
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
-from django.core.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_409_CONFLICT
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_409_CONFLICT, HTTP_201_CREATED
 
 from forkapi.authentication.HeaderAuthentication import HeaderAuthentication
 from . import models, password_validation
-from .models import PasswordResetToken
-from .serializers import UserSerializer, ResetPasswordRequestSerializer, UserProfileSerializer
+from .models import PasswordResetToken, UserSettings
+from .serializers import UserSerializer, ResetPasswordRequestSerializer, UserProfileSerializer, UserSettingsSerializer
 
 
 class SignUpView(generics.CreateAPIView):
     authentication_classes = [HeaderAuthentication]
     serializer_class = UserSerializer
     permission_classes = (AllowAny,)
+
+    def perform_create(self, serializer):
+        """
+        Creating and UserSettings for the user
+        """
+        instance = serializer.save()
+        UserSettings.objects.create(user=instance)
 
 
 class LoginView(generics.CreateAPIView):
@@ -32,6 +41,8 @@ class LoginView(generics.CreateAPIView):
             return Response("Forbidden", status.HTTP_403_FORBIDDEN)
         token, created = Token.objects.get_or_create(user=user)
         serializer = UserSerializer(user)
+        # Temporary workaround for default language for recipe.filters.FilterRecipeByLanguage
+        os.environ["DEFAULT_RECIPE_DISPLAY_LANGUAGE"] = (user.settings.get().preferred_translate_language or "None")
         return Response({'token': token.key, 'user': serializer.data})
 
 
@@ -156,3 +167,27 @@ class ResetPassword(generics.GenericAPIView):
 
             token.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UserSettingsView(generics.GenericAPIView):
+    serializer_class = UserSettingsSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        instance = UserSettings.objects.get(user=user)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def patch(self, request, *args, **kwargs):
+        user = request.user
+        instance = UserSettings.objects.get(user=user)
+        language = request.data.get('language')
+        instance.preferred_translate_language = language
+        instance.save()
+        serializer = self.get_serializer(instance)
+        # Temporary workaround for default language for recipe.filters.FilterRecipeByLanguage
+        os.environ["DEFAULT_RECIPE_DISPLAY_LANGUAGE"] = language
+        return Response(serializer.data, status=HTTP_201_CREATED)
+

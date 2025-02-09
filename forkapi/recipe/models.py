@@ -4,6 +4,7 @@ from enum import Enum
 
 import django
 from django.db import models
+from django.db.models import Q
 from .util import calculate_recipe_total_time
 
 
@@ -79,25 +80,23 @@ class Recipe(models.Model):
 
     @property
     def is_translated(self):
-        return self.original_recipe_pk is not None
+        return len(self.get_variations) > 1
+
+    @property
+    def is_original(self):
+        return (self.is_translated and self.original_recipe_pk is None) or (not self.is_translated and self.original_recipe_pk is None)
 
     @property
     def get_variations(self):
         """
-        Get original recipe before the last translation
+        Get variations of the recipes of any and the original recipe
         """
-        variations = []
-        original_recipe_pk = self.original_recipe_pk
-        is_last_variation = False
-        while not is_last_variation:
-            recipe = Recipe.objects.get(pk=original_recipe_pk)
-            variations.append(recipe)
-            if not recipe.is_translated:
-                break
+        recipes = Recipe.objects.filter(
+            Q(original_recipe_pk=self.pk) | Q(pk=self.pk) if self.original_recipe_pk is None \
+                else Q(original_recipe_pk=self.original_recipe_pk) | Q(pk=self.original_recipe_pk)
+        ) ## Consider exclude self .exclude(pk=self.pk)
 
-            original_recipe_pk = recipe.original_recipe_pk
-
-        return variations
+        return recipes
 
     # total_time calculated to hours
     @property

@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.db.models import BooleanField
+from django.db.models import BooleanField, CASCADE
 from django.utils.translation import gettext_lazy as _
 
 
@@ -16,3 +16,9 @@ class PasswordResetToken(models.Model):
     email = models.EmailField()
     token = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class UserSettings(models.Model):
+    preferred_translate_language = models.CharField(max_length=20, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=CASCADE, related_name="settings")
+    # TODO:// add unit conversion choice
