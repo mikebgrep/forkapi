@@ -27,7 +27,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 #    tk8.6-dev \
 #    python3-tk \
 #    libharfbuzz-dev \
-#    libfribidi-dev
+#    libfribidi-dev \
+#    libpq-dev
 
 # Set the working directory
 WORKDIR /forkapi
@@ -38,7 +39,7 @@ COPY ./requirements.txt /forkapi/requirements.txt
 
 # Install dependencies
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --verbose -r requirements.txt
 RUN playwright install --with-deps chromium
 
 
