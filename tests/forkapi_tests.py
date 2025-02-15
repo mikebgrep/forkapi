@@ -212,7 +212,7 @@ def create_tag(api_client):
 
 @pytest.mark.django_db
 @override_settings(MEDIA_ROOT='tests/media')
-def create_recipe(api_client):
+def create_recipe(api_client, original_recipe_pk=None):
     tag, tag_data = create_tag(api_client)
     category, category_data = create_category(api_client)
 
@@ -225,12 +225,17 @@ def create_recipe(api_client):
         "cook_time": random.randrange(1, 40),
         "description": f"Description-{uuid.uuid4()}",
         "image": open("tests/uploads/upload-image.png", 'rb'),
-        "video": open("tests/uploads/upload-video.mp4", 'rb')
+        "video": open("tests/uploads/upload-video.mp4", 'rb'),
     }
 
     response = api_client.post("/api/recipe/", recipe_data, format="multipart")
     assert response.status_code == 201
+
     recipe = Recipe.objects.get(name=recipe_data['name'])
+    if original_recipe_pk:
+        recipe.original_recipe_pk = original_recipe_pk
+        recipe.language = "Bulgarian"
+        recipe.save()
 
     return recipe, recipe_data
 
@@ -293,6 +298,48 @@ def test_login_with_wrong_auth_header(api_client):
     response = api_client.post("/api/auth/token", admin_user_data, format="json")
     assert response.status_code == 403
 
+
+@pytest.mark.django_db
+def test_create_user_creates_user_settings(api_client):
+    add_access_token_header(api_client)
+    response  = api_client.get("/api/auth/settings", format="json")
+
+    assert response.status_code == 200
+    response_content = json.loads(response.content)
+    assert response_content['preferred_translate_language'] is None
+    assert os.getenv("DEFAULT_RECIPE_DISPLAY_LANGUAGE") == "None"
+
+
+@pytest.mark.django_db
+def test_user_settings_are_changed_successfully(api_client):
+    add_access_token_header(api_client)
+
+    patch_request_data = {
+        "language": "Bulgarian"
+    }
+
+    response =  api_client.patch("/api/auth/settings", patch_request_data, format="json")
+    assert response.status_code == 201
+    response_content = json.loads(response.content)
+    assert response_content['preferred_translate_language'] == patch_request_data['language']
+    assert os.getenv("DEFAULT_RECIPE_DISPLAY_LANGUAGE") == patch_request_data['language']
+
+
+@pytest.mark.django_db
+def test_user_settings_are_returned_after_changes(api_client):
+    add_access_token_header(api_client)
+
+    patch_request_data = {
+        "language": "Bulgarian"
+    }
+
+    response = api_client.patch("/api/auth/settings", patch_request_data, format="json")
+    assert response.status_code == 201
+
+    response = api_client.get("/api/auth/settings", format="json")
+    response_content = json.loads(response.content)
+    assert response_content['preferred_translate_language'] == patch_request_data['language']
+    assert os.getenv("DEFAULT_RECIPE_DISPLAY_LANGUAGE") == patch_request_data['language']
 
 @pytest.mark.django_db
 def test_create_category(api_client):
@@ -1014,3 +1061,62 @@ def test_change_password_on_reset_passwords_does_not_match(api_client):
     assert response.status_code == 400
     assert CONFIRM_AND_NEW_PASSWORD_DOES_NOT_MATCH_ERROR_MESSAGE in response_data['errors']
     assert len(response_data['errors']) == 1
+
+@pytest.mark.django_db
+def test_translate_recipe_return_none_for_default_user_settings_none_on_post(api_client):
+    add_access_token_header(api_client)
+    response = api_client.post("/api/recipe/translate", format="json")
+
+    assert response.status_code == 400
+    response_json_content = json.loads(response.content)
+    assert "Default language for translation should be set" in response_json_content['errors']
+
+
+@pytest.mark.django_db
+def test_translate_recipe_without_request_data_language_and_the_recipe_is_original_false(api_client):
+    add_access_token_header(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    recipe, recipe_data = create_recipe(api_client, original_recipe_pk=recipe.pk)
+    os.environ["DEFAULT_RECIPE_DISPLAY_LANGUAGE"] = "Bulgarian"
+
+    json_data = {
+        "pk": recipe.pk
+    }
+
+    response = api_client.post("/api/recipe/translate", json_data, format="json")
+    assert response.status_code == 400
+    response_json_content = json.loads(response.content)
+
+    assert "Translation must be performed only on original recipes" in response_json_content['errors']
+
+@pytest.mark.django_db
+def test_translate_translated_recipe_same_language(api_client):
+    add_access_token_header(api_client)
+    original_recipe, recipe_data = create_recipe(api_client)
+    create_recipe(api_client, original_recipe_pk=original_recipe.pk)
+    os.environ["DEFAULT_RECIPE_DISPLAY_LANGUAGE"] = "Bulgarian"
+
+    json_data = {
+        "pk": original_recipe.pk,
+        "language": "Bulgarian"
+    }
+
+    response = api_client.post("/api/recipe/translate", json_data, format="json")
+    assert response.status_code == 400
+    response_json_content = json.loads(response.content)
+
+    assert "Translation language is already used and there a recipe translated with that language." in response_json_content['errors']
+
+@pytest.mark.django_db
+def test_get_recipe_variations(api_client):
+    add_access_token_header(api_client)
+    original_recipe, recipe_data = create_recipe(api_client)
+    second_recipe, recipe_data = create_recipe(api_client, original_recipe_pk=original_recipe.pk)
+    third_recipe, recipe_data = create_recipe(api_client, original_recipe_pk=original_recipe.pk)
+    remove_access_token_header_and_add_header_secret(api_client)
+
+    response = api_client.get(f"/api/recipe/{original_recipe.pk}/variations", format="json")
+    assert response.status_code == 200
+
+    response_content = json.loads(response.content)
+    assert (second_recipe.pk and third_recipe.pk and original_recipe.pk) in [x['pk'] for x in response_content]

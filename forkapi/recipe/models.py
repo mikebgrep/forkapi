@@ -23,6 +23,7 @@ DIFFICULTY_CHOICES = [
     ('Expert', 'Expert'),
 ]
 
+
 LANGUAGES_CHOICES = [
     ('English', 'English'),
     ('Spanish', 'Español'),
