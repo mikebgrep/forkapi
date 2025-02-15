@@ -13,7 +13,7 @@ hide:
     with value csrftoken=token to work proparly
 
 ------------------------------------------------------------------------------------------
-=== "v2.4"
+=== "v3.0"
 
     <br />
 
@@ -271,7 +271,84 @@ hide:
 
 
     ------------------------------------------------------------------------------------------
+
+    # User Settings
     
+    #### Get User settings
+    
+    ??? pied-piper-get "GET /api/auth/settings/"
+
+
+    
+        ##### Headers
+        
+        | name          |  type     | data type               | description                                                           |
+        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
+    
+        ##### Responses
+        
+        | http code     | content-type                      | response                                                            |
+        |---------------|-----------------------------------|---------------------------------------------------------------------|
+        | `200`         | `application/json`                | `{auth.models.UserSettingsSerializer}`                                |
+        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
+    
+        ##### Example cURL
+        
+        > ``` bash
+        > curl --location --request GET 'host/api/auth/settings' --header 'Authorization: Token token_value' 
+        > ```
+
+    #### Update user settings
+
+    ??? pied-piper-patch "PATCH  /api/auth/settings/"
+        
+        ##### Payload
+        ``` json title="auth.serializers.UserSettingsSerializer object"
+        {
+            "preferred_translate_language": LANGUAGES_CHOICES
+        }
+        ```
+
+        ##### Languages choices (LANGUAGES_CHOICES)
+        ``` python title="recipe.models.LANGUAGES_CHOICES (use only the key in the request)"
+                ('English', 'English'),
+                ('Spanish', 'Español'),
+                ('French', 'Français'),
+                ('German', 'Deutsch'),
+                ('Chinese', '中文'),
+                ('Russian', 'Русский'),
+                ('Italian', 'Italiano'),
+                ('Japanese', '日本語'),
+                ('Dutch', 'Nederlands'),
+                ('Polish', 'Polski'),
+                ('Greek', 'Ελληνικά'),
+                ('Swedish', 'Svenska'),
+                ('Czech', 'Čeština'),
+                ('Bulgarian', 'Български'),
+        ```
+
+        ##### Headers
+        
+        | name          |  type     | data type               | description                                                           |
+        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
+    
+        ##### Responses
+        
+        | http code     | content-type                      | response                                                            |
+        |---------------|-----------------------------------|---------------------------------------------------------------------|
+        | `201`         | `application/json`                | `{auth.models.UserSettingsSerializer}`                                |
+        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
+
+        ##### Example cURL
+        
+        > ``` bash
+        > curl --location --request PATCH 'host/api/auth/settings' --header 'Authorization: Token token_value' --data '{"language":"recipe.models.LANGUAGES_CHOICES"}'
+        > ```
+
+    ------------------------------------------------------------------------------------------
+
     # Recipe
     
     #### Search for recipes
@@ -695,7 +772,7 @@ hide:
         
         | http code     | content-type                      | response                                                              |
         |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Recipe object}`|
+        | `200`         | `application/json`                | `{recipe.Recipe object}`|
         | `400`         | `application/json`                | `{"errors":["Default language for translation should be set"]}`                       |
         | `400`         | `application/json`                | `{"errors":["Translation must be performed only on original recipes"]}`                       |
         | `400`         | `application/json`                | `{"errors":["Translation language is already used and there a recipe translated with that language."]}`                       |
