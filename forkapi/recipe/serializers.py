@@ -76,7 +76,8 @@ class RecipesSerializer(serializers.ModelSerializer):
             "clear_video",
             "reference",
             "language",
-            "is_original"
+            "is_original",
+            "is_translated",
         )
 
     def create(self, validated_data):

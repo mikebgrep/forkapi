@@ -1,6 +1,6 @@
 # ForkAPI
 
-![version](https://img.shields.io/badge/version-2.3.0-green) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)  <a aria-label="Build" href="https://github.com/mikebgrep/forkapi/actions?query=Build%20and%20Push%20to%20Docker%20Registry">
+![version](https://img.shields.io/badge/version-3.0.0-green) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)  <a aria-label="Build" href="https://github.com/mikebgrep/forkapi/actions?query=Build%20and%20Push%20to%20Docker%20Registry">
     <img alt="build" src="https://img.shields.io/github/actions/workflow/status/mikebgrep/forkapi/run-tests.yml?label=Build&logo=github&style=flat-quare&labelColor=000000" />
 
 <img align="right" src="https://github.com/mikebgrep/foodie/blob/master/assets/logo.png" height="170px" alt="Logo">
