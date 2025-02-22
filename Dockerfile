@@ -14,21 +14,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Raspberry Pi packages 📦
-# RUN apt update && apt install -y \
-#    libjpeg-dev \
-#    zlib1g-dev \
-#    libpng-dev \
-#    libfreetype6-dev \
-#    liblcms2-dev \
-#    libopenjp2-7-dev \
-#    libtiff5-dev \
-#    libwebp-dev \
-#    tcl8.6-dev \
-#    tk8.6-dev \
-#    python3-tk \
-#    libharfbuzz-dev \
-#    libfribidi-dev \
-#    libpq-dev
+RUN apt update && apt install -y \
+    libjpeg-dev \
+    zlib1g-dev \
+    libpng-dev \
+    libfreetype6-dev \
+    liblcms2-dev \
+    libopenjp2-7-dev \
+    libtiff5-dev \
+    libwebp-dev \
+    tcl8.6-dev \
+    tk8.6-dev \
+    python3-tk \
+    libharfbuzz-dev \
+    libfribidi-dev \
+    libpq-dev
 
 # Set the working directory
 WORKDIR /forkapi
