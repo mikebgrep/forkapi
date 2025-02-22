@@ -23,6 +23,10 @@ def generate_recipes(ingredients: List[str]):
         recipe_name = single_recipe_json['name']
         print(recipe_name)
         hrefs = get_duckduckgo_result(url=f"https://duckduckgo.com/html/?q={recipe_name.replace(' ', '%20')}")
+
+        if not hrefs:
+            continue
+
         recipe_words = remove_stop_words(recipe_name)
         link_with_recipe = get_first_matching_link(recipe_words, hrefs)
 

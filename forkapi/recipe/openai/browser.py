@@ -60,7 +60,12 @@ def get_duckduckgo_result(url) -> List[str] | None:
         page = browser.new_page()
         apply_stealth(page)
 
-        page.goto(url=url, timeout=3000)
+        try:
+            page.goto(url=url, timeout=3000)
+        except TimeoutError as ex:
+            print(ex)
+            return None
+
         href_elements = page.locator('a.result__a')
         href_values = href_elements.evaluate_all('elements => elements.map(e => e.href)')
         browser.close()
