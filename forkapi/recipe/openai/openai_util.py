@@ -30,11 +30,11 @@ def generate_recipes(ingredients: List[str]):
         recipe_words = remove_stop_words(recipe_name)
         link_with_recipe = get_first_matching_link(recipe_words, hrefs)
 
-        # Skip if the link is in blacklist
-        if any(bl in link_with_recipe for bl in blacklist):
-            continue
-
         if link_with_recipe:
+            # Skip if the link is in blacklist
+            if any(bl in link_with_recipe for bl in blacklist):
+                continue
+
             val = URLValidator()
             try:
                 url = extract_link_from_duckduck_go_url_result(link_with_recipe)
