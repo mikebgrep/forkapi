@@ -41,6 +41,8 @@ def get_first_matching_link(words: str, strings: List[str]) -> str | None:
     for string in strings:
         if all(word.lower() in string for word in words):
             return string
+        elif len([word.lower() in string for word in words]) >= 2:
+            return string
 
     return None
 
