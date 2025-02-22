@@ -31,7 +31,7 @@ def generate_recipes(ingredients: List[str]):
         link_with_recipe = get_first_matching_link(recipe_words, hrefs)
 
         # Skip if the link is in blacklist
-        if link_with_recipe in blacklist:
+        if any(bl in link_with_recipe for bl in blacklist):
             continue
 
         if link_with_recipe:

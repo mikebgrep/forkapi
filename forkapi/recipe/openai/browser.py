@@ -61,7 +61,7 @@ def get_duckduckgo_result(url) -> List[str] | None:
         apply_stealth(page)
 
         try:
-            page.goto(url=url, timeout=3000)
+            page.goto(url=url)
         except TimeoutError as ex:
             print(ex)
             return None
