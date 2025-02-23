@@ -10,7 +10,7 @@ class Browser:
 
     def __init__(self):
         self.playwright = sync_playwright().start()
-        self.browser = self.playwright.firefox.launch(headless=False)
+        self.browser = self.playwright.firefox.launch(headless=True)
         self.page = self.browser.new_page()
         self.apply_stealth()
 
