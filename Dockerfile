@@ -40,7 +40,8 @@ COPY ./requirements.txt /forkapi/requirements.txt
 # Install dependencies
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir --verbose -r requirements.txt
-RUN playwright install --with-deps chromium
+RUN playwright install-deps firefox
+RUN playwright install firefox
 
 
 # Collect static files

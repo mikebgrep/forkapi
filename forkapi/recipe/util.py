@@ -1,3 +1,4 @@
+import json
 import os
 from typing import List
 
@@ -40,6 +41,8 @@ def get_first_matching_link(words: str, strings: List[str]) -> str | None:
     for string in strings:
         if all(word.lower() in string for word in words):
             return string
+        elif len([word.lower() in string for word in words]) >= 2:
+            return string
 
     return None
 
@@ -59,8 +62,30 @@ def remove_stop_words(text: str):
     return filtered_words
 
 
+def parse_recipe_info(json_response: str):
+    json_response = json_response.replace("```", "").replace("json", "")
+    json_content = json.loads(json_response)
+    return json_content
+
+
+def manage_media(json_content_main_info, is_video: bool):
+    image_url = json_content_main_info['image'] if not is_video else json_content_main_info['video']
+    file_path = download_media_files(address=image_url, recipe_name=json_content_main_info['name'], is_video=is_video)
+    if not is_video:
+        del json_content_main_info['image']
+    else:
+        del json_content_main_info['video']
+    return file_path
+
+
 def extract_link_from_duckduck_go_url_result(url: str) -> str:
-    link_with_ext = url.split("?uddg=")[1]
+    print(url)
+    try:
+        link_with_ext = url.split("?uddg=")[1]
+    except IndexError as ex:
+        print(ex)
+        link_with_ext = url
+
     encoded_url = link_with_ext.split("&rut")[0]
 
     return unquote(encoded_url)

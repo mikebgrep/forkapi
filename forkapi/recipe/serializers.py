@@ -102,6 +102,14 @@ class RecipesSerializer(serializers.ModelSerializer):
                 instance.video.delete()
             validated_data['video'] = None
 
+        # Change category to all variation of the recipe
+        if instance.is_translated and validated_data['category'] != instance.category:
+            recipes = instance.get_variations
+            for recipe in recipes:
+                if recipe != instance:
+                    recipe.category = validated_data['category']
+                    recipe.save()
+
         return super().update(instance, validated_data)
 
 
