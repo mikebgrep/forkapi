@@ -79,8 +79,16 @@ def scrape_recipe(url: str):
     json_response = open_ai_scrape_message(content, PromptType.MAIN_INFO)
     json_content_main_info = parse_recipe_info(json_response)
 
+    # Edge case when the content contains more than one recipe after the prompt
+    try:
+        json_content_main_info['image']
+    except TypeError as ex:
+        print(ex)
+        return None, None, None
+
     if meta_content_thumbnail:
-        json_content_main_info['image'] = meta_content_thumbnail.split("?")[0]
+        json_content_main_info['image'] = meta_content_thumbnail.split("?")[0] if \
+            len(meta_content_thumbnail.split("?")) > 1 else meta_content_thumbnail
 
     file_path = manage_media(json_content_main_info, False)
 
