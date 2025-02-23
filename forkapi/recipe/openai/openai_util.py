@@ -6,7 +6,7 @@ from django.core.validators import URLValidator
 
 from .messages import open_ai_scrape_message, open_ai_generate_recipe_message, open_ai_translate_recipe_message
 from ..models import PromptType, Recipe, Ingredient, Step
-from .browser import get_duckduckgo_result, get_page_content_recipe
+from .browser import Browser
 from ..util import delete_media_file, get_first_matching_link, remove_stop_words, \
     extract_link_from_duckduck_go_url_result, instructions_and_steps_json_to_lists, parse_recipe_info, manage_media
 
@@ -18,11 +18,13 @@ def generate_recipes(ingredients: List[str]):
     json_content_recipes = parse_recipe_info(json_response)
     filtered_recipes = []
 
+    browser = Browser()
+
     # TODO:// Return multiple recipes from json_content_recipes if have more than one link per recipe name
     for single_recipe_json in json_content_recipes:
         recipe_name = single_recipe_json['name']
         print(recipe_name)
-        hrefs = get_duckduckgo_result(url=f"https://duckduckgo.com/html/?q={recipe_name.replace(' ', '%20')}")
+        hrefs = browser.get_duckduckgo_result(url=f"https://duckduckgo.com/html/?q={recipe_name.replace(' ', '%20')}")
 
         if not hrefs:
             continue
@@ -45,7 +47,7 @@ def generate_recipes(ingredients: List[str]):
                 continue
 
             if url:
-                content, meta_content_thumbnail = get_page_content_recipe(url)
+                content, meta_content_thumbnail = browser.get_page_content_recipe(url)
                 try:
                     val(meta_content_thumbnail)
                     single_recipe_json['thumbnail'] = meta_content_thumbnail
@@ -56,6 +58,8 @@ def generate_recipes(ingredients: List[str]):
             continue
         filtered_recipes.append(single_recipe_json)
 
+    browser.close()
+
     return filtered_recipes
 
 
@@ -63,7 +67,9 @@ def scrape_recipe(url: str):
     if any(item in url for item in blacklist):
         return None, None, None
 
-    content, meta_content_thumbnail = get_page_content_recipe(url)
+    browser = Browser()
+    content, meta_content_thumbnail = browser.get_page_content_recipe(url)
+    browser.close()
     # TODO: meta_content_thumbnail sometimes return 404 on download retry for original image when scraping the recipe
     # https://sweetcaramelsunday.com/beef-pesto-pasta/
     if not content:
