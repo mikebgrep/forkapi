@@ -32,7 +32,7 @@ class SearchRecipies(ListModelViewSet):
 
     queryset = Recipe.objects.all().order_by('created_at')
     filter_backends = [FilterRecipeByLanguage, filters.SearchFilter]
-    search_fields = ['name']
+    search_fields = ['name', 'ingredients__name']
 
     @action(detail=False)
     def favorites(self, request, *args, **kwargs):
