@@ -14,7 +14,7 @@ class ShoppingList(models.Model):
 class ShoppingItem(BaseIngredient):
     is_completed = models.BooleanField(default=False)
     shopping_list = models.ForeignKey(ShoppingList, on_delete=models.CASCADE, related_name="items")
-
+    times = models.IntegerField(default=1)
 
 
 

@@ -12,7 +12,9 @@ class ShoppingItemSerializer(serializers.ModelSerializer):
             "name",
             "quantity",
             "metric",
+            "times",
             "is_completed",
+
         )
 
 class ShoppingItemPatchSerializer(serializers.ModelSerializer):
@@ -55,12 +57,21 @@ class ShoppingListSerializer(serializers.Serializer):
         recipe = validated_data['recipe']
         found_recipe = Recipe.objects.get(pk=recipe.pk)
 
-        for x in found_recipe.ingredient_set.all():
-            ingredient_data = model_to_dict(x, fields=['name', 'quantity', 'metric'])
-            item = ShoppingItem(**ingredient_data)
-            item.recipe = found_recipe
-            item.shopping_list = instance
-            item.save()
+        # TODO: Find a better way to increment the times if the recipe is added second time to the list and the ingredients are same
+
+        if found_recipe.pk in instance.recipes:
+            for x in instance.items.all():
+                if x.name in [z.name for z in found_recipe.ingredient_set.all()] and \
+                    x.quantity in [z.quantity for z in found_recipe.ingredient_set.all()]:
+                    x.times += 1
+                    x.save()
+        else:
+            for x in found_recipe.ingredient_set.all():
+                ingredient_data = model_to_dict(x, fields=['name', 'quantity', 'metric'])
+                item = ShoppingItem(**ingredient_data)
+                item.recipe = found_recipe
+                item.shopping_list = instance
+                item.save()
 
         return instance
 
