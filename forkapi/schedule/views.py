@@ -12,6 +12,7 @@ from .serializers import ScheduleSerializer
 
 
 class ScheduleView(ListCreateDestroyViewSet):
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = ScheduleSerializer
     queryset = Schedule.objects.all()

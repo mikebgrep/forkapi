@@ -25,6 +25,7 @@ if settings.DEBUG:
                        path("api/auth/", include("authentication.urls")),
                        path("api/recipe/", include("recipe.urls")),
                        path("api/schedule/", include("schedule.urls")),
+                       path("api/shopping/", include("shopping.urls")),
                        path('', admin.site.urls),
                    ])
 else:
@@ -32,5 +33,6 @@ else:
         path("api/auth/", include("authentication.urls")),
         path("api/recipe/", include("recipe.urls")),
         path("api/schedule/", include("schedule.urls")),
+        path("api/shopping/", include("shopping.urls")),
         path('', admin.site.urls),
     ])

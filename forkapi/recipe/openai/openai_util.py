@@ -148,7 +148,7 @@ def save_recipe(recipe: Recipe, ingredients: List[Ingredient], steps: List[Step]
             step.save()
 
     recipe.steps.set(steps)
-    recipe.ingredients.set(ingredients)
+    recipe.ingredient_set.set(ingredients)
 
     return recipe
 

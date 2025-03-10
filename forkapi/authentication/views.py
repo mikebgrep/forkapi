@@ -36,6 +36,7 @@ class LoginView(generics.CreateAPIView):
     authentication_classes = [HeaderAuthentication]
 
     def post(self, request, *args, **kwargs):
+        print(request.data['email'])
         user = get_object_or_404(models.User, email=request.data['email'])
         if not user.check_password(request.data['password']):
             return Response("Forbidden", status.HTTP_403_FORBIDDEN)

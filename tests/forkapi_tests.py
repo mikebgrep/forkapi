@@ -252,7 +252,7 @@ def create_ingredients_for_recipe(recipe: Recipe, api_client):
                                content_type="application/json")
     assert response.status_code == 201
 
-    ingredients = recipe.ingredients.all()
+    ingredients = recipe.ingredient_set.all()
     return ingredients, json.loads(ingredients_data)
 
 
@@ -851,7 +851,8 @@ def test_create_ingredients_second_time_rewrite_existing(api_client):
     recipe, recipe_data = create_recipe(api_client)
     ingredients, ingredients_data = create_ingredients_for_recipe(recipe, api_client)
     second_ingredients, second_ingredients_data = create_ingredients_for_recipe(recipe, api_client)
-
+    print(ingredients)
+    print(second_ingredients)
     assert len(second_ingredients) == len(second_ingredients_data)
     assert len([x for x in ingredients if x.name not in [y.name for y in second_ingredients]]) == 0
 
