@@ -67,7 +67,7 @@ def open_ai_translate_recipe_message(recipe: Recipe, language: str):
          "content": "Your are helpful assistant that translate recipes to foreign languages and return them to a valid json"},
         {
             "role": "user",
-            "content": f"With the provided name: {recipe.name}, description: {recipe.description}, ingredients: {json.dumps(list(recipe.ingredient_set.all().values()))} and instruction/steps: {json.dumps(list(recipe.steps.all().values()))}. Your task it to {prompt_translate_recipe} to the  provided language: {language}"
+            "content": f"With the provided name: {recipe.name}, description: {recipe.description}, ingredients: {json.dumps(list(recipe.ingredients.all().values()))} and instruction/steps: {json.dumps(list(recipe.steps.all().values()))}. Your task it to {prompt_translate_recipe} to the  provided language: {language}"
         }
     ]
     # TODO: Change model if not performing well on translation , model="gpt-4-turbo"

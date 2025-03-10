@@ -129,6 +129,7 @@ class BaseIngredient(models.Model):
 
 
 class Ingredient(BaseIngredient):
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="ingredients")
     def __str__(self):
         return self.name
 

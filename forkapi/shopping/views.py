@@ -25,8 +25,14 @@ class CompleteShoppingList(generics.PatchAPIView):
         shopping_list = get_object_or_404(ShoppingList, pk=kwargs['pk'])
         if shopping_list.is_completed:
             shopping_list.is_completed = False
+            for x in shopping_list.items.all():
+                x.is_completed = False
+                x.save()
         else:
             shopping_list.is_completed = True
+            for x in shopping_list.items.all():
+                x.is_completed = True
+                x.save()
         shopping_list.save()
 
         return Response(data=f"Success {"complete" if shopping_list.is_completed else "un-complete"} shopping list",
