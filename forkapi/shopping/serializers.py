@@ -30,6 +30,7 @@ class ShoppingItemPatchSerializer(serializers.ModelSerializer):
             "quantity",
             "metric",
             "is_completed",
+            "times",
         )
 
 
