@@ -75,10 +75,10 @@ class ShoppingListSerializer(serializers.Serializer):
         return instance
 
     def to_representation(self, instance):
-        return ShoppingListRepresentationSerializer(context=self.context).to_representation(instance)
+        return SingleShoppingListSerializer(context=self.context).to_representation(instance)
 
 
-class ShoppingListRepresentationSerializer(serializers.ModelSerializer):
+class SingleShoppingListSerializer(serializers.ModelSerializer):
     items = ShoppingItemSerializer(many=True)
 
     class Meta:

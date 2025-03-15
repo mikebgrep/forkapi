@@ -1,3 +1,4 @@
+from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -6,7 +7,8 @@ from rest_framework.status import HTTP_201_CREATED
 
 from forkapi import generics
 from .models import ShoppingList, ShoppingItem
-from .serializers import ShoppingListSerializer, ShoppingItemPatchSerializer
+from .serializers import ShoppingListSerializer, ShoppingItemPatchSerializer, SingleShoppingListSerializer, \
+    ShoppingItemSerializer
 
 
 class CreateListShoppingListView(generics.ListCreateUpdateDestroyViewSet):
@@ -15,6 +17,23 @@ class CreateListShoppingListView(generics.ListCreateUpdateDestroyViewSet):
     pagination_class = None
     serializer_class = ShoppingListSerializer
     queryset = ShoppingList.objects.all()
+
+
+class RetrieveUpdateShoppingListView(generics.RetrieveUpdateView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = SingleShoppingListSerializer
+    queryset = ShoppingList.objects.all()
+
+    def patch(self, request, *args, **kwargs):
+        shopping_list = get_object_or_404(ShoppingList, pk=kwargs['pk'])
+        data = request.data
+        serializer = ShoppingItemSerializer(data=data)
+        if serializer.is_valid():
+            new_item = serializer.save(shopping_list=shopping_list)
+            return Response(ShoppingItemSerializer(new_item).data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CompleteShoppingList(generics.PatchAPIView):
