@@ -9,7 +9,7 @@ class ShoppingList(models.Model):
 
     @property
     def recipes(self):
-        return list({item.recipe.pk for item in self.items.all()})
+        return list({item.recipe.pk for item in self.items.all() if item.recipe})
 
 class ShoppingItem(BaseIngredient):
     is_completed = models.BooleanField(default=False)

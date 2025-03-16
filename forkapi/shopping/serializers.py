@@ -14,7 +14,6 @@ class ShoppingItemSerializer(serializers.ModelSerializer):
             "metric",
             "times",
             "is_completed",
-
         )
 
 class ShoppingItemPatchSerializer(serializers.ModelSerializer):
@@ -40,6 +39,7 @@ class ShoppingListSerializer(serializers.Serializer):
         write_only=True,
         required=False
     )
+
     name = serializers.CharField(default=None)
 
     class Meta:
@@ -91,3 +91,4 @@ class SingleShoppingListSerializer(serializers.ModelSerializer):
             "is_completed",
             "recipes",
         )
+

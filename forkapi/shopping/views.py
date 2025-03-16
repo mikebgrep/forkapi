@@ -65,4 +65,23 @@ class ShoppingListItemView(generics.UpdateDestroyView):
     serializer_class = ShoppingItemPatchSerializer
 
 
+class ShoppingListCompleteItemView(generics.PatchAPIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
+    def patch(self, request, *args, **kwargs):
+        item = get_object_or_404(ShoppingItem, pk=kwargs['pk'])
+
+        if item.is_completed:
+            item.is_completed = False
+        else:
+            item.is_completed = True
+
+        item.save()
+
+        # if all(item.is_completed for item in item.shopping_list.items.all()):
+        #     item.shopping_list.is_completed = True
+        #     item.shopping_list.save()
+
+        return Response(data=f"Success {"completed" if item.is_completed else "un-completed"} item",
+                        status=HTTP_201_CREATED)
