@@ -36,7 +36,12 @@ class Browser:
         # Disable navigator configs affect cloudflare with this we are not blocked
         config = StealthConfig(
             navigator_user_agent=False,
-            browser_type=BrowserType.FIREFOX
+            browser_type=BrowserType.FIREFOX,
+            # Disable Chrome as we use Firefox
+            chrome_app = False,
+            chrome_csi = False,
+            chrome_load_times = False,
+            chrome_runtime = True,
         )
 
         # page = context.new_page()
@@ -48,7 +53,13 @@ class Browser:
             content = response.text()
         except TimeoutError as ex:
             print(ex)
-            return None, None
+            # Second try if not load at first
+            try:
+                response = self.page.goto(url=url, timeout=7000)
+                content = response.text()
+            except TimeoutError as ex:
+                print(ex)
+                return None, None
 
         try:
             # Get thumbnail for recipies without image

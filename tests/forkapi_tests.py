@@ -4,6 +4,8 @@ import shutil
 from authentication.models import User, PasswordResetToken
 from recipe.models import Category, Tag, Recipe, Ingredient
 from recipe.util import calculate_recipe_total_time
+from shopping.models import ShoppingList
+
 from .models import UserUpdateDetailsEnum, PasswordResetChoice
 from .constants import LENGTH_PASSWORD_ERROR_MESSAGE, PASSWORD_TO_COMMON_ERROR_MESSAGE, \
     OLD_PASSWORD_DOES_NOT_MATCH_ERROR_MESSAGE, NUMERIC_PASSWORD_ERROR_MESSAGE, \
@@ -270,6 +272,27 @@ def create_steps_for_recipe(recipe: Recipe, api_client):
 
     steps = recipe.steps.all()
     return steps, json.loads(steps_data)
+
+@pytest.mark.django_db
+def create_shopping_list(api_client):
+    shopping_list_data = {
+        "name": f"Shopping list-{uuid.uuid4()}"
+    }
+
+    response = api_client.post("/api/shopping/", data=json.dumps(shopping_list_data), content_type="application/json")
+    assert response.status_code == 201
+    return json.loads(response.content), shopping_list_data
+
+@pytest.mark.django_db
+def add_items_to_shopping_list(recipe:Recipe, shopping_pk: int, api_client):
+
+    shopping_list_update_data = {
+        "recipe": recipe.pk
+    }
+
+    response = api_client.put(f"/api/shopping/{shopping_pk}/", data=json.dumps(shopping_list_update_data),  content_type="application/json")
+    assert response.status_code == 200
+    return json.loads(response.content)
 
 
 @pytest.mark.django_db
@@ -851,7 +874,8 @@ def test_create_ingredients_second_time_rewrite_existing(api_client):
     recipe, recipe_data = create_recipe(api_client)
     ingredients, ingredients_data = create_ingredients_for_recipe(recipe, api_client)
     second_ingredients, second_ingredients_data = create_ingredients_for_recipe(recipe, api_client)
-
+    print(ingredients)
+    print(second_ingredients)
     assert len(second_ingredients) == len(second_ingredients_data)
     assert len([x for x in ingredients if x.name not in [y.name for y in second_ingredients]]) == 0
 
@@ -1120,3 +1144,117 @@ def test_get_recipe_variations(api_client):
 
     response_content = json.loads(response.content)
     assert (second_recipe.pk and third_recipe.pk and original_recipe.pk) in [x['pk'] for x in response_content]
+
+
+@pytest.mark.django_db
+def test_create_shopping_list_by_name(api_client):
+    add_access_token_header(api_client)
+    response_dict, shopping_list_data = create_shopping_list(api_client)
+
+    assert response_dict['name'] == shopping_list_data['name']
+    assert len(response_dict['items']) == 0
+    assert response_dict['pk'] is not None
+    assert response_dict['is_completed'] is False
+    assert len(response_dict['recipes']) == 0
+
+@pytest.mark.django_db
+def test_update_shopping_list_add_items_from_recipe(api_client):
+    add_access_token_header(api_client)
+    response_dict, shopping_list_data = create_shopping_list(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    create_ingredients_for_recipe(recipe, api_client)
+    response_shopping_list_dict = add_items_to_shopping_list(recipe, response_dict['pk'], api_client)
+
+    assert len(response_shopping_list_dict['items']) == len(recipe.ingredients.all())
+    assert recipe.pk in response_shopping_list_dict['recipes']
+    assert response_shopping_list_dict['is_completed'] is False
+
+@pytest.mark.django_db
+def test_update_shopping_list_with_same_recipe(api_client):
+    add_access_token_header(api_client)
+    response_dict, shopping_list_data = create_shopping_list(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    create_ingredients_for_recipe(recipe, api_client)
+    add_items_to_shopping_list(recipe, response_dict['pk'], api_client)
+    response_shopping_list_dict = add_items_to_shopping_list(recipe, response_dict['pk'], api_client)
+
+    assert len(response_shopping_list_dict['items']) == len(recipe.ingredients.all())
+    assert len([x for x in response_shopping_list_dict['items'] if x['times'] == 2]) == len(recipe.ingredients.all())
+    assert recipe.pk in response_shopping_list_dict['recipes']
+    assert response_shopping_list_dict['is_completed'] is False
+
+@pytest.mark.django_db
+def test_complete_shopping_list(api_client):
+    add_access_token_header(api_client)
+    response_dict, shopping_list_data = create_shopping_list(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    create_ingredients_for_recipe(recipe, api_client)
+    add_items_to_shopping_list(recipe, response_dict['pk'], api_client)
+
+    response = api_client.patch(f"/api/shopping/complete-list/{response_dict['pk']}/", format="json")
+    assert response.status_code == 201
+
+    current_shopping_list = ShoppingList.objects.get(pk=response_dict['pk'])
+    assert len(current_shopping_list.items.all()) ==  len(recipe.ingredients.all())
+    assert len([x for x in current_shopping_list.items.all() if x.is_completed]) == len(recipe.ingredients.all())
+
+@pytest.mark.django_db
+def test_uncompleted_shopping_list(api_client):
+    add_access_token_header(api_client)
+    response_dict, shopping_list_data = create_shopping_list(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    create_ingredients_for_recipe(recipe, api_client)
+    add_items_to_shopping_list(recipe, response_dict['pk'], api_client)
+
+    response = api_client.patch(f"/api/shopping/complete-list/{response_dict['pk']}/", format="json")
+    assert response.status_code == 201
+
+    response = api_client.patch(f"/api/shopping/complete-list/{response_dict['pk']}/", format="json")
+    assert response.status_code == 201
+
+    current_shopping_list = ShoppingList.objects.get(pk=response_dict['pk'])
+    assert len(current_shopping_list.items.all()) == len(recipe.ingredients.all())
+    assert len([x for x in current_shopping_list.items.all() if not x.is_completed]) == len(recipe.ingredients.all())
+
+
+@pytest.mark.django_db
+def test_shopping_list_item_has_expected_fields_type(api_client):
+    add_access_token_header(api_client)
+    response_dict, shopping_list_data = create_shopping_list(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    create_ingredients_for_recipe(recipe, api_client)
+    response_shopping_list_dict = add_items_to_shopping_list(recipe, response_dict['pk'], api_client)
+
+    assert len([x for x in response_shopping_list_dict['items'] if type(x['pk'] is int)]) == len(recipe.ingredients.all())
+    assert len([x for x in response_shopping_list_dict['items'] if type(x['name'] is str)]) == len(recipe.ingredients.all())
+    assert len([x for x in response_shopping_list_dict['items'] if type(x['quantity'] is str)]) == len(recipe.ingredients.all())
+    assert len([x for x in response_shopping_list_dict['items'] if type(x['metric'] is str)]) == len(recipe.ingredients.all())
+    assert len([x for x in response_shopping_list_dict['items'] if type(x['times'] is int)]) == len(recipe.ingredients.all())
+    assert len([x for x in response_shopping_list_dict['items'] if type(x['is_completed'] is bool)]) == len(recipe.ingredients.all())
+
+@pytest.mark.django_db
+def test_update_shipping_list_item_values(api_client):
+    add_access_token_header(api_client)
+    response_dict, shopping_list_data = create_shopping_list(api_client)
+    recipe, recipe_data = create_recipe(api_client)
+    create_ingredients_for_recipe(recipe, api_client)
+    response_shopping_list_dict = add_items_to_shopping_list(recipe, response_dict['pk'], api_client)
+
+    items = response_shopping_list_dict['items']
+    random_item = items[random.randint(0, len(items) - 1)]
+
+    new_data = {
+        "name" : f"Name-{uuid.uuid4()}",
+        "quantity": f"1.0-{random.randint(0, 100)}",
+        "metric": ['gr', 'ml', 'kg', 'oz'][random.randint(0, 3)],
+        "is_completed": [False, True][random.randint(0, 1)]
+    }
+
+    response = api_client.patch(f"/api/shopping/item/{random_item['pk']}/", data=json.dumps(new_data), content_type="application/json")
+    assert response.status_code == 200
+
+    response_content = json.loads(response.content)
+    assert response_content['name'] == new_data['name']
+    assert response_content['quantity'] == new_data['quantity']
+    assert response_content['metric'] == new_data['metric']
+    assert response_content['is_completed'] == new_data['is_completed']

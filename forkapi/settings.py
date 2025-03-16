@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent
 SECRET_KEY = os.getenv('DJANGO_SECRET')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 SESSION_COOKIE_NAME = 'tokenadmin_sessionid'
 
 ALLOWED_HOSTS = ['*']
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'authentication.apps.AuthenticationConfig',
     'recipe.apps.RecipeConfig',
     'schedule.apps.ScheduleConfig',
+    'shopping.apps.ShoppingListConfig',
     'background_jobs_app',
     'django.contrib.admin',
     'django.contrib.auth',
