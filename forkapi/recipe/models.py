@@ -121,7 +121,7 @@ class Recipe(models.Model):
 class BaseIngredient(models.Model):
     name = models.CharField(max_length=120)
     quantity = models.CharField(max_length=20)
-    metric = models.CharField(max_length=10, blank=True, null=True)
+    metric = models.CharField(max_length=11, blank=True, null=True)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:

@@ -3,7 +3,7 @@ prompt_recipe_main_info = """
             Output json:
 
             ```json
-            { "name": "The title or name of the recipe as string", "servings": "The servings (only number as integer must not be null)", "description": "The description of the recipe", "image": "Image src path", "video" "Video source path (if available), "difficulty": "string one of 'Easy', 'Intermediate', 'Advanced' or 'Expert'", "chef": "The chef of the recipe", "prep_time": "preparation time in minutes integer value", "cook_time": "The cook time in minutes integer" }
+            { "name": "The title or name of the recipe as string", "servings": "The servings (only number as integer must not be null)", "description": "The description of the recipe", "image": "Image src path", "video" "Video source path (if available), "difficulty": "string one of 'Easy', 'Intermediate', 'Advanced' or 'Expert'", "chef": "The chef of the recipe if any else null as NULL value", "prep_time": "preparation time in minutes integer value", "cook_time": "The cook time in minutes integer" }
             ```
 
             Make sure to return a plain json dict object with the values found on the page source as described.
