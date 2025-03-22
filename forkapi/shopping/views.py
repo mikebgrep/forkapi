@@ -54,7 +54,7 @@ class CompleteShoppingList(generics.PatchAPIView):
                 x.save()
         shopping_list.save()
 
-        return Response(data=f"Success {"complete" if shopping_list.is_completed else "un-complete"} shopping list",
+        return Response(data=f"Success {"complete" if shopping_list.is_completed else "incomplete"} shopping list",
                         status=HTTP_201_CREATED)
 
 
@@ -84,5 +84,5 @@ class ShoppingListCompleteItemView(generics.PatchAPIView):
         #     item.shopping_list.is_completed = True
         #     item.shopping_list.save()
 
-        return Response(data=f"Success {"completed" if item.is_completed else "un-completed"} item",
+        return Response(data=f"Success {"completed" if item.is_completed else "incompleted"} item",
                         status=HTTP_201_CREATED)
