@@ -48,6 +48,7 @@ RUN playwright install firefox
 RUN python manage.py makemigrations authentication
 RUN python manage.py makemigrations recipe
 RUN python manage.py makemigrations schedule
+RUN python manage.py makemigrations shopping
 RUN python manage.py migrate
 RUN python manage.py collectstatic --noinput
 
