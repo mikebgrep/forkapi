@@ -30,8 +30,8 @@ def openai_tts_stream(recipe_json: dict, language: str):
             voice=os.getenv("OPEN_AI_TTS_MODEL_VOICE"),
             input=str(recipe_json),
             instructions=f"Speak as professional cooking chef assistant with pause of 0.5 sec on each item. You must spell the recipe `name`, the `ingredients` and \
-            `instruction` from the provided json string object on the provided language: {language}. \
-            Important: You must not skip any ingredient or instruction or mix them also the ingredients \
+            `instruction` from the provided json string object on the provided language: {language} including the name, instruction and ingredients words to the same language: {language}. \
+            Important: You must not skip any ingredient and instruction or mix them also the ingredients \
             must be read with all available information for each of them without skipping nothing! (Pay attention to this).\
             And finish the speach after all are spelled.",
     ) as response:

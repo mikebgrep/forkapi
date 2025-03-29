@@ -319,8 +319,7 @@ class GenerateRecipeAudion(CreateAPIView):
             if not hasattr(recipe, 'audio_instructions'):
                 audio_instructions = recipe_to_tts_audio(recipe)
                 recipe_audio_serializer = AudioInstructionsSerializer(audio_instructions)
-                if recipe_audio_serializer.is_valid(raise_exception=True):
-                    return Response(status=HTTP_201_CREATED, data=recipe_audio_serializer.data,  content_type="application/json")
+                return Response(status=HTTP_201_CREATED, data=recipe_audio_serializer.data,  content_type="application/json")
             else:
                 return Response(data={
                     "errors": [

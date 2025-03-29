@@ -13,7 +13,7 @@ class StepAdminForm(forms.ModelForm):
         }
 
 
-class IngredientsInline(admin.TabularInline):
+class IngredientsInline(admin.StackedInline):
     model = Ingredient
     extra = 5
 
@@ -25,7 +25,7 @@ class StepsInline(admin.StackedInline):
 
 class AudioInstructionsInline(admin.StackedInline):
     model = AudioInstructions
-    extra = 0
+    extra = 1
 
 class RecipeAdmin(admin.ModelAdmin):
     fieldsets = [

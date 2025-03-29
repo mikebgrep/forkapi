@@ -73,4 +73,5 @@ prompt_translate_recipe = """
             ```
             !Note you must translate only the: `name`, `description`, `ingredients` and `steps`
             as described in the json example and the ingredients metrics and quantity should be the correct by the standard of the language.
+            !Note return only the json not conversions!
             """

@@ -142,9 +142,13 @@ class Step(models.Model):
     def __lt__(self, other):
         return self.pk > other.pk
 
+    def get_step_number(self):
+        step_pks = list(self.recipe.steps.values_list('pk', flat=True).order_by('pk'))
+        return step_pks.index(self.pk) + 1 if self.pk in step_pks else None
+
     def __str__(self):
-        steps = list(self.recipe.steps.all().order_by('pk'))
-        return str(steps.index(self) + 1)
+        index = self.get_step_number()
+        return f"Step {index}" if index else f"Step (unsaved)"
 
 
 class AudioInstructions(models.Model):
