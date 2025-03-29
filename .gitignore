@@ -12,6 +12,7 @@ __pycache__
 forkapi/static/*
 forkapi/media/images
 forkapi/media/videos
+forkapi/media/audio/*
 fullchain.pem
 privkey.pem
 .tox

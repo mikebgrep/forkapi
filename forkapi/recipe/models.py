@@ -23,7 +23,6 @@ DIFFICULTY_CHOICES = [
     ('Expert', 'Expert'),
 ]
 
-
 LANGUAGES_CHOICES = [
     ('English', 'English'),
     ('Spanish', 'Español'),
@@ -85,7 +84,8 @@ class Recipe(models.Model):
 
     @property
     def is_original(self):
-        return (self.is_translated and self.original_recipe_pk is None) or (not self.is_translated and self.original_recipe_pk is None)
+        return (self.is_translated and self.original_recipe_pk is None) or (
+                not self.is_translated and self.original_recipe_pk is None)
 
     @property
     def get_variations(self):
@@ -95,7 +95,7 @@ class Recipe(models.Model):
         recipes = Recipe.objects.filter(
             Q(original_recipe_pk=self.pk) | Q(pk=self.pk) if self.original_recipe_pk is None \
                 else Q(original_recipe_pk=self.original_recipe_pk) | Q(pk=self.original_recipe_pk)
-        ) ## Consider exclude self .exclude(pk=self.pk)
+        )  ## Consider exclude self .exclude(pk=self.pk)
 
         return recipes
 
@@ -130,6 +130,7 @@ class BaseIngredient(models.Model):
 
 class Ingredient(BaseIngredient):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="ingredients")
+
     def __str__(self):
         return self.name
 
@@ -144,6 +145,15 @@ class Step(models.Model):
     def __str__(self):
         steps = list(self.recipe.steps.all().order_by('pk'))
         return str(steps.index(self) + 1)
+
+
+class AudioInstructions(models.Model):
+    file = models.FileField(blank=True, null=True)
+    recipe = models.OneToOneField(Recipe, on_delete=models.CASCADE, null=True, blank=True,
+                                  related_name="audio_instructions")
+
+    def __str__(self):
+        return f'{self.file}, {self.recipe.pk}'
 
 
 class PromptType(Enum):

@@ -1,5 +1,7 @@
 import json
 import os
+import uuid
+from pathlib import Path
 from typing import List
 from openai import OpenAI
 
@@ -9,14 +11,35 @@ from .prompts import prompt_recipe_main_info, prompt_recipe_instructions, prompt
 from markdownify import markdownify as md
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
+
+# TODO:// make it singleton
 def __init_open_ai_client():
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
     )
     return client
+
+
+def openai_tts_stream(recipe_json: dict, language: str):
+    client = __init_open_ai_client()
+
+    with client.audio.speech.with_streaming_response.create(
+            model="gpt-4o-mini-tts",
+            voice=os.getenv("OPEN_AI_TTS_MODEL_VOICE"),
+            input=str(recipe_json),
+            instructions=f"Speak as professional cooking chef assistant with pause of 0.5 sec on each item. You must spell the recipe `name`, the `ingredients` and \
+            `instruction` from the provided json string object on the provided language: {language}. \
+            Important: You must not skip any ingredient or instruction or mix them also the ingredients \
+            must be read with all available information for each of them without skipping nothing! (Pay attention to this).\
+            And finish the speach after all are spelled.",
+    ) as response:
+        file_name = f"{uuid.uuid4()}-{recipe_json['name'].replace(" ", "_")}.mp3"
+        speech_file_path = Path(__file__).parent.parent.parent / f"media/audio/{file_name}"
+        response.stream_to_file(speech_file_path)
+
+        return file_name
 
 
 def __openai_chat_completion(messages, model=os.getenv("OPENAI_MODEL")):

@@ -23,6 +23,9 @@ class StepsInline(admin.StackedInline):
     form = StepAdminForm
     extra = 1
 
+class AudioInstructionsInline(admin.StackedInline):
+    model = AudioInstructions
+    extra = 0
 
 class RecipeAdmin(admin.ModelAdmin):
     fieldsets = [
@@ -33,10 +36,9 @@ class RecipeAdmin(admin.ModelAdmin):
         ("Additional Info", {"fields": ['servings', 'prep_time', 'cook_time']}),
         ("Image", {"fields": ['image']}),
         ("Video", {"fields": ['video']}),
-
     ]
     list_display = ['name', 'category', 'tag']
-    inlines = [IngredientsInline, StepsInline]
+    inlines = [AudioInstructionsInline, IngredientsInline, StepsInline]
     search_fields = ['name', 'category__name', 'tag__name']
     list_filter = ['created_at']
 

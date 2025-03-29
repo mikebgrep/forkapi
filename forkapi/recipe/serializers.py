@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Category, Recipe, Ingredient, Step, Tag, LANGUAGES_CHOICES
+from .models import Category, Recipe, Ingredient, Step, Tag, LANGUAGES_CHOICES, AudioInstructions
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -49,9 +49,25 @@ class StepsSerializer(serializers.ModelSerializer):
         )
 
 
+class AudioInstructionsSerializer(serializers.ModelSerializer):
+    recipe_id = serializers.PrimaryKeyRelatedField(
+        queryset=Recipe.objects.all(),
+        write_only=True,
+        required=False
+    )
+
+    class Meta:
+        model = AudioInstructions
+        fields = (
+            "file",
+            "recipe_id"
+        )
+
+
 class RecipesSerializer(serializers.ModelSerializer):
     ingredients = IngredientsSerializer(many=True, read_only=True)
     steps = StepsSerializer(many=True, read_only=True)
+    audio_instructions = AudioInstructionsSerializer(many=False, read_only=True)
     clear_video = serializers.BooleanField(write_only=True, required=False)
 
     class Meta:
@@ -78,6 +94,7 @@ class RecipesSerializer(serializers.ModelSerializer):
             "language",
             "is_original",
             "is_translated",
+            "audio_instructions"
         )
 
     def create(self, validated_data):
@@ -196,4 +213,14 @@ class TranslateRecipeSerializer(serializers.Serializer):
         fields = (
             "language",
             "pk"
+        )
+
+
+
+class CreateRecipeAudioSerializer(serializers.Serializer):
+    recipe_pk = serializers.IntegerField()
+
+    class Meta:
+        fields = (
+            "recipe_pk"
         )

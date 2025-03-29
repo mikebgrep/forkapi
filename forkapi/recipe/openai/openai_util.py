@@ -1,17 +1,19 @@
+import json
 from typing import List, Tuple
 
 from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.core.validators import URLValidator
 
-from .messages import open_ai_scrape_message, open_ai_generate_recipe_message, open_ai_translate_recipe_message
-from ..models import PromptType, Recipe, Ingredient, Step
+from .messages import open_ai_scrape_message, open_ai_generate_recipe_message, open_ai_translate_recipe_message, \
+    openai_tts_stream
+from ..models import PromptType, Recipe, Ingredient, Step, AudioInstructions
 from .browser import Browser
 from ..util import delete_media_file, get_first_matching_link, remove_stop_words, \
     extract_link_from_duckduck_go_url_result, instructions_and_steps_json_to_lists, parse_recipe_info, manage_media
 
-
 blacklist = ['foodnetwork.co.uk', 'foodnetwork.com', 'foodnetwork']
+
 
 def generate_recipes(ingredients: List[str]):
     json_response = open_ai_generate_recipe_message(ingredients)
@@ -122,6 +124,7 @@ def scrape_recipe(url: str):
 
 def translate_recipe_to_language(recipe: Recipe, language: str):
     json_response = open_ai_translate_recipe_message(recipe, language)
+    print(json_response)
     json_content = parse_recipe_info(json_response)
 
     name_translated = json_content['name']
@@ -173,3 +176,16 @@ def translate_and_save_recipe(recipe: Recipe, language: str) -> Recipe | None:
     translated_recipe = save_recipe(new_recipe, ingredients, steps)
 
     return translated_recipe
+
+
+def recipe_to_tts_audio(recipe: Recipe):
+    formated_result = {
+        "name": recipe.name,
+        "ingredients": [[i.name, i.quantity, i.metric] for i in recipe.ingredients.all()],
+        "instructions": [step.text for step in recipe.steps.all()]
+    }
+
+    file_name = openai_tts_stream(formated_result, recipe.language)
+    audio_instructions = AudioInstructions.objects.create(file=f"audio/{file_name}", recipe=recipe)
+
+    return audio_instructions
