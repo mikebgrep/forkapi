@@ -76,7 +76,7 @@ prompt_translate_recipe = """
             !Note return only the json not conversions!
             """
 
-prompt_tts_audio = f"""
+prompt_tts_audio = """
             Speak as professional cooking chef assistant with pause of 0.5 sec on each item (name, ingredient and instruction). You must spell the recipe `name`, the `ingredients` and \
             `instruction` from the provided json string object on the provided language: {0} including the name, instruction and ingredients words to the same language: {0}. \
             Important: You must not skip any ingredient and instruction or mix them also the ingredients \
