@@ -176,6 +176,12 @@ def translate_and_save_recipe(recipe: Recipe, language: str) -> Recipe | None:
     new_recipe.original_recipe_pk = recipe.pk
     new_recipe.language = language
 
+    #TODO:// Saving image and video to new file if one of the copies is deleted
+    new_recipe.image.save(f"{recipe.name.replace("\s", "_")}.png", recipe.image)
+    if recipe.video:
+        new_recipe.video.save(f"{recipe.name.replace("\s", "_")}.mp4", recipe.video)
+
+
     translated_recipe = save_recipe(new_recipe, ingredients, steps)
 
     return translated_recipe
