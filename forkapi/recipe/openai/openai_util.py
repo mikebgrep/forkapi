@@ -1,17 +1,22 @@
+import json
+import re
+from traceback import print_tb
 from typing import List, Tuple
 
 from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.core.validators import URLValidator
 
-from .messages import open_ai_scrape_message, open_ai_generate_recipe_message, open_ai_translate_recipe_message
-from ..models import PromptType, Recipe, Ingredient, Step
+from .messages import open_ai_scrape_message, open_ai_generate_recipe_message, open_ai_translate_recipe_message, \
+    openai_tts_stream
+from ..models import PromptType, Recipe, Ingredient, Step, AudioInstructions
 from .browser import Browser
 from ..util import delete_media_file, get_first_matching_link, remove_stop_words, \
-    extract_link_from_duckduck_go_url_result, instructions_and_steps_json_to_lists, parse_recipe_info, manage_media
-
+    extract_link_from_duckduck_go_url_result, instructions_and_steps_json_to_lists, parse_recipe_info, manage_media, flatten, \
+    delete_files
 
 blacklist = ['foodnetwork.co.uk', 'foodnetwork.com', 'foodnetwork']
+
 
 def generate_recipes(ingredients: List[str]):
     json_response = open_ai_generate_recipe_message(ingredients)
@@ -122,6 +127,7 @@ def scrape_recipe(url: str):
 
 def translate_recipe_to_language(recipe: Recipe, language: str):
     json_response = open_ai_translate_recipe_message(recipe, language)
+    print(json_response)
     json_content = parse_recipe_info(json_response)
 
     name_translated = json_content['name']
@@ -170,6 +176,51 @@ def translate_and_save_recipe(recipe: Recipe, language: str) -> Recipe | None:
     new_recipe.original_recipe_pk = recipe.pk
     new_recipe.language = language
 
+    #TODO:// Saving image and video to new file if one of the copies is deleted
+    new_recipe.image.save(f"{recipe.name.replace("\s", "_")}.png", recipe.image)
+    if recipe.video:
+        new_recipe.video.save(f"{recipe.name.replace("\s", "_")}.mp4", recipe.video)
+
+
     translated_recipe = save_recipe(new_recipe, ingredients, steps)
 
     return translated_recipe
+
+
+def recipe_to_tts_audio(recipe: Recipe):
+    formated_result = {
+        "name": recipe.name,
+        "ingredients": [[i.quantity, i.metric, i.name] for i in recipe.ingredients.all()],
+        "instructions": [step.text for step in recipe.steps.all()]
+    }
+
+    sentences = []
+    [sentences.extend([k,v]) for k,v in formated_result.items()]
+    chunks = split_recipe_json_to_sentences(sentences)
+
+    file_name, chunk_files = openai_tts_stream(chunks, recipe.name, recipe.language)
+    audio_instructions = AudioInstructions.objects.create(file=f"audio/{file_name}", recipe=recipe)
+    delete_files(chunk_files)
+
+    return audio_instructions
+
+def split_recipe_json_to_sentences(sentences):
+    """
+    Function to split the recipe json to smaller chunks so openai tts to not made nonce`s responses
+    """
+    chunks = []
+    current_chunk = ""
+    max_char_limit = 400
+    flat_sentences = flatten(sentences)
+
+    for sentence in flat_sentences:
+        if len(current_chunk) + len(sentence) + 1 <= max_char_limit:
+            current_chunk += " " + sentence if current_chunk else sentence
+        else:
+            chunks.append(current_chunk.strip())
+            current_chunk = sentence
+
+    if current_chunk:
+        chunks.append(current_chunk.strip())
+
+    return chunks

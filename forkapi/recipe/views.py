@@ -16,9 +16,9 @@ from .filters import FilterRecipeByLanguage
 from .models import Category, Recipe, Tag, Ingredient, Step
 from .serializers import RecipesSerializer, CategorySerializer, TagsSerializer, IngredientsSerializer, StepsSerializer, \
     RecipePreviewSerializer, GenerateRecipeSerializer, RecipeLinkSerializer, \
-    GenerateRecipeResultSerializer, TranslateRecipeSerializer
+    GenerateRecipeResultSerializer, TranslateRecipeSerializer, CreateRecipeAudioSerializer, AudioInstructionsSerializer
 from .openai.openai_util import scrape_recipe, save_recipe, generate_recipes, \
-    translate_and_save_recipe
+    translate_and_save_recipe, recipe_to_tts_audio
 
 
 class SearchRecipies(ListModelViewSet):
@@ -304,3 +304,25 @@ class TranslateRecipeView(CreateAPIView):
             return Response(data={
                 "errors": ["Translation language is already used and there a recipe translated with that language."]},
                             status=HTTP_400_BAD_REQUEST)
+
+
+class GenerateRecipeAudion(CreateAPIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = CreateRecipeAudioSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            recipe_pk = serializer.validated_data['recipe_pk']
+            recipe = get_object_or_404(Recipe, pk=recipe_pk)
+            if not hasattr(recipe, 'audio_instructions'):
+                audio_instructions = recipe_to_tts_audio(recipe)
+                recipe_audio_serializer = AudioInstructionsSerializer(audio_instructions)
+                return Response(status=HTTP_201_CREATED, data=recipe_audio_serializer.data,  content_type="application/json")
+            else:
+                return Response(data={
+                    "errors": [
+                        "Recipe is converted to audio instructions already."]},
+                    status=HTTP_400_BAD_REQUEST)
+

@@ -1,0 +1,1 @@
+## Folder to store openai tts chunk files needed to generating audo recipes

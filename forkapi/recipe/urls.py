@@ -4,7 +4,8 @@ from rest_framework.routers import SimpleRouter
 from .views import Categories, TrendingRecipies, CategoryRecipes, FavoriteRecipes, Tags, TagsRecipies, SearchRecipies, \
     CreateCategory, UpdateCategory, RetrieveCreateDestroyRecipeSet, CreateIngredients, CreateSteps, UpdateRecipe, \
     CreateTag, \
-    UpdateTag, ScrapeView, GenerateRecipeView, TranslateRecipeView, RetrieveRecipeLangVariationsView
+    UpdateTag, ScrapeView, GenerateRecipeView, TranslateRecipeView, RetrieveRecipeLangVariationsView, \
+    GenerateRecipeAudion
 
 app_name = "recipe"
 
@@ -12,7 +13,6 @@ router_search = SimpleRouter()
 router_search.register(r"home", SearchRecipies)
 router_recipe = SimpleRouter()
 router_recipe.register(r"", RetrieveCreateDestroyRecipeSet)
-
 
 urlpatterns = [
     path("category", Categories.as_view()),
@@ -36,4 +36,5 @@ urlpatterns = [
     path("generate", GenerateRecipeView.as_view()),
     path("translate", TranslateRecipeView.as_view()),
     path("<int:recipe_pk>/variations", RetrieveRecipeLangVariationsView.as_view()),
+    path("audio", GenerateRecipeAudion.as_view()),
 ]
