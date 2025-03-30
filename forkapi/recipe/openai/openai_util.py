@@ -1,4 +1,6 @@
 import json
+import re
+from traceback import print_tb
 from typing import List, Tuple
 
 from django.core.exceptions import ValidationError
@@ -10,7 +12,8 @@ from .messages import open_ai_scrape_message, open_ai_generate_recipe_message, o
 from ..models import PromptType, Recipe, Ingredient, Step, AudioInstructions
 from .browser import Browser
 from ..util import delete_media_file, get_first_matching_link, remove_stop_words, \
-    extract_link_from_duckduck_go_url_result, instructions_and_steps_json_to_lists, parse_recipe_info, manage_media
+    extract_link_from_duckduck_go_url_result, instructions_and_steps_json_to_lists, parse_recipe_info, manage_media, flatten, \
+    delete_files
 
 blacklist = ['foodnetwork.co.uk', 'foodnetwork.com', 'foodnetwork']
 
@@ -181,11 +184,37 @@ def translate_and_save_recipe(recipe: Recipe, language: str) -> Recipe | None:
 def recipe_to_tts_audio(recipe: Recipe):
     formated_result = {
         "name": recipe.name,
-        "ingredients": [[i.name, i.quantity, i.metric] for i in recipe.ingredients.all()],
+        "ingredients": [[i.quantity, i.metric, i.name] for i in recipe.ingredients.all()],
         "instructions": [step.text for step in recipe.steps.all()]
     }
 
-    file_name = openai_tts_stream(formated_result, recipe.language)
+    sentences = []
+    [sentences.extend([k,v]) for k,v in formated_result.items()]
+    chunks = split_recipe_json_to_sentences(sentences)
+
+    file_name, chunk_files = openai_tts_stream(chunks, recipe.name, recipe.language)
     audio_instructions = AudioInstructions.objects.create(file=f"audio/{file_name}", recipe=recipe)
+    delete_files(chunk_files)
 
     return audio_instructions
+
+def split_recipe_json_to_sentences(sentences):
+    """
+    Function to split the recipe json to smaller chunks so openai tts to not made nonce`s responses
+    """
+    chunks = []
+    current_chunk = ""
+    max_char_limit = 400
+    flat_sentences = flatten(sentences)
+
+    for sentence in flat_sentences:
+        if len(current_chunk) + len(sentence) + 1 <= max_char_limit:
+            current_chunk += " " + sentence if current_chunk else sentence
+        else:
+            chunks.append(current_chunk.strip())
+            current_chunk = sentence
+
+    if current_chunk:
+        chunks.append(current_chunk.strip())
+
+    return chunks

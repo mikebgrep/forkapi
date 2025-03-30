@@ -1,9 +1,10 @@
 import json
 import os
-from typing import List
+from pathlib import Path
+from typing import List, Union
+from urllib.parse import unquote
 
 import requests
-from urllib.parse import unquote
 
 
 def calculate_recipe_total_time(total: int) -> str:
@@ -105,3 +106,31 @@ def instructions_and_steps_json_to_lists(json_content_steps: dict, json_content_
         ingredients.append(ingredient)
 
     return steps, ingredients
+
+
+def flatten(nested_list):
+    """Recursively flattens a deeply nested list."""
+    flat_list = []
+    for item in nested_list:
+        if isinstance(item, list):
+            if flat_list:  # Add a comma before appending a nested list
+                flat_list.append(", ")
+            flat_list.extend(flatten(item))  # Recursive call for deeper lists
+        else:
+            flat_list.append(item)
+    return flat_list
+
+
+def delete_files(files: List[Union[str, Path]]):
+    for file in files:
+        file_path = Path(file)
+        try:
+            if file_path.exists():
+                file_path.unlink()
+                print(f"Deleted: {file_path}")
+            else:
+                print(f"File not found: {file_path}")
+        except PermissionError:
+            print(f"Permission denied: {file_path}")
+        except Exception as e:
+            print(f"Error deleting {file_path}: {e}")

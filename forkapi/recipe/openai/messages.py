@@ -7,7 +7,7 @@ from openai import OpenAI
 
 from ..models import PromptType, Recipe
 from .prompts import prompt_recipe_main_info, prompt_recipe_instructions, prompt_recipe_ingredients, \
-    prompt_generate_recipe, prompt_translate_recipe
+    prompt_generate_recipe, prompt_translate_recipe, prompt_tts_audio
 from markdownify import markdownify as md
 from dotenv import load_dotenv
 
@@ -22,24 +22,34 @@ def __init_open_ai_client():
     return client
 
 
-def openai_tts_stream(recipe_json: dict, language: str):
+def openai_tts_stream(chunks: list, recipe_name: str, language: str):
     client = __init_open_ai_client()
+    chunk_files = []
 
-    with client.audio.speech.with_streaming_response.create(
-            model="gpt-4o-mini-tts",
-            voice=os.getenv("OPEN_AI_TTS_MODEL_VOICE"),
-            input=str(recipe_json),
-            instructions=f"Speak as professional cooking chef assistant with pause of 0.5 sec on each item. You must spell the recipe `name`, the `ingredients` and \
-            `instruction` from the provided json string object on the provided language: {language} including the name, instruction and ingredients words to the same language: {language}. \
-            Important: You must not skip any ingredient and instruction or mix them also the ingredients \
-            must be read with all available information for each of them without skipping nothing! (Pay attention to this).\
-            And finish the speach after all are spelled.",
-    ) as response:
-        file_name = f"{uuid.uuid4()}-{recipe_json['name'].replace(" ", "_")}.mp3"
-        speech_file_path = Path(__file__).parent.parent.parent / f"media/audio/{file_name}"
-        response.stream_to_file(speech_file_path)
+    for i, chunk in enumerate(chunks):
+        chunk_file = Path(__file__).parent.parent.parent / f"media/audio/chunks/chunk_{i}.mp3"
 
-        return file_name
+        with client.audio.speech.with_streaming_response.create(
+                model="gpt-4o-mini-tts",
+                voice=os.getenv("OPEN_AI_TTS_MODEL_VOICE"),
+                input=chunk,
+                instructions=prompt_tts_audio.format(language)
+        ) as response:
+            with open(chunk_file, "wb") as f:
+                for chunk_data in response.iter_bytes():
+                    f.write(chunk_data)
+
+        chunk_files.append(chunk_file)
+
+    file_name = f"{uuid.uuid4()}-{recipe_name.replace(" ", "_")}.mp3"
+    speech_file_path = Path(__file__).parent.parent.parent / f"media/audio/{file_name}"
+
+    with open(speech_file_path, "wb") as final_file:
+        for file in chunk_files:
+            with open(file, "rb") as f:
+                final_file.write(f.read())
+
+    return file_name, chunk_files
 
 
 def __openai_chat_completion(messages, model=os.getenv("OPENAI_MODEL")):
