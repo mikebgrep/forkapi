@@ -29,7 +29,7 @@ class AudioInstructionsInline(admin.StackedInline):
 
 class RecipeAdmin(admin.ModelAdmin):
     fieldsets = [
-        ("Recipe Name", {"fields": ['name', 'difficulty']}),
+        ("Recipe Name", {"fields": ['name', 'difficulty', "language"]}),
         ("Recipe Group", {"fields": ['category', 'tag']}),
         ("Created date", {"fields": ['created_at']}),
         ("Reference", {"fields": ['chef', 'reference']}),
