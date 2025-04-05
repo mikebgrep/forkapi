@@ -177,9 +177,9 @@ def translate_and_save_recipe(recipe: Recipe, language: str) -> Recipe | None:
     new_recipe.language = language
 
     #TODO:// Saving image and video to new file if one of the copies is deleted
-    new_recipe.image.save(f"{recipe.name.replace("\s", "_")}.png", recipe.image)
+    new_recipe.image.save(f"{recipe.name.replace(" ", "_")}.png", recipe.image)
     if recipe.video:
-        new_recipe.video.save(f"{recipe.name.replace("\s", "_")}.mp4", recipe.video)
+        new_recipe.video.save(f"{recipe.name.replace(" ", "_")}.mp4", recipe.video)
 
 
     translated_recipe = save_recipe(new_recipe, ingredients, steps)
@@ -209,18 +209,19 @@ def split_recipe_json_to_sentences(sentences):
     Function to split the recipe json to smaller chunks so openai tts to not made nonce`s responses
     """
     chunks = []
+    max_char_limit = 300
     current_chunk = ""
-    max_char_limit = 400
     flat_sentences = flatten(sentences)
 
     for sentence in flat_sentences:
-        if len(current_chunk) + len(sentence) + 1 <= max_char_limit:
-            current_chunk += " " + sentence if current_chunk else sentence
-        else:
-            chunks.append(current_chunk.strip())
-            current_chunk = sentence
+        words = sentence.split()
+        for word in words:
+            current_chunk += word + " "
+            if len(current_chunk) >= max_char_limit:
+                chunks.append(current_chunk)
+                current_chunk = ""
 
     if current_chunk:
-        chunks.append(current_chunk.strip())
+        chunks.append(current_chunk)
 
     return chunks
