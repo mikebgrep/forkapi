@@ -599,6 +599,24 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#translate-recipes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Translate recipes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generate-recipe-audio" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generate recipe audio
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -735,6 +753,24 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#translate-recipes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Translate recipes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generate-recipe-audio" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generate recipe audio
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -772,14 +808,18 @@
 <p>Here you can find how we use OpenAI model for the application. <br></p>
 <details class="info" open="open">
 <summary>Info</summary>
-<p>Available from 2.2.0+ release.</p>
+<p>Available from 2.2.0+ release.
+TTS available from 5.0.0+ release.</p>
 </details>
 <h2 id="functionality-with-the-ai-model">Functionality with the AI model<a class="headerlink" href="#functionality-with-the-ai-model" title="Permanent link">&para;</a></h2>
 <p>Open AI chat gpt model <code>gpt-4o-mini</code> is the default model that we use it the API.
-For the purpose of his task is working ok and is the lowest cost model from OpenAI.</p>
+For the purpose of his task is working ok and is the lowest cost model from OpenAI.
+For TTS the model is <code>tts-4o-mini</code> which is the latest model can translate to any language but best results are for English.</p>
 <ol>
 <li>We use it to scrape a recipe from external url.</li>
-<li>We use it to generate an recipes from ingredients and after this we scrape the recipes from the available url online.</li>
+<li>We use it to generate a recipes from ingredients and after this we scrape the recipes from the available url online.</li>
+<li>We use it to translate recipe to selected number of languages</li>
+<li>We use it for generating of a recipe audio file that record the recipe name, ingredients and insstructions</li>
 </ol>
 <h2 id="edge-cases">Edge cases<a class="headerlink" href="#edge-cases" title="Permanent link">&para;</a></h2>
 <p>There a case where the model fails and we return empty response with status code <code>204</code> from the endpoint that are responsible for generating or scraping the recipes.</p>
@@ -896,6 +936,158 @@ For the purpose of his task is working ok and is the lowest cost model from Open
 <h5 id="example-curl_1">Example cURL<a class="headerlink" href="#example-curl_1" title="Permanent link">&para;</a></h5>
 <blockquote>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>curl<span class="w"> </span>--location<span class="w"> </span><span class="s1">&#39;host/api/recipe/generate&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;Authorization: Token token_value&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;Content-Type: application/json&#39;</span><span class="w"> </span>--data<span class="w"> </span><span class="s1">&#39;{&quot;ingredients&quot;:[&quot;tomato&quot;,&quot;onion&quot;,&quot;cheese&quot;,&quot;pasta&quot;,&quot;milk&quot;,&quot;red peparz&quot;]}&#39;</span>
+</span></code></pre></div>
+</blockquote>
+</details>
+<h4 id="translate-recipes">Translate recipes<a class="headerlink" href="#translate-recipes" title="Permanent link">&para;</a></h4>
+<details class="pied-piper">
+<summary>POST /api/recipe/translate</summary>
+<p>##### Payload
+    <div class="language-json highlight"><span class="filename">recipe.Recipe object</span><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="nt">&quot;pk&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">recipe.pk</span><span class="p">,</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">&quot;language&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">recipe.models.LANGUAGES_CHOICES</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="p">}</span>
+</span></code></pre></div></p>
+<h5 id="language-choices-languages_choices">Language choices (LANGUAGES_CHOICES)<a class="headerlink" href="#language-choices-languages_choices" title="Permanent link">&para;</a></h5>
+<div class="language-python highlight"><span class="filename">recipe.models.LANGUAGES_CHOICES (use only the key in the request)</span><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>        <span class="p">(</span><span class="s1">&#39;English&#39;</span><span class="p">,</span> <span class="s1">&#39;English&#39;</span><span class="p">),</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>        <span class="p">(</span><span class="s1">&#39;Spanish&#39;</span><span class="p">,</span> <span class="s1">&#39;Español&#39;</span><span class="p">),</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>        <span class="p">(</span><span class="s1">&#39;French&#39;</span><span class="p">,</span> <span class="s1">&#39;Français&#39;</span><span class="p">),</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>        <span class="p">(</span><span class="s1">&#39;German&#39;</span><span class="p">,</span> <span class="s1">&#39;Deutsch&#39;</span><span class="p">),</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>        <span class="p">(</span><span class="s1">&#39;Chinese&#39;</span><span class="p">,</span> <span class="s1">&#39;中文&#39;</span><span class="p">),</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>        <span class="p">(</span><span class="s1">&#39;Russian&#39;</span><span class="p">,</span> <span class="s1">&#39;Русский&#39;</span><span class="p">),</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>        <span class="p">(</span><span class="s1">&#39;Italian&#39;</span><span class="p">,</span> <span class="s1">&#39;Italiano&#39;</span><span class="p">),</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>        <span class="p">(</span><span class="s1">&#39;Japanese&#39;</span><span class="p">,</span> <span class="s1">&#39;日本語&#39;</span><span class="p">),</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>        <span class="p">(</span><span class="s1">&#39;Dutch&#39;</span><span class="p">,</span> <span class="s1">&#39;Nederlands&#39;</span><span class="p">),</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>        <span class="p">(</span><span class="s1">&#39;Polish&#39;</span><span class="p">,</span> <span class="s1">&#39;Polski&#39;</span><span class="p">),</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>        <span class="p">(</span><span class="s1">&#39;Greek&#39;</span><span class="p">,</span> <span class="s1">&#39;Ελληνικά&#39;</span><span class="p">),</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>        <span class="p">(</span><span class="s1">&#39;Swedish&#39;</span><span class="p">,</span> <span class="s1">&#39;Svenska&#39;</span><span class="p">),</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>        <span class="p">(</span><span class="s1">&#39;Czech&#39;</span><span class="p">,</span> <span class="s1">&#39;Čeština&#39;</span><span class="p">),</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>        <span class="p">(</span><span class="s1">&#39;Bulgarian&#39;</span><span class="p">,</span> <span class="s1">&#39;Български&#39;</span><span class="p">),</span>
+</span></code></pre></div>
+<h5 id="headers_2">Headers<a class="headerlink" href="#headers_2" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>type</th>
+<th>data type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Authorization</code></td>
+<td><code>required</code></td>
+<td><code>Access Token</code></td>
+<td><code>Token obtained from login endpoint</code></td>
+</tr>
+</tbody>
+</table>
+<h5 id="responses_2">Responses<a class="headerlink" href="#responses_2" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>http code</th>
+<th>content-type</th>
+<th>response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>200</code></td>
+<td><code>application/json</code></td>
+<td><code>{recipe.Recipe object}</code></td>
+</tr>
+<tr>
+<td><code>400</code></td>
+<td><code>application/json</code></td>
+<td><code>{"errors":["Default language for translation should be set"]}</code></td>
+</tr>
+<tr>
+<td><code>400</code></td>
+<td><code>application/json</code></td>
+<td><code>{"errors":["Translation must be performed only on original recipes"]}</code></td>
+</tr>
+<tr>
+<td><code>400</code></td>
+<td><code>application/json</code></td>
+<td><code>{"errors":["Translation language is already used and there a recipe translated with that language."]}</code></td>
+</tr>
+<tr>
+<td><code>401</code></td>
+<td><code>application/json</code></td>
+<td><code>{"detail":"Authentication credentials were not provided."}</code></td>
+</tr>
+</tbody>
+</table>
+<h5 id="example-curl_2">Example cURL<a class="headerlink" href="#example-curl_2" title="Permanent link">&para;</a></h5>
+<blockquote>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="w"> </span>curl<span class="w"> </span>--location<span class="w"> </span><span class="s1">&#39;host/api/recipe/translate&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;Authorization: Token token_value&#39;</span><span class="w"> </span>--data<span class="w"> </span><span class="s1">&#39;{&quot;pk&quot;:15,&quot;language&quot;:&quot;German&quot;}&#39;</span>
+</span></code></pre></div>
+</blockquote>
+</details>
+<h4 id="generate-recipe-audio">Generate recipe audio<a class="headerlink" href="#generate-recipe-audio" title="Permanent link">&para;</a></h4>
+<details class="pied-piper">
+<summary>POST /api/recipe/audio</summary>
+<h5 id="payload_2">Payload<a class="headerlink" href="#payload_2" title="Permanent link">&para;</a></h5>
+<div class="language-json highlight"><span class="filename">recipe.Recipe object</span><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="nt">&quot;recipe_pk&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">i</span><span class="kc">nt</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="p">}</span>
+</span></code></pre></div>
+<h5 id="headers_3">Headers<a class="headerlink" href="#headers_3" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>type</th>
+<th>data type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Authorization</code></td>
+<td><code>required</code></td>
+<td><code>Access Token</code></td>
+<td><code>Token obtained from login endpoint</code></td>
+</tr>
+</tbody>
+</table>
+<h5 id="responses_3">Responses<a class="headerlink" href="#responses_3" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>http code</th>
+<th>content-type</th>
+<th>response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>200</code></td>
+<td><code>application/json</code></td>
+<td><code>{recipe.AudioInstructionsSerializer object}</code></td>
+</tr>
+<tr>
+<td><code>400</code></td>
+<td><code>application/json</code></td>
+<td><code>{"errors":["Recipe is converted to audio instructions already"]}</code></td>
+</tr>
+<tr>
+<td><code>401</code></td>
+<td><code>application/json</code></td>
+<td><code>{"detail":"Authentication credentials were not provided."}</code></td>
+</tr>
+<tr>
+<td><code>404</code></td>
+<td><code>application/json</code></td>
+<td><code>{"errors":["Recipe with that pk does not exists"]}</code></td>
+</tr>
+</tbody>
+</table>
+<h5 id="example-curl_3">Example cURL<a class="headerlink" href="#example-curl_3" title="Permanent link">&para;</a></h5>
+<blockquote>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="w"> </span>curl<span class="w"> </span>--location<span class="w"> </span><span class="s1">&#39;host/api/recipe/audio&#39;</span><span class="w"> </span>--header<span class="w"> </span><span class="s1">&#39;Authorization: Token token_value&#39;</span><span class="w"> </span>--data<span class="w"> </span><span class="s1">&#39;{&quot;recipe_pk&quot;:15}&#39;</span>
 </span></code></pre></div>
 </blockquote>
 </details>
