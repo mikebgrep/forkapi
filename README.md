@@ -1,6 +1,6 @@
 # ForkAPI
 
-![version](https://img.shields.io/badge/version-5.0.0-green) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)  <a aria-label="Build" href="https://github.com/mikebgrep/forkapi/actions?query=Build%20and%20Push%20to%20Docker%20Registry">
+![version](https://img.shields.io/badge/version-5.0.0-green) ![![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3_Clause-red.svg)](https://opensource.org/license/bsd-3-clause)  <a aria-label="Build" href="https://github.com/mikebgrep/forkapi/actions?query=Build%20and%20Push%20to%20Docker%20Registry">
     <img alt="build" src="https://img.shields.io/github/actions/workflow/status/mikebgrep/forkapi/run-tests.yml?label=Build&logo=github&style=flat-quare&labelColor=000000" />
 
 <img align="right" src="https://github.com/mikebgrep/foodie/blob/master/assets/logo.png" height="170px" alt="Logo">
@@ -51,6 +51,7 @@ You can support the repo as clicking on the sponsorship button.
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/mikebgrep)
 
-### License
-The repository use [MIT](https://opensource.org/licenses/MIT) license
+## License
+This project is licensed under the BSD 3-Clause License.
 
+It includes third-party components licensed under the Apache License 2.0.
