@@ -1,7 +1,7 @@
 # ForkAPI
 
 ![version](https://img.shields.io/badge/version-5.0.0-green) [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3_Clause-red.svg)](https://opensource.org/license/bsd-3-clause)  <a aria-label="Build" href="https://github.com/mikebgrep/forkapi/actions?query=Build%20and%20Push%20to%20Docker%20Registry">
-    <img alt="build" src="https://img.shields.io/github/actions/workflow/status/mikebgrep/forkapi/run-tests.yml?label=Build&logo=github&style=flat-quare&labelColor=000000" />
+    <img alt="build" src="https://img.shields.io/github/actions/workflow/status/mikebgrep/forkapi/run-tests.yml?label=Build&logo=github&style=flat-quare&labelColor=000000" /> ![Docker pulls](https://img.shields.io/docker/pulls/mikebgrep/forkapi?logo=docker&color=informational)
 
 <img align="right" src="https://github.com/mikebgrep/foodie/blob/master/assets/logo.png" height="170px" alt="Logo">
 
