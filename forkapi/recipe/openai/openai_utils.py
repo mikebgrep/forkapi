@@ -11,7 +11,7 @@ from .messages import open_ai_scrape_message, open_ai_generate_recipe_message, o
     openai_tts_stream
 from ..models import PromptType, Recipe, Ingredient, Step, AudioInstructions
 from .browser import Browser
-from ..util import delete_media_file, get_first_matching_link, remove_stop_words, \
+from ..utils import delete_file, get_first_matching_link, remove_stop_words, \
     extract_link_from_duckduck_go_url_result, instructions_and_steps_json_to_lists, parse_recipe_info, manage_media, flatten, \
     delete_files
 
@@ -102,13 +102,13 @@ def scrape_recipe(url: str):
 
     with open(file_path, 'rb') as img_file:
         recipe.image.save(f'{file_name}.png', File(img_file), save=True)
-        delete_media_file(file_path)
+        delete_file(file_path)
 
     if json_content_main_info['video'] and not 'youtube' in json_content_main_info['video']:
         file_path = manage_media(json_content_main_info, True)
         with open(file_path, 'rb') as video_file:
             recipe.video.save(f'{file_name}.mp4', File(video_file), save=True)
-            delete_media_file(file_path)
+            delete_file(file_path)
 
     recipe.save()
 

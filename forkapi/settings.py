@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'recipe.apps.RecipeConfig',
     'schedule.apps.ScheduleConfig',
     'shopping.apps.ShoppingListConfig',
+    'backupper.apps.BackupperConfig',
     'background_jobs_app',
     'django.contrib.admin',
     'django.contrib.auth',

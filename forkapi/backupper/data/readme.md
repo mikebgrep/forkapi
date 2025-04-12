@@ -1,0 +1,1 @@
+# File to stage the data directory needed in backup task

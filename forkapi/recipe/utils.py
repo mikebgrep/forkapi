@@ -31,7 +31,7 @@ def download_media_files(address: str, recipe_name: str, is_video: bool):
     return file_path
 
 
-def delete_media_file(file_path: str):
+def delete_file(file_path: str):
     os.remove(file_path)
 
 

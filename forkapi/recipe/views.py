@@ -17,7 +17,7 @@ from .models import Category, Recipe, Tag, Ingredient, Step
 from .serializers import RecipesSerializer, CategorySerializer, TagsSerializer, IngredientsSerializer, StepsSerializer, \
     RecipePreviewSerializer, GenerateRecipeSerializer, RecipeLinkSerializer, \
     GenerateRecipeResultSerializer, TranslateRecipeSerializer, CreateRecipeAudioSerializer, AudioInstructionsSerializer
-from .openai.openai_util import scrape_recipe, save_recipe, generate_recipes, \
+from .openai.openai_utils import scrape_recipe, save_recipe, generate_recipes, \
     translate_and_save_recipe, recipe_to_tts_audio
 
 

@@ -5,7 +5,7 @@ from enum import Enum
 import django
 from django.db import models
 from django.db.models import Q
-from .util import calculate_recipe_total_time
+from .utils import calculate_recipe_total_time
 
 
 def upload_to(instance, filename):
