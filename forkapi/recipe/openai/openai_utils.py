@@ -1,18 +1,16 @@
-import json
-import re
-from traceback import print_tb
-from typing import List, Tuple
+from typing import List
 
 from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.core.validators import URLValidator
 
+from .browser import Browser
 from .messages import open_ai_scrape_message, open_ai_generate_recipe_message, open_ai_translate_recipe_message, \
     openai_tts_stream
 from ..models import PromptType, Recipe, Ingredient, Step, AudioInstructions
-from .browser import Browser
 from ..utils import delete_file, get_first_matching_link, remove_stop_words, \
-    extract_link_from_duckduck_go_url_result, instructions_and_steps_json_to_lists, parse_recipe_info, manage_media, flatten, \
+    extract_link_from_duckduck_go_url_result, instructions_and_steps_json_to_lists, parse_recipe_info, manage_media, \
+    flatten, \
     delete_files
 
 blacklist = ['foodnetwork.co.uk', 'foodnetwork.com', 'foodnetwork']
@@ -176,11 +174,10 @@ def translate_and_save_recipe(recipe: Recipe, language: str) -> Recipe | None:
     new_recipe.original_recipe_pk = recipe.pk
     new_recipe.language = language
 
-    #TODO:// Saving image and video to new file if one of the copies is deleted
+    # TODO:// Saving image and video to new file if one of the copies is deleted
     new_recipe.image.save(f"{recipe.name.replace(" ", "_")}.png", recipe.image)
     if recipe.video:
         new_recipe.video.save(f"{recipe.name.replace(" ", "_")}.mp4", recipe.video)
-
 
     translated_recipe = save_recipe(new_recipe, ingredients, steps)
 
@@ -195,7 +192,7 @@ def recipe_to_tts_audio(recipe: Recipe):
     }
 
     sentences = []
-    [sentences.extend([k,v]) for k,v in formated_result.items()]
+    [sentences.extend([k, v]) for k, v in formated_result.items()]
     chunks = split_recipe_json_to_sentences(sentences)
 
     file_name, chunk_files = openai_tts_stream(chunks, recipe.name, recipe.language)
@@ -203,6 +200,7 @@ def recipe_to_tts_audio(recipe: Recipe):
     delete_files(chunk_files)
 
     return audio_instructions
+
 
 def split_recipe_json_to_sentences(sentences):
     """

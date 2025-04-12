@@ -7,29 +7,23 @@ from typing import List, Literal
 from recipe.models import Recipe, Category
 from recipe.serializers import RecipesSerializer, CategorySerializer
 from recipe.utils import delete_file
-from .models import BackupSnapshot
 
-from django.core.files import File
-
-recipe_json_path = os.path.join("backupper/data", "recipe.json")
-category_json_path = os.path.join("backupper/data", "category.json")
-zip_file_name = os.path.join("backupper/data",
-                             f"fork_recipes_{datetime.now().date().strftime('%Y.%m.%d')}_{datetime.now().strftime('%H.%M.%S')}.zip")
+base_data_path = "backupper/data"
+recipe_json_path = os.path.join(base_data_path, "recipe.json")
+category_json_path = os.path.join(base_data_path, "category.json")
+zip_file_name_with_path = os.path.join(base_data_path,
+                                       f"fork_recipes_{datetime.now().date().strftime('%Y.%m.%d')}_{datetime.now().strftime('%H.%M.%S')}.zip")
 
 
 def backup(recipes: List[Recipe], categories: List[Category]):
     backup_recipes(recipes)
     backup_categories(categories)
 
-    with open(zip_file_name, 'rb') as f:
-        backup_file = File(f)
-        snapshot = BackupSnapshot.objects.create(file=backup_file)
-
-    return snapshot
+    return zip_file_name_with_path
 
 
 def append_to_file(file_paths: List, mode: Literal['w', 'a']):
-    with zipfile.ZipFile(zip_file_name, mode) as myZipFile:
+    with zipfile.ZipFile(zip_file_name_with_path, mode) as myZipFile:
         for local_path, zip_path in file_paths:
             if local_path and os.path.exists(local_path):
                 myZipFile.write(local_path, zip_path, zipfile.ZIP_DEFLATED)
@@ -87,4 +81,11 @@ def create_category_data_file(category: Category, index: int):
     with open(category_json_path, 'w', encoding='utf8') as file:
         file.write(category_json_str)
 
-    return [(category_json_path, f"{root_path}/{index}/recipe.json")]
+    return [(category_json_path, f"{root_path}/{index}/category.json")]
+
+
+def get_first_zip_file(directory=base_data_path):
+    for filename in os.listdir(directory):
+        if filename.lower().endswith('.zip'):
+            return filename, os.path.join(directory, filename)
+    return None, None
