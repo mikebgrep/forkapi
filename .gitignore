@@ -8,6 +8,7 @@ forkapi/authentication/migrations/*
 forkapi/recipe/migrations/*
 forkapi/schedule/migrations/*
 forkapi/shopping/migrations/*
+forkapi/backupper/migrations/*
 __pycache__
 forkapi/static/*
 forkapi/media/images
