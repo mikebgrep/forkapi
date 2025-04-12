@@ -111,8 +111,8 @@ class RetrieveUpdateView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, gen
 
 class RetrieveDestroyView(mixins.RetrieveModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView):
     """
-        Concrete view to retrieve and delete
-        """
+    Concrete view to retrieve and delete
+    """
 
     def get(self, request, *args, **kwargs):
         return super().retrieve(self, request, *args, **kwargs)

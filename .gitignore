@@ -9,6 +9,7 @@ forkapi/recipe/migrations/*
 forkapi/schedule/migrations/*
 forkapi/shopping/migrations/*
 forkapi/backupper/migrations/*
+forkapi/backupper/data/*.zip
 __pycache__
 forkapi/static/*
 forkapi/media/images

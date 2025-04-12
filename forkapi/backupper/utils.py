@@ -89,3 +89,13 @@ def get_first_zip_file(directory=base_data_path):
         if filename.lower().endswith('.zip'):
             return filename, os.path.join(directory, filename)
     return None, None
+
+
+def unpack_backup(full_path: str):
+
+
+    with zipfile.ZipFile(full_path, 'r') as zip_file:
+        # List all files in the ZIP to inspect its structure
+        zip_file_contents = zip_file.namelist()
+
+        print("Files in ZIP:", zip_file_contents)

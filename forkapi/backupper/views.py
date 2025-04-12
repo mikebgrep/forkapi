@@ -34,3 +34,7 @@ class ExportDeleteBackup(RetrieveDestroyView):
         else:
             return Response(status=HTTP_400_BAD_REQUEST, data={
                 "errors": [f"There no saved backup file."]})
+
+
+class RestoreBackup():
+    pass
