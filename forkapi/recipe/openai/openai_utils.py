@@ -11,7 +11,7 @@ from ..models import PromptType, Recipe, Ingredient, Step, AudioInstructions
 from ..utils import delete_file, get_first_matching_link, remove_stop_words, \
     extract_link_from_duckduck_go_url_result, instructions_and_steps_json_to_lists, parse_recipe_info, manage_media, \
     flatten, \
-    delete_files
+    delete_files, save_recipe
 
 blacklist = ['foodnetwork.co.uk', 'foodnetwork.com', 'foodnetwork']
 
@@ -136,27 +136,6 @@ def translate_recipe_to_language(recipe: Recipe, language: str):
     return name_translated, description_translated, ingredients_translated, instructions_translated
 
 
-def save_recipe(recipe: Recipe, ingredients: List[Ingredient], steps: List[Step], page_address: str = None):
-    if page_address is not None:
-        recipe.reference = page_address
-
-    recipe.save()
-
-    for ingredient in ingredients:
-        if not ingredient.pk:
-            ingredient.recipe = recipe
-            ingredient.save()
-    for step in steps:
-        if not step.pk:
-            step.recipe = recipe
-            step.save()
-
-    recipe.steps.set(steps)
-    recipe.ingredients.set(ingredients)
-
-    return recipe
-
-
 def translate_and_save_recipe(recipe: Recipe, language: str) -> Recipe | None:
     if any([x for x in recipe.get_variations if x.language == language]):
         return None
@@ -196,7 +175,7 @@ def recipe_to_tts_audio(recipe: Recipe):
     chunks = split_recipe_json_to_sentences(sentences)
 
     file_name, chunk_files = openai_tts_stream(chunks, recipe.name, recipe.language)
-    audio_instructions = AudioInstructions.objects.create(file=f"audio/{file_name}", recipe=recipe)
+    audio_instructions = AudioInstructions.objects.create(file=file_name, recipe=recipe)
     delete_files(chunk_files)
 
     return audio_instructions

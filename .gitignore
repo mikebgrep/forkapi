@@ -15,6 +15,7 @@ forkapi/static/*
 forkapi/media/images
 forkapi/media/videos
 forkapi/media/audio/*
+forkapi/media/backups/*
 fullchain.pem
 privkey.pem
 .tox

@@ -5,15 +5,9 @@ from typing import List, Union
 from urllib.parse import unquote
 
 import requests
+from django.core.files.base import ContentFile
 
-
-def calculate_recipe_total_time(total: int) -> str:
-    if total < 60:
-        return f"{total / 100:.2f}"
-
-    hours = total // 60
-    minutes = total % 60
-    return f"{hours}.{minutes:02}"
+from .models import Recipe, Ingredient, Step
 
 
 def download_media_files(address: str, recipe_name: str, is_video: bool):
@@ -108,6 +102,27 @@ def instructions_and_steps_json_to_lists(json_content_steps: dict, json_content_
     return steps, ingredients
 
 
+def save_recipe(recipe: Recipe, ingredients: List[Ingredient], steps: List[Step], page_address: str = None):
+    if page_address is not None:
+        recipe.reference = page_address
+
+    recipe.save()
+
+    for ingredient in ingredients:
+        if not ingredient.pk:
+            ingredient.recipe = recipe
+            ingredient.save()
+    for step in steps:
+        if not step.pk:
+            step.recipe = recipe
+            step.save()
+
+    recipe.steps.set(steps)
+    recipe.ingredients.set(ingredients)
+
+    return recipe
+
+
 def flatten(nested_list):
     """Recursively flattens a deeply nested list."""
     flat_list = []
@@ -134,3 +149,17 @@ def delete_files(files: List[Union[str, Path]]):
             print(f"Permission denied: {file_path}")
         except Exception as e:
             print(f"Error deleting {file_path}: {e}")
+
+
+def delete_json_files_in_paths(file_paths: List):
+    local_files_to_delete = [local for local, _ in file_paths if ".json" in local]
+    delete_files(local_files_to_delete)
+
+
+def get_first_file_from_zip_file_folder(zip_file, all_files, folder_path):
+    try:
+        file_path = next(f for f in all_files if f.startswith(folder_path) and not f.endswith('/'))
+        with zip_file.open(file_path) as f:
+            return ContentFile(f.read(), name=os.path.basename(file_path))
+    except StopIteration:
+        return None

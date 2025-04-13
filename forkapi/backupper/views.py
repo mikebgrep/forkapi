@@ -1,40 +1,44 @@
-from django.http import FileResponse
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
-
-from forkapi.generics import RetrieveDestroyView
+from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404
 from recipe.models import Recipe, Category
-from .utils import backup, get_first_zip_file
 from recipe.utils import delete_file
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_201_CREATED
+
+from forkapi.generics import RetrieveDestroyView, RetrieveCreateView, ListView
+from .models import BackupSnapshot
+from .serializers import BackupSnapshotSerializer
+from .utils import backup, unpack_and_apply_backup
 
 
-class ExportDeleteBackup(RetrieveDestroyView):
+class RetrieveDeleteBackup(RetrieveDestroyView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = BackupSnapshotSerializer
+    queryset = BackupSnapshot.objects.all()
+
+
+class CreateRestoreBackup(RetrieveCreateView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        existing_backup_file, full_path = get_first_zip_file()
-        if existing_backup_file:
-            return Response(status=HTTP_400_BAD_REQUEST, data={
-                "errors": [f"Backup file already exists: {existing_backup_file}. Please delete it first!"]})
-
         recipes = Recipe.objects.all()
         categories = Category.objects.all()
-        file_path = backup(recipes, categories)
+        snapshot = backup(recipes, categories)
+        return Response(status=HTTP_201_CREATED, data={f"Successfully created backup file: {snapshot.file.name}"})
 
-        return FileResponse(open(file_path, 'rb'))
-
-    def delete(self, request, *args, **kwargs):
-        existing_backup_file, full_path = get_first_zip_file()
-        if existing_backup_file:
-            delete_file(full_path)
-            return Response(status=HTTP_204_NO_CONTENT)
-        else:
-            return Response(status=HTTP_400_BAD_REQUEST, data={
-                "errors": [f"There no saved backup file."]})
+    def post(self, request, *args, **kwargs):
+        found_backup = get_object_or_404(BackupSnapshot, pk=request.data['backup_pk'])
+        unpack_and_apply_backup(found_backup.file.name)
+        return Response(status=HTTP_204_NO_CONTENT, data={f"Successfully loaded backup file: {found_backup.file.name}"})
 
 
-class RestoreBackup():
-    pass
+class ListBackups(ListView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = BackupSnapshotSerializer
+    queryset = BackupSnapshot.objects.all()
+    pagination_class = None

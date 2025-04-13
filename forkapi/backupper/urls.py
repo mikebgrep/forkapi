@@ -1,10 +1,11 @@
 from django.urls import path, include
-from rest_framework.routers import SimpleRouter
 
-from .views import ExportDeleteBackup
+from .views import RetrieveDeleteBackup, CreateRestoreBackup, ListBackups
 
 app_name = "backupper"
 
 urlpatterns = [
-    path('', ExportDeleteBackup.as_view()),
+    path('', CreateRestoreBackup.as_view()),
+    path('<int:pk>/', RetrieveDeleteBackup.as_view()),
+    path('all/', ListBackups.as_view()),
 ]

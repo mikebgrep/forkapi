@@ -5,7 +5,6 @@ from enum import Enum
 import django
 from django.db import models
 from django.db.models import Q
-from .utils import calculate_recipe_total_time
 
 
 def upload_to(instance, filename):
@@ -14,6 +13,9 @@ def upload_to(instance, filename):
 
 def upload_video_to(instance, filename):
     return 'videos/{uuid}_{filename}'.format(uuid=str(uuid.uuid4()), filename=filename)
+
+def upload_audio_to(instance, filename):
+    return 'audio/{uuid}_{filename}'.format(uuid=str(uuid.uuid4()), filename=filename)
 
 
 DIFFICULTY_CHOICES = [
@@ -152,7 +154,7 @@ class Step(models.Model):
 
 
 class AudioInstructions(models.Model):
-    file = models.FileField(blank=True, null=True)
+    file = models.FileField(upload_to=upload_audio_to, blank=True, null=True)
     recipe = models.OneToOneField(Recipe, on_delete=models.CASCADE, null=True, blank=True,
                                   related_name="audio_instructions")
 
@@ -165,3 +167,12 @@ class PromptType(Enum):
     INGREDIENTS = 1,
     INSTRUCTIONS = 2,
     GENERATE = 3,
+
+
+def calculate_recipe_total_time(total: int) -> str:
+    if total < 60:
+        return f"{total / 100:.2f}"
+
+    hours = total // 60
+    minutes = total % 60
+    return f"{hours}.{minutes:02}"

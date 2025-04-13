@@ -111,7 +111,7 @@ class RetrieveUpdateView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, gen
 
 class RetrieveDestroyView(mixins.RetrieveModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView):
     """
-    Concrete view to retrieve and delete
+    Concrete view to retrieve and delete a model instance
     """
 
     def get(self, request, *args, **kwargs):
@@ -119,3 +119,23 @@ class RetrieveDestroyView(mixins.RetrieveModelMixin, mixins.DestroyModelMixin, g
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
+
+
+class RetrieveCreateView(mixins.RetrieveModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
+    """
+    Concrete view to retrieve and create a model instance
+    """
+
+    def get(self, request, *args, **kwargs):
+        return super().retrieve(self, request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+
+class ListView(mixins.ListModelMixin, generics.GenericAPIView):
+    """
+   Concrete view to list a model instances
+   """
+    def get(self, request, *args, **kwargs):
+        return super().list(self, request, *args, **kwargs)
