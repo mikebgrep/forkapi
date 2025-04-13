@@ -5,7 +5,7 @@ from .views import Categories, TrendingRecipies, CategoryRecipes, FavoriteRecipe
     CreateCategory, UpdateCategory, RetrieveCreateDestroyRecipeSet, CreateIngredients, CreateSteps, UpdateRecipe, \
     CreateTag, \
     UpdateTag, ScrapeView, GenerateRecipeView, TranslateRecipeView, RetrieveRecipeLangVariationsView, \
-    GenerateRecipeAudion
+    GenerateRecipeAudion, PatchRecipeCategory
 
 app_name = "recipe"
 
@@ -32,6 +32,7 @@ urlpatterns = [
     path("<int:pk>", UpdateRecipe.as_view()),
     path("<int:pk>/ingredients", CreateIngredients.as_view()),
     path("<int:pk>/steps", CreateSteps.as_view()),
+    path("<int:pk>/category", PatchRecipeCategory.as_view()),
     path("scrape", ScrapeView.as_view()),
     path("generate", GenerateRecipeView.as_view()),
     path("translate", TranslateRecipeView.as_view()),

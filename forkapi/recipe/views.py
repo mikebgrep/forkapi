@@ -231,6 +231,28 @@ class UpdateRecipe(UpdateAPIView):
     queryset = Recipe.objects.all()
 
 
+class PatchRecipeCategory(PatchAPIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, *args, **kwargs):
+        recipe = get_object_or_404(Recipe, pk=kwargs['pk'])
+        category_pk = request.data['category_pk']
+        category = get_object_or_404(Category, pk=category_pk)
+
+        if recipe.is_translated and category != recipe.category:
+            variations = recipe.get_variations
+            for single_variation in variations:
+                if single_variation != recipe:
+                    single_variation.category = category
+                    single_variation.save()
+
+        recipe.category = category
+        recipe.save()
+
+        return Response(status=HTTP_204_NO_CONTENT)
+
+
 class RetrieveRecipeLangVariationsView(generics.ListAPIView):
     serializer_class = TranslateRecipeSerializer
     permission_classes = [IsAuthenticated]
@@ -303,7 +325,7 @@ class TranslateRecipeView(CreateAPIView):
                 return Response(data=serializer.data, content_type="application/json")
             return Response(data={
                 "errors": ["Translation language is already used and there a recipe translated with that language."]},
-                            status=HTTP_400_BAD_REQUEST)
+                status=HTTP_400_BAD_REQUEST)
 
 
 class GenerateRecipeAudion(CreateAPIView):
@@ -319,10 +341,10 @@ class GenerateRecipeAudion(CreateAPIView):
             if not hasattr(recipe, 'audio_instructions'):
                 audio_instructions = recipe_to_tts_audio(recipe)
                 recipe_audio_serializer = AudioInstructionsSerializer(audio_instructions)
-                return Response(status=HTTP_201_CREATED, data=recipe_audio_serializer.data,  content_type="application/json")
+                return Response(status=HTTP_201_CREATED, data=recipe_audio_serializer.data,
+                                content_type="application/json")
             else:
                 return Response(data={
                     "errors": [
                         "Recipe is converted to audio instructions already."]},
                     status=HTTP_400_BAD_REQUEST)
-
