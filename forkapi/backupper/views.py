@@ -26,8 +26,7 @@ class CreateRestoreBackup(RetrieveCreateView):
 
     def get(self, request, *args, **kwargs):
         recipes = Recipe.objects.all()
-        categories = Category.objects.all()
-        snapshot = backup(recipes, categories)
+        snapshot = backup(recipes)
         return Response(status=HTTP_201_CREATED, data={f"Successfully created backup file: {snapshot.file.name}"})
 
     def post(self, request, *args, **kwargs):

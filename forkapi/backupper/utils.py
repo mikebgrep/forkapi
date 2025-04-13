@@ -14,12 +14,13 @@ from .models import BackupSnapshot
 base_path_backup = "media/backups"
 base_temp_data_path = "backupper/data"
 recipe_json_path = os.path.join(base_temp_data_path, "recipe_{0}.json")
-zip_file_name_with_path = os.path.join(base_path_backup,
-                                       f"fork_recipes_{datetime.now().date().strftime('%Y.%m.%d')}_{datetime.now().strftime('%H.%M.%S')}.zip")
 
 
-def backup(recipes: List[Recipe], categories: List[Category]):
-    backup_recipes(recipes)
+def backup(recipes: List[Recipe]):
+    zip_file_name_with_path = os.path.join(base_path_backup,
+                                           f"fork_recipes_{datetime.now().date().strftime('%Y.%m.%d')}_{datetime.now().strftime('%H.%M.%S')}.zip")
+
+    backup_recipes(recipes, zip_file_name_with_path)
 
     snapshot = BackupSnapshot.objects.create()
     snapshot.file.name = zip_file_name_with_path.replace("media/", "")
@@ -28,16 +29,16 @@ def backup(recipes: List[Recipe], categories: List[Category]):
     return snapshot
 
 
-def backup_recipes(recipes: List[Recipe]):
+def backup_recipes(recipes: List[Recipe], zip_file_name_with_path:str):
     file_paths = []
     for index, recipe in enumerate(recipes):
         file_paths.extend(create_recipe_data_list(recipe, index))
 
-    append_to_file(file_paths, 'w')
+    append_to_file(file_paths, zip_file_name_with_path,'w')
     delete_json_files_in_paths(file_paths)
 
 
-def append_to_file(file_paths: List, mode: Literal['w', 'a']):
+def append_to_file(file_paths: List, zip_file_name_with_path:str, mode: Literal['w', 'a']):
     with zipfile.ZipFile(zip_file_name_with_path, mode) as myZipFile:
         for local_path, zip_path in file_paths:
             if local_path and os.path.exists(local_path):

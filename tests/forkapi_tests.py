@@ -3,7 +3,7 @@ import shutil
 
 from authentication.models import User, PasswordResetToken
 from recipe.models import Category, Tag, Recipe, Ingredient
-from recipe.util import calculate_recipe_total_time
+from recipe.utils import calculate_recipe_total_time
 from shopping.models import ShoppingList
 
 from .models import UserUpdateDetailsEnum, PasswordResetChoice
