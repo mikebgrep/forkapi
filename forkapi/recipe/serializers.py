@@ -67,6 +67,7 @@ class AudioInstructionsSerializer(serializers.ModelSerializer):
 class RecipesSerializer(serializers.ModelSerializer):
     ingredients = IngredientsSerializer(many=True, read_only=True)
     steps = StepsSerializer(many=True, read_only=True)
+    category = CategorySerializer(many=False, read_only=True)
     audio_instructions = AudioInstructionsSerializer(many=False, read_only=True)
     clear_video = serializers.BooleanField(write_only=True, required=False)
 

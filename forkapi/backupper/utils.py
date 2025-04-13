@@ -72,7 +72,9 @@ def create_recipe_data_list(recipe: Recipe, index: int):
 
 def unpack_and_apply_backup(full_path: str):
     Recipe.objects.all().delete()
+    Category.objects.all().delete()
     upload_recipes(full_path)
+
 
 def upload_recipes(full_path: str):
     with zipfile.ZipFile(f"media/{full_path}", 'r') as zip_file:
@@ -92,6 +94,7 @@ def upload_recipes(full_path: str):
             if recipe_json_file_path in all_files:
                 with zip_file.open(recipe_json_file_path) as recipe_json_file:
                     recipe_data = json.load(recipe_json_file)
+                    category_data = recipe_data['category']
                     steps, ingredients = instructions_and_steps_json_to_lists(recipe_data['steps'],
                                                                               recipe_data['ingredients'])
                     recipe_data['image'] = get_first_file_from_zip_file_folder(zip_file, all_files, image_folder)
@@ -100,9 +103,17 @@ def upload_recipes(full_path: str):
                     del recipe_data['ingredients']
                     del recipe_data['category']
 
+                    if category_data:
+                        serializer = CategorySerializer(data=category_data)
+                        if serializer.is_valid(raise_exception=True):
+                            category = serializer.save()
+
                     serializer = RecipesSerializer(data=recipe_data)
                     if serializer.is_valid(raise_exception=True):
                         recipe = serializer.save()
+                        if category_data:
+                            recipe.category = category
+
                         audio_file = get_first_file_from_zip_file_folder(zip_file, all_files, audio_folder)
                         if audio_file:
                             AudioInstructions.objects.create(file=audio_file, recipe=recipe)
