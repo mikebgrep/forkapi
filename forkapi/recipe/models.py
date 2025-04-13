@@ -6,7 +6,6 @@ import django
 from django.db import models
 from django.db.models import Q
 
-
 def upload_to(instance, filename):
     return 'images/{uuid}_{filename}'.format(uuid=str(uuid.uuid4()), filename=filename)
 
@@ -104,6 +103,7 @@ class Recipe(models.Model):
     # total_time calculated to hours
     @property
     def total_time(self) -> str | None:
+        from .utils import calculate_recipe_total_time
         prep_time = int(self.prep_time.__repr__()) if self.prep_time is not None else 0
         cook_time = int(self.cook_time.__repr__()) if self.cook_time is not None else 0
         total = prep_time + cook_time
@@ -169,10 +169,3 @@ class PromptType(Enum):
     GENERATE = 3,
 
 
-def calculate_recipe_total_time(total: int) -> str:
-    if total < 60:
-        return f"{total / 100:.2f}"
-
-    hours = total // 60
-    minutes = total % 60
-    return f"{hours}.{minutes:02}"
