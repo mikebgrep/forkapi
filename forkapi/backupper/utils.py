@@ -79,6 +79,7 @@ def unpack_and_apply_backup(full_path: str):
 
 def upload_recipes(full_path: str):
     processed_categories = []
+    original_recipes_ids = {}
 
     with zipfile.ZipFile(f"media/{full_path}", 'r') as zip_file:
         all_files = zip_file.namelist()
@@ -98,6 +99,9 @@ def upload_recipes(full_path: str):
                 with zip_file.open(recipe_json_file_path) as recipe_json_file:
                     recipe_data = json.load(recipe_json_file)
                     category_data = recipe_data['category']
+                    is_original = recipe_data['is_original']
+                    is_translate = recipe_data['is_translated']
+
                     steps, ingredients = instructions_and_steps_json_to_lists(recipe_data['steps'],
                                                                               recipe_data['ingredients'])
                     recipe_data['image'] = get_first_file_from_zip_file_folder(zip_file, all_files, image_folder)
@@ -107,6 +111,7 @@ def upload_recipes(full_path: str):
                     del recipe_data['category']
 
                     if category_data:
+                        # Category is match based on name saved in processed_categories list to not duplicate same category
                         if category_data['name'] not in [x.name for x in processed_categories]:
                             serializer = CategorySerializer(data=category_data)
                             if serializer.is_valid(raise_exception=True):
@@ -123,3 +128,14 @@ def upload_recipes(full_path: str):
                         if audio_file:
                             AudioInstructions.objects.create(file=audio_file, recipe=recipe)
                         save_recipe(recipe, ingredients, steps)
+
+                        if is_original and is_translate:
+                            original_recipes_ids[recipe_data['pk']] = recipe.pk
+
+        # TODO: Find a better way to update the original recipe pk reference to the source of translated recipe
+        recipes = Recipe.objects.all()
+        for recipe in recipes:
+            if recipe.is_translated and not recipe.is_original:
+                recipe.original_recipe_pk = original_recipes_ids[recipe.original_recipe_pk]
+                recipe.save()
+
