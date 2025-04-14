@@ -53,4 +53,10 @@ class ImportBackup(views.APIView):
             destination.write(chunk)
         destination.close()
 
+        file_name = destination.name.replace("media/", "")
+
+        snapshot, _ = BackupSnapshot.objects.get_or_create(file=file_name)
+        snapshot.file.name = file_name
+        snapshot.save()
+
         return Response(data=upload_file.name, status=HTTP_201_CREATED)
