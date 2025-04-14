@@ -109,10 +109,12 @@ class RetrieveUpdateView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, gen
         return self.partial_update(request, *args, **kwargs)
 
 
-class DestroyView(mixins.DestroyModelMixin, generics.GenericAPIView):
+class RetrieveDestroyView(mixins.RetrieveModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView):
     """
-    Concrete view to delete a model instance
+    Concrete view to retrieve or delete a model instance
     """
+    def get(self, request, *args, **kwargs):
+        return super().retrieve(self, request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
