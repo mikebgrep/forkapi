@@ -29,16 +29,16 @@ def backup(recipes: List[Recipe]):
     return snapshot
 
 
-def backup_recipes(recipes: List[Recipe], zip_file_name_with_path:str):
+def backup_recipes(recipes: List[Recipe], zip_file_name_with_path: str):
     file_paths = []
     for index, recipe in enumerate(recipes):
         file_paths.extend(create_recipe_data_list(recipe, index))
 
-    append_to_file(file_paths, zip_file_name_with_path,'w')
+    append_to_file(file_paths, zip_file_name_with_path, 'w')
     delete_json_files_in_paths(file_paths)
 
 
-def append_to_file(file_paths: List, zip_file_name_with_path:str, mode: Literal['w', 'a']):
+def append_to_file(file_paths: List, zip_file_name_with_path: str, mode: Literal['w', 'a']):
     with zipfile.ZipFile(zip_file_name_with_path, mode) as myZipFile:
         for local_path, zip_path in file_paths:
             if local_path and os.path.exists(local_path):
@@ -78,6 +78,8 @@ def unpack_and_apply_backup(full_path: str):
 
 
 def upload_recipes(full_path: str):
+    processed_categories = []
+
     with zipfile.ZipFile(f"media/{full_path}", 'r') as zip_file:
         all_files = zip_file.namelist()
         recipe_folders = set(
@@ -105,15 +107,17 @@ def upload_recipes(full_path: str):
                     del recipe_data['category']
 
                     if category_data:
-                        serializer = CategorySerializer(data=category_data)
-                        if serializer.is_valid(raise_exception=True):
-                            category = serializer.save()
+                        if category_data['name'] not in [x.name for x in processed_categories]:
+                            serializer = CategorySerializer(data=category_data)
+                            if serializer.is_valid(raise_exception=True):
+                                category = serializer.save()
+                                processed_categories.append(category)
 
                     serializer = RecipesSerializer(data=recipe_data)
                     if serializer.is_valid(raise_exception=True):
                         recipe = serializer.save()
                         if category_data:
-                            recipe.category = category
+                            recipe.category = [x for x in processed_categories if x.name == category_data['name']][0]
 
                         audio_file = get_first_file_from_zip_file_folder(zip_file, all_files, audio_folder)
                         if audio_file:
