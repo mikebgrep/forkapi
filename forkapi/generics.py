@@ -109,33 +109,25 @@ class RetrieveUpdateView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, gen
         return self.partial_update(request, *args, **kwargs)
 
 
-class RetrieveDestroyView(mixins.RetrieveModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView):
+class DestroyView(mixins.DestroyModelMixin, generics.GenericAPIView):
     """
-    Concrete view to retrieve and delete a model instance
+    Concrete view to delete a model instance
     """
-
-    def get(self, request, *args, **kwargs):
-        return super().retrieve(self, request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
 
-class RetrieveCreateView(mixins.RetrieveModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
+class ListCreateUpdateView(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.UpdateModelMixin, generics.GenericAPIView):
     """
     Concrete view to retrieve and create a model instance
     """
 
     def get(self, request, *args, **kwargs):
-        return super().retrieve(self, request, *args, **kwargs)
+        return super().list(self, request, *args, **kwargs)
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
-
-
-class ListView(mixins.ListModelMixin, generics.GenericAPIView):
-    """
-   Concrete view to list a model instances
-   """
-    def get(self, request, *args, **kwargs):
-        return super().list(self, request, *args, **kwargs)
