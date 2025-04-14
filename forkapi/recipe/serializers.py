@@ -94,6 +94,7 @@ class RecipesSerializer(serializers.ModelSerializer):
             "reference",
             "language",
             "is_original",
+            "original_recipe_pk",
             "is_translated",
             "audio_instructions"
         )
