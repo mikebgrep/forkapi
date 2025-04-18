@@ -16,8 +16,8 @@ from ..utils import delete_file, get_first_matching_link, remove_stop_words, \
 blacklist = ['foodnetwork.co.uk', 'foodnetwork.com', 'foodnetwork']
 
 
-def generate_recipes(ingredients: List[str]):
-    json_response = open_ai_generate_recipe_message(ingredients)
+def generate_recipes(ingredients: List[str], meal_type:str):
+    json_response = open_ai_generate_recipe_message(ingredients, "any" if not meal_type else meal_type)
     json_content_recipes = parse_recipe_info(json_response)
     filtered_recipes = []
 

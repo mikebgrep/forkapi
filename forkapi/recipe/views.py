@@ -292,7 +292,8 @@ class GenerateRecipeView(CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             ingredients = serializer.validated_data['ingredients']
-            json_content_recipes = generate_recipes(ingredients)
+            meal_type = serializer.validated_data['meal_type']
+            json_content_recipes = generate_recipes(ingredients, meal_type)
             print(json_content_recipes)
             serializer = GenerateRecipeResultSerializer(json_content_recipes, many=True)
             return Response(data=serializer.data, content_type="application/json")

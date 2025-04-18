@@ -175,10 +175,12 @@ class RecipeLinkSerializer(serializers.Serializer):
 
 class GenerateRecipeSerializer(serializers.Serializer):
     ingredients = serializers.ListField(child=serializers.CharField(), allow_empty=False)
+    meal_type = serializers.CharField(allow_blank=True, default=None)
 
     class Meta:
         fields = (
             "ingredients",
+            "meal_type",
         )
 
 

@@ -49,11 +49,11 @@ prompt_recipe_ingredients = """
             """
 
 prompt_generate_recipe = """
-            Your goal is to generate 5 recipes from the provided ingredients. 
+            Your goal is to generate 5 recipes from the provided ingredients and the provided meal type {0}.
             Output json:
 
             ```json
-            [ { "name": "Full name of the recipe"}, .... ]
+            [ {{ "name": "Full name of the recipe"}}, .... ]
             ```
 
             You must not make up a recipe names.
@@ -61,7 +61,7 @@ prompt_generate_recipe = """
             Be creative and supply the names even for 2 ingredients.
             If no data.json is available return empty json as:
             ```json
-            {}
+            {{}}
             ```
             !Note return only the json not conversions!
             """

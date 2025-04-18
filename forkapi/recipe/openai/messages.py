@@ -81,13 +81,13 @@ def open_ai_scrape_message(page_content: str, prompt_type: PromptType):
     return __openai_chat_completion(messages)
 
 
-def open_ai_generate_recipe_message(ingredients: List[str] = None):
+def open_ai_generate_recipe_message(ingredients: List[str] = None, meal_type:str = None):
     messages = [
         {"role": "system",
          "content": "You are helpful assistant that generate a valid recipes from a given ingredients and return them to a valid json"},
         {
             "role": "user",
-            "content": f"With provided ingredients: {ingredients}. Your task is to {prompt_generate_recipe}"
+            "content": f"With provided ingredients: {ingredients}. Your task is to {prompt_generate_recipe.format(meal_type)}"
         }
     ]
 
