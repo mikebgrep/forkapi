@@ -175,7 +175,7 @@ def recipe_to_tts_audio(recipe: Recipe):
     chunks = split_recipe_json_to_sentences(sentences)
 
     file_name, chunk_files = openai_tts_stream(chunks, recipe.name, recipe.language)
-    audio_instructions = AudioInstructions.objects.create(file=file_name, recipe=recipe)
+    audio_instructions = AudioInstructions.objects.create(file=f"audio/{file_name}", recipe=recipe)
     delete_files(chunk_files)
 
     return audio_instructions

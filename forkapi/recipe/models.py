@@ -64,7 +64,7 @@ class Recipe(models.Model):
     created_at = models.DateTimeField(default=django.utils.timezone.now)
     image = models.ImageField(upload_to=upload_to, blank=True, null=True)
     video = models.FileField(upload_to=upload_video_to, blank=True, null=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="recipies", blank=True, null=True)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name="recipies", blank=True, null=True)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE, related_name="recipes", default=None, blank=True, null=True)
     difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, default=None, blank=True, null=True)
     chef = models.CharField(max_length=100, default=None, blank=True, null=True)
