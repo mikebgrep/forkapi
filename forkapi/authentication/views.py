@@ -42,7 +42,7 @@ class LoginView(generics.CreateAPIView):
         token, created = Token.objects.get_or_create(user=user)
         serializer = UserSerializer(user)
         # Temporary workaround for default language for recipe.filters.FilterRecipeByLanguage
-        os.environ["DEFAULT_RECIPE_DISPLAY_LANGUAGE"] = (user.settings.get().preferred_translate_language or "None")
+        os.environ["DEFAULT_RECIPE_DISPLAY_LANGUAGE"] = (user.settings.preferred_translate_language or "None")
         return Response({'token': token.key, 'user': serializer.data})
 
 
