@@ -54,12 +54,12 @@ class SearchRecipies(ListModelViewSet):
 class RetrieveRandomRecipe(views.APIView):
     authentication_classes = [HeaderAuthentication]
     permission_classes = [IsAuthenticated]
-    serializer_class = RecipesSerializer
+    serializer_class = RecipePreviewSerializer
 
     def get(self, request):
         recipes = Recipe.objects.all()
         random_recipe = random.choice(recipes)
-        serializer = self.serializer_class(random_recipe)
+        serializer = self.serializer_class(random_recipe, context={'request': request})
         return Response(data=serializer.data, status=HTTP_200_OK)
 
 
@@ -287,7 +287,8 @@ class ScrapeView(CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             page_address = serializer.validated_data['url']
-            recipe, ingredients, steps = scrape_recipe(page_address)
+            user = request.user
+            recipe, ingredients, steps = scrape_recipe(page_address, user.settings.emoji_recipes)
             if any(item is None for item in (recipe, ingredients, steps)):
                 return Response(status=HTTP_204_NO_CONTENT, content_type="application/json")
 

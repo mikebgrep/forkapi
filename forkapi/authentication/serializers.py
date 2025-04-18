@@ -45,4 +45,5 @@ class UserSettingsSerializer(serializers.ModelSerializer):
         fields = (
             "preferred_translate_language",
             "compact_pdf",
+            "emoji_recipes",
         )

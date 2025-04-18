@@ -16,7 +16,7 @@ from ..utils import delete_file, get_first_matching_link, remove_stop_words, \
 blacklist = ['foodnetwork.co.uk', 'foodnetwork.com', 'foodnetwork']
 
 
-def generate_recipes(ingredients: List[str], meal_type:str):
+def generate_recipes(ingredients: List[str], meal_type: str):
     json_response = open_ai_generate_recipe_message(ingredients, "any" if not meal_type else meal_type)
     json_content_recipes = parse_recipe_info(json_response)
     filtered_recipes = []
@@ -66,7 +66,7 @@ def generate_recipes(ingredients: List[str], meal_type:str):
     return filtered_recipes
 
 
-def scrape_recipe(url: str):
+def scrape_recipe(url: str, emoji_enabled: bool):
     if any(item in url for item in blacklist):
         return None, None, None
 
@@ -79,7 +79,7 @@ def scrape_recipe(url: str):
         return None, None, None
 
     # Main info of the recipe
-    json_response = open_ai_scrape_message(content, PromptType.MAIN_INFO)
+    json_response = open_ai_scrape_message(content, PromptType.MAIN_INFO if not emoji_enabled else PromptType.MAIN_INFO_WITH_EMOJI )
     json_content_main_info = parse_recipe_info(json_response)
 
     # Edge case when the content contains more than one recipe after the prompt
@@ -115,7 +115,7 @@ def scrape_recipe(url: str):
     json_content_instructions = parse_recipe_info(json_response)
 
     # Ingredients of the recipe
-    json_response = open_ai_scrape_message(content, PromptType.INGREDIENTS)
+    json_response = open_ai_scrape_message(content, PromptType.INGREDIENTS if not emoji_enabled else  PromptType.INGREDIENT_WITH_EMOJI)
     json_content_ingredients = parse_recipe_info(json_response)
 
     steps, ingredients = instructions_and_steps_json_to_lists(json_content_instructions, json_content_ingredients)

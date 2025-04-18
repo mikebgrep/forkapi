@@ -164,8 +164,10 @@ class AudioInstructions(models.Model):
 
 class PromptType(Enum):
     MAIN_INFO = 0,
-    INGREDIENTS = 1,
-    INSTRUCTIONS = 2,
-    GENERATE = 3,
+    MAIN_INFO_WITH_EMOJI = 1
+    INGREDIENTS = 2,
+    INGREDIENT_WITH_EMOJI = 3,
+    INSTRUCTIONS = 4,
+    GENERATE = 5,
 
 

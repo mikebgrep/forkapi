@@ -7,7 +7,7 @@ from openai import OpenAI
 
 from ..models import PromptType, Recipe
 from .prompts import prompt_recipe_main_info, prompt_recipe_instructions, prompt_recipe_ingredients, \
-    prompt_generate_recipe, prompt_translate_recipe, prompt_tts_audio
+    prompt_generate_recipe, prompt_translate_recipe, prompt_tts_audio, additional_prompt_for_emojis_ingredients, additional_prompt_for_emojis_name
 from markdownify import markdownify as md
 from dotenv import load_dotenv
 
@@ -72,6 +72,8 @@ def open_ai_scrape_message(page_content: str, prompt_type: PromptType):
         {
             "role": "user",
             "content": f"Provided markdown: {markdown_content}. Your task is to {prompt_recipe_main_info if prompt_type is PromptType.MAIN_INFO
+            else prompt_recipe_main_info.format(additional_prompt_for_emojis_name) if prompt_type is PromptType.MAIN_INFO_WITH_EMOJI
+            else prompt_recipe_ingredients.format(additional_prompt_for_emojis_ingredients) if prompt_type is PromptType.INGREDIENT_WITH_EMOJI
             else prompt_recipe_ingredients if prompt_type is PromptType.INGREDIENTS
             else prompt_recipe_instructions if prompt_type is PromptType.INSTRUCTIONS
             else prompt_recipe_main_info}.",

@@ -20,6 +20,7 @@ class PasswordResetToken(models.Model):
 
 class UserSettings(models.Model):
     preferred_translate_language = models.CharField(max_length=20, null=True, blank=True, default=None)
-    user = models.ForeignKey(User, on_delete=CASCADE, related_name="settings")
+    user = models.OneToOneField(User, on_delete=CASCADE, related_name="settings")
     compact_pdf = models.BooleanField(default=False)
+    emoji_recipes = models.BooleanField(default=False)
     # TODO:// add unit conversion choice

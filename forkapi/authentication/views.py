@@ -102,9 +102,9 @@ class UpdateUserPasswordUsernameAndEmail(generics.UpdateAPIView):
         #  "{'username': [ErrorDetail(string='user with this username already exists.', code='unique')], 'email': [ErrorDetail(string='user with this email address already exists.', code='unique')]}"
         if not serializer.is_valid():
             errors = serializer.errors
-            error_msg = "This email address already exists or is invalid.Please choice another."  if "email" in errors and \
-                        "username" not in errors else "This username already exists.Please choice another." if "email" \
-                        not in errors and "username" in errors else "This username and the email already exists.Please choice another."
+            error_msg = "This email address already exists or is invalid.Please choice another." if "email" in errors and \
+                                                                                                    "username" not in errors else "This username already exists.Please choice another." if "email" \
+                                                                                                                                                                                           not in errors and "username" in errors else "This username and the email already exists.Please choice another."
 
             return Response(data={"errors": [error_msg]}, status=HTTP_409_CONFLICT)
 
@@ -185,11 +185,19 @@ class UserSettingsView(generics.GenericAPIView):
         instance = UserSettings.objects.get(user=user)
         language = request.data.get('language')
         compact_pdf = request.data.get('compact_pdf')
-        instance.preferred_translate_language = language
-        instance.compact_pdf = compact_pdf
+        emoji_recipes = request.data.get('emoji_recipes')
+
+        if language:
+            instance.preferred_translate_language = language
+            # TODO: Temporary workaround for default language for recipe.filters.FilterRecipeByLanguage
+            os.environ["DEFAULT_RECIPE_DISPLAY_LANGUAGE"] = language
+
+        if compact_pdf is not None:
+            instance.compact_pdf = compact_pdf
+
+        if emoji_recipes is not None:
+            instance.emoji_recipes = emoji_recipes
+
         instance.save()
         serializer = self.get_serializer(instance)
-        # Temporary workaround for default language for recipe.filters.FilterRecipeByLanguage
-        os.environ["DEFAULT_RECIPE_DISPLAY_LANGUAGE"] = language
         return Response(serializer.data, status=HTTP_201_CREATED)
-

@@ -15,6 +15,7 @@ router_recipe = SimpleRouter()
 router_recipe.register(r"", RetrieveCreateDestroyRecipeSet)
 
 urlpatterns = [
+    path('random', RetrieveRandomRecipe.as_view()),
     path("category", Categories.as_view()),
     path("trending", TrendingRecipies.as_view()),
     path("category/<int:pk>/recipes", CategoryRecipes.as_view()),
@@ -23,7 +24,6 @@ urlpatterns = [
     path("<int:pk>/favorite", FavoriteRecipes.as_view()),
     path('', include(router_search.urls)),
     path('', include(router_recipe.urls)),
-    path('random', RetrieveRandomRecipe.as_view()),
 
     # Creation and update views
     path("category/add", CreateCategory.as_view()),

@@ -3,14 +3,15 @@ prompt_recipe_main_info = """
             Output json:
 
             ```json
-            { "name": "The title or name of the recipe as string", "servings": "The servings (only number as integer must not be null)", "description": "The description of the recipe", "image": "Image src path", "video" "Video source path (if available), "difficulty": "string one of 'Easy', 'Intermediate', 'Advanced' or 'Expert'", "chef": "The chef of the recipe if any else null as NULL value", "prep_time": "preparation time in minutes integer value", "cook_time": "The cook time in minutes integer" }
+            {{ "name": "The title or name of the recipe as string", "servings": "The servings (only number as integer must not be null)", "description": "The description of the recipe", "image": "Image src path", "video" "Video source path (if available), "difficulty": "string one of 'Easy', 'Intermediate', 'Advanced' or 'Expert'", "chef": "The chef of the recipe if any else null as NULL value", "prep_time": "preparation time in minutes integer value", "cook_time": "The cook time in minutes integer" }}
             ```
 
             Make sure to return a plain json dict object with the values found on the page source as described.
             If description is not present in thr source add your based on the recipe name and steps.
-            If no data.json is available return empty json as:
+            {0}
+            If no data is available return empty json as:
             ```json
-            {}
+            {{}}
             ```
             Or if field is missing return null for value except the servings.Make sure the image url pointing to a image file not blob or else.
             !Note return only the json not conversions!
@@ -25,7 +26,7 @@ prompt_recipe_instructions = """
             ```
 
             You must combine all instructions from the page source at the single list of json objects.
-            If no data.json is available return empty json as:
+            If no data is available return empty json as:
             ```json
             {}
             ```
@@ -37,13 +38,14 @@ prompt_recipe_ingredients = """
             Output json:
 
             ```json
-            [ { "name": "Full text of the ingredient name", "quantity": "an string value of the quantity if the ingredient", "metric": "the metric of the ingredient eg. g, ml, pcs etc." } , { "name": "Full text of the second ingredient name", "quantity": "an string value of the quantity if the second ingredient", "metric": "the metric of the second ingredient eg. g, ml, pcs etc." } ]"
+            [ {{ "name": "Full text of the ingredient name", "quantity": "an string value of the quantity if the ingredient", "metric": "the metric of the ingredient eg. g, ml, pcs etc." }} , {{ "name": "Full text of the second ingredient name", "quantity": "an string value of the quantity if the second ingredient", "metric": "the metric of the second ingredient eg. g, ml, pcs etc." }} ]"
             ```
 
             You must combine all ingredients from the page source at the single list of json objects.
-            If no data.json is available return empty json as:
+            {0}
+            If no data is available return empty json as:
             ```json
-            {}
+            {{}}
             ```
             !Note return only the json not conversions!
             """
@@ -59,7 +61,7 @@ prompt_generate_recipe = """
             You must not make up a recipe names.
             Some times there will be 2 or more ingredients generate recipe names in all cases that has this ingredients.
             Be creative and supply the names even for 2 ingredients.
-            If no data.json is available return empty json as:
+            If no data is available or the meal type is not a meal type return empty json as:
             ```json
             {{}}
             ```
@@ -82,4 +84,14 @@ prompt_tts_audio = """
             Important: You must not skip any ingredient and instruction or mix them also the ingredients \
             must be read with all available information for each of them without skipping nothing! (Pay attention to this).\
             And finish the speach after all are spelled.
+            """
+
+additional_prompt_for_emojis_ingredients = """
+            If your recognize a ingredient that has available emoji (animal, fruit, а vegetable, spice) matching the ingredient name add the emoji before the name as a suffix with space.
+            This apply for all ingredients.
+            """
+
+additional_prompt_for_emojis_name = """
+            If you recognise that the name of the recipe include a word that has available emoji (animal, fruit, а vegetable or meal type) add the emoji before the recognized word.
+            That apply for all words in the name and description of the recipe.
             """
