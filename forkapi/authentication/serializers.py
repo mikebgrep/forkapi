@@ -44,4 +44,5 @@ class UserSettingsSerializer(serializers.ModelSerializer):
         model = UserSettings
         fields = (
             "preferred_translate_language",
+            "compact_pdf",
         )

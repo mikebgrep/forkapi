@@ -184,7 +184,9 @@ class UserSettingsView(generics.GenericAPIView):
         user = request.user
         instance = UserSettings.objects.get(user=user)
         language = request.data.get('language')
+        compact_pdf = request.data.get('compact_pdf')
         instance.preferred_translate_language = language
+        instance.compact_pdf = compact_pdf
         instance.save()
         serializer = self.get_serializer(instance)
         # Temporary workaround for default language for recipe.filters.FilterRecipeByLanguage
