@@ -1,14 +1,15 @@
 import os
+import random
 
 from django.shortcuts import get_list_or_404, get_object_or_404
-from rest_framework import generics, filters
+from rest_framework import generics, filters, views
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
 from rest_framework.generics import CreateAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST, HTTP_200_OK
 
 from forkapi.authentication.HeaderAuthentication import HeaderAuthentication
 from forkapi.generics import UpdateAPIView, PatchAPIView, ListModelViewSet, RetrieveCreateDestroyViewSet
@@ -48,6 +49,18 @@ class SearchRecipies(ListModelViewSet):
         page = self.paginate_queryset(preview_recipes)
         serializer = self.get_serializer(page, many=True)
         return self.get_paginated_response(serializer.data)
+
+
+class RetrieveRandomRecipe(views.APIView):
+    authentication_classes = [HeaderAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = RecipesSerializer
+
+    def get(self, request):
+        recipes = Recipe.objects.all()
+        random_recipe = random.choice(recipes)
+        serializer = self.serializer_class(random_recipe)
+        return Response(data=serializer.data, status=HTTP_200_OK)
 
 
 class Categories(generics.ListAPIView):

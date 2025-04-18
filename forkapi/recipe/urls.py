@@ -5,7 +5,7 @@ from .views import Categories, TrendingRecipies, CategoryRecipes, FavoriteRecipe
     CreateCategory, UpdateCategory, RetrieveCreateDestroyRecipeSet, CreateIngredients, CreateSteps, UpdateRecipe, \
     CreateTag, \
     UpdateTag, ScrapeView, GenerateRecipeView, TranslateRecipeView, RetrieveRecipeLangVariationsView, \
-    GenerateRecipeAudion, PatchRecipeCategory
+    GenerateRecipeAudion, PatchRecipeCategory, RetrieveRandomRecipe
 
 app_name = "recipe"
 
@@ -23,6 +23,7 @@ urlpatterns = [
     path("<int:pk>/favorite", FavoriteRecipes.as_view()),
     path('', include(router_search.urls)),
     path('', include(router_recipe.urls)),
+    path('random', RetrieveRandomRecipe.as_view()),
 
     # Creation and update views
     path("category/add", CreateCategory.as_view()),

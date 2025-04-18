@@ -129,6 +129,7 @@ def calculate_recipe_total_time(total: int) -> str:
     return f"{hours}.{minutes:02}"
 
 
+
 def flatten(nested_list):
     """Recursively flattens a deeply nested list."""
     flat_list = []
