@@ -32,8 +32,7 @@ class CreateRestoreListBackup(ListCreateUpdateView):
     pagination_class = None
 
     def post(self, request, *args, **kwargs):
-        recipes = Recipe.objects.all()
-        snapshot = backup(recipes)
+        snapshot = backup()
         return Response(status=HTTP_201_CREATED, data={f"Successfully created backup file: {snapshot.file.name}"})
 
     def patch(self, request, *args, **kwargs):

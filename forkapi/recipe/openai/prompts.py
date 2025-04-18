@@ -8,7 +8,7 @@ prompt_recipe_main_info = """
 
             Make sure to return a plain json dict object with the values found on the page source as described.
             If description is not present in thr source add your based on the recipe name and steps.
-            If no data is available return empty json as:
+            If no data.json is available return empty json as:
             ```json
             {}
             ```
@@ -25,7 +25,7 @@ prompt_recipe_instructions = """
             ```
 
             You must combine all instructions from the page source at the single list of json objects.
-            If no data is available return empty json as:
+            If no data.json is available return empty json as:
             ```json
             {}
             ```
@@ -41,7 +41,7 @@ prompt_recipe_ingredients = """
             ```
 
             You must combine all ingredients from the page source at the single list of json objects.
-            If no data is available return empty json as:
+            If no data.json is available return empty json as:
             ```json
             {}
             ```
@@ -59,7 +59,7 @@ prompt_generate_recipe = """
             You must not make up a recipe names.
             Some times there will be 2 or more ingredients generate recipe names in all cases that has this ingredients.
             Be creative and supply the names even for 2 ingredients.
-            If no data is available return empty json as:
+            If no data.json is available return empty json as:
             ```json
             {}
             ```

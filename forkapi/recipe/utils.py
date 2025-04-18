@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 from pathlib import Path
 from typing import List, Union
 from urllib.parse import unquote
@@ -23,10 +24,6 @@ def download_media_files(address: str, recipe_name: str, is_video: bool):
             del response
 
     return file_path
-
-
-def delete_file(file_path: str):
-    os.remove(file_path)
 
 
 def get_first_matching_link(words: str, strings: List[str]) -> str | None:
@@ -145,6 +142,14 @@ def flatten(nested_list):
     return flat_list
 
 
+def delete_file(file_path: str):
+    os.remove(file_path)
+
+
+def delete_folder(folder_path: str):
+    shutil.rmtree(folder_path)
+
+
 def delete_files(files: List[Union[str, Path]]):
     for file in files:
         file_path = Path(file)
@@ -160,15 +165,30 @@ def delete_files(files: List[Union[str, Path]]):
             print(f"Error deleting {file_path}: {e}")
 
 
-def delete_json_files_in_paths(file_paths: List):
-    local_files_to_delete = [local for local, _ in file_paths if ".json" in local]
-    delete_files(local_files_to_delete)
+def get_files_from_folder_to_zip_paths(source_folder: str, ):
+    file_paths = []
+    zip_folder_root = os.path.basename(source_folder)
+    for root, dirs, files in os.walk(source_folder):
+        for file in files:
+            # Skip .md file from audio
+            if not file.endswith('.md'):
+                local_path = os.path.join(root, file)
+                relative_path = os.path.relpath(local_path, start=source_folder)
+                zip_path = os.path.join(zip_folder_root, relative_path).replace("\\", "/")
+                file_paths.append((local_path, zip_path))
+
+    return file_paths
 
 
-def get_first_file_from_zip_file_folder(zip_file, all_files, folder_path):
-    try:
-        file_path = next(f for f in all_files if f.startswith(folder_path) and not f.endswith('/'))
-        with zip_file.open(file_path) as f:
-            return ContentFile(f.read(), name=os.path.basename(file_path))
-    except StopIteration:
-        return None
+def move_file(source_path: str, target_path: str):
+    shutil.move(source_path, target_path)
+
+
+def delete_folder_files_only(folder_path: str, exclude_ext: str):
+    if os.path.isdir(folder_path):
+        for item in os.listdir(folder_path):
+            item_path = os.path.join(folder_path, item)
+            if os.path.isfile(item_path):
+                ext = os.path.splitext(item)[1]
+                if ext != exclude_ext:
+                    os.remove(item_path)

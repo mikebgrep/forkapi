@@ -102,7 +102,7 @@ class RecipesSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """
         Make sure the image is present for create/post requests
-        Remove clear_video from validated data on create
+        Remove clear_video from validated data.json on create
         """
         if 'image' not in validated_data:
             raise serializers.ValidationError({'image': 'Image is required for new recipes.'})

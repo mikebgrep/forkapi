@@ -1,41 +1,62 @@
-import json
+import os
 import os
 import zipfile
 from datetime import datetime
 from typing import List, Literal
 
+from django.core.management import call_command
 from recipe.models import Recipe, Category, AudioInstructions
 from recipe.serializers import RecipesSerializer, CategorySerializer
-from recipe.utils import delete_json_files_in_paths, instructions_and_steps_json_to_lists, save_recipe, \
-    get_first_file_from_zip_file_folder
+from recipe.utils import instructions_and_steps_json_to_lists, save_recipe, \
+    get_files_from_folder_to_zip_paths, delete_file, move_file, delete_folder, delete_folder_files_only
 
 from .models import BackupSnapshot
 
 base_path_backup = "media/backups"
 base_temp_data_path = "backupper/data"
-recipe_json_path = os.path.join(base_temp_data_path, "recipe_{0}.json")
+backup_json_database_file_path = f"{base_temp_data_path}/data.json"
+media_images_folder = 'media/images'
+media_video_folder = 'media/videos'
+media_audio_folder = 'media/audio'
 
 
-def backup(recipes: List[Recipe]):
+def backup():
     zip_file_name_with_path = os.path.join(base_path_backup,
                                            f"fork_recipes_{datetime.now().date().strftime('%Y.%m.%d')}_{datetime.now().strftime('%H.%M.%S')}.zip")
-
-    backup_recipes(recipes, zip_file_name_with_path)
 
     snapshot = BackupSnapshot.objects.create()
     snapshot.file.name = zip_file_name_with_path.replace("media/", "")
     snapshot.save()
 
+    backup_recipes(zip_file_name_with_path)
+
     return snapshot
 
 
-def backup_recipes(recipes: List[Recipe], zip_file_name_with_path: str):
+def backup_recipes(zip_file_name_with_path: str):
     file_paths = []
-    for index, recipe in enumerate(recipes):
-        file_paths.extend(create_recipe_data_list(recipe, index))
+    file_paths.extend(dump_database())
+    file_paths.extend(dump_media())
+    append_to_file(file_paths=file_paths, zip_file_name_with_path=zip_file_name_with_path,
+                   mode='w')
 
-    append_to_file(file_paths, zip_file_name_with_path, 'w')
-    delete_json_files_in_paths(file_paths)
+    delete_file(backup_json_database_file_path)
+
+
+def dump_database():
+    with open(backup_json_database_file_path, "w", encoding="utf-8") as file:
+        call_command("dumpdata", indent=4, format="json", stdout=file)
+
+    return [(backup_json_database_file_path, "data.json/")]
+
+
+def dump_media():
+    file_paths = []
+    file_paths.extend(get_files_from_folder_to_zip_paths(media_images_folder))
+    file_paths.extend(get_files_from_folder_to_zip_paths(media_video_folder))
+    file_paths.extend(get_files_from_folder_to_zip_paths(media_audio_folder))
+
+    return file_paths
 
 
 def append_to_file(file_paths: List, zip_file_name_with_path: str, mode: Literal['w', 'a']):
@@ -45,97 +66,30 @@ def append_to_file(file_paths: List, zip_file_name_with_path: str, mode: Literal
                 myZipFile.write(local_path, zip_path, zipfile.ZIP_DEFLATED)
 
 
-def create_recipe_data_list(recipe: Recipe, index: int):
-    paths = []
-    recipe_data = RecipesSerializer(recipe).data
-    recipe_json_str = json.dumps(recipe_data, indent=4)
-    root_path = "recipes"
-
-    with open(recipe_json_path.format(index), 'w', encoding='utf8') as file:
-        file.write(recipe_json_str)
-
-    paths.append((recipe_json_path.format(index), f"{root_path}/{index}/recipe.json"))
-
-    if recipe.image and hasattr(recipe.image, 'path'):
-        image_path = recipe.image.path
-        paths.append((image_path, f"{root_path}/{index}/image/{os.path.basename(image_path)}"))
-
-    if recipe.video and hasattr(recipe.video, 'path'):
-        video_path = recipe.video.path
-        paths.append((video_path, f"{root_path}/{index}/video/{os.path.basename(video_path)}"))
-
-    if hasattr(recipe, 'audio_instructions'):
-        audio_path = recipe.audio_instructions.file.path
-        paths.append((audio_path, f"{root_path}/{index}/audio/{os.path.basename(audio_path)}"))
-
-    return paths
-
-
 def unpack_and_apply_backup(full_path: str):
-    Recipe.objects.all().delete()
-    Category.objects.all().delete()
+    call_command("flush", interactive=False)
+    from django.contrib.contenttypes.models import ContentType
+    ContentType.objects.all().delete()
     upload_recipes(full_path)
 
 
 def upload_recipes(full_path: str):
-    processed_categories = []
-    original_recipes_ids = {}
+    zip_path = f"media/{full_path}"
+    extract_to = os.path.join(base_temp_data_path, full_path.split("/")[-1].replace(".zip", ""))
+    media_locations = [media_images_folder, media_audio_folder, media_video_folder]
 
-    with zipfile.ZipFile(f"media/{full_path}", 'r') as zip_file:
-        all_files = zip_file.namelist()
-        recipe_folders = set(
-            path.split('/')[1] for path in all_files
-            if path.startswith('recipes/') and path.count('/') > 1
-        )
+    with zipfile.ZipFile(zip_path, 'r') as zip_file:
+        zip_file.extractall(extract_to)
+        [delete_folder_files_only(x, ".md") for x in media_locations]
 
-        for folder in sorted(recipe_folders):
-            base_path = f"recipes/{folder}/"
-            image_folder = f"{base_path}image/"
-            video_folder = f"{base_path}video/"
-            audio_folder = f"{base_path}audio/"
-            recipe_json_file_path = base_path + "recipe.json"
+        for file in zip_file.namelist():
+            if file.startswith("images/"):
+                move_file(f"{extract_to}/{file.replace("image/", "")}", media_images_folder)
+            elif file.startswith("audio/"):
+                move_file(f"{extract_to}/{file.replace("image/", "")}", media_audio_folder)
+            elif file.startswith("videos/"):
+                move_file(f"{extract_to}/{file.replace("image/", "")}", media_video_folder)
 
-            if recipe_json_file_path in all_files:
-                with zip_file.open(recipe_json_file_path) as recipe_json_file:
-                    recipe_data = json.load(recipe_json_file)
-                    category_data = recipe_data['category']
-                    is_original = recipe_data['is_original']
-                    is_translate = recipe_data['is_translated']
-
-                    steps, ingredients = instructions_and_steps_json_to_lists(recipe_data['steps'],
-                                                                              recipe_data['ingredients'])
-                    recipe_data['image'] = get_first_file_from_zip_file_folder(zip_file, all_files, image_folder)
-                    recipe_data['video'] = get_first_file_from_zip_file_folder(zip_file, all_files, video_folder)
-                    del recipe_data['steps']
-                    del recipe_data['ingredients']
-                    del recipe_data['category']
-
-                    if category_data:
-                        # Category is match based on name saved in processed_categories list to not duplicate same category
-                        if category_data['name'] not in [x.name for x in processed_categories]:
-                            serializer = CategorySerializer(data=category_data)
-                            if serializer.is_valid(raise_exception=True):
-                                category = serializer.save()
-                                processed_categories.append(category)
-
-                    serializer = RecipesSerializer(data=recipe_data)
-                    if serializer.is_valid(raise_exception=True):
-                        recipe = serializer.save()
-                        if category_data:
-                            recipe.category = [x for x in processed_categories if x.name == category_data['name']][0]
-
-                        audio_file = get_first_file_from_zip_file_folder(zip_file, all_files, audio_folder)
-                        if audio_file:
-                            AudioInstructions.objects.create(file=audio_file, recipe=recipe)
-                        save_recipe(recipe, ingredients, steps)
-
-                        if is_original and is_translate:
-                            original_recipes_ids[recipe_data['pk']] = recipe.pk
-
-        # TODO: Find a better way to update the original recipe pk reference to the source of translated recipe
-        recipes = Recipe.objects.all()
-        for recipe in recipes:
-            if recipe.is_translated and not recipe.is_original:
-                recipe.original_recipe_pk = original_recipes_ids[recipe.original_recipe_pk]
-                recipe.save()
-
+        if "data.json" in zip_file.namelist():
+            call_command("loaddata", f"{extract_to}/data.json")
+            delete_folder(extract_to)
