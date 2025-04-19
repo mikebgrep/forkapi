@@ -3,7 +3,7 @@ prompt_recipe_main_info = """
             Output json:
 
             ```json
-            {{ "name": "The title or name of the recipe as string", "servings": "The servings (only number as integer must not be null)", "description": "The description of the recipe", "image": "Image src path", "video" "Video source path (if available), "difficulty": "string one of 'Easy', 'Intermediate', 'Advanced' or 'Expert'", "chef": "The chef of the recipe if any else null as NULL value", "prep_time": "preparation time in minutes integer value", "cook_time": "The cook time in minutes integer" }}
+            {{ "name": "The title or name of the recipe as string", "servings": "The servings (only number as integer must not be null)", "description": "The description of the recipe", "image": "Image src path", "video" "Video source path (if available), "difficulty": "string one of 'Easy', 'Intermediate', 'Advanced' or 'Expert' (Note: if not available in the content decide based on the name of the recipe if you think is different than Easy)", "chef": "The chef of the recipe if any else null as NULL value", "prep_time": "preparation time in minutes integer value", "cook_time": "The cook time in minutes integer" }}
             ```
 
             Make sure to return a plain json dict object with the values found on the page source as described.
@@ -38,7 +38,7 @@ prompt_recipe_ingredients = """
             Output json:
 
             ```json
-            [ {{ "name": "Full text of the ingredient name", "quantity": "an string value of the quantity if the ingredient", "metric": "the metric of the ingredient eg. g, ml, pcs etc." }} , {{ "name": "Full text of the second ingredient name", "quantity": "an string value of the quantity if the second ingredient", "metric": "the metric of the second ingredient eg. g, ml, pcs etc." }} ]"
+            [ {{ "name": "Full text of the ingredient name", "quantity": "an string value of the quantity if in the ingredient", "metric": "the metric of the ingredient eg. g, ml, pcs etc." }} , {{ "name": "Full text of the second ingredient name", "quantity": "an string value of the quantity if the second ingredient", "metric": "the metric of the second ingredient eg. g, ml, pcs etc." }} ]"
             ```
 
             You must combine all ingredients from the page source at the single list of json objects.
@@ -48,6 +48,7 @@ prompt_recipe_ingredients = """
             {{}}
             ```
             !Note return only the json not conversions!
+            !Note make sure to not return None as string for a value for the any of the ingredient objects values!
             """
 
 prompt_generate_recipe = """
@@ -87,11 +88,13 @@ prompt_tts_audio = """
             """
 
 additional_prompt_for_emojis_ingredients = """
-            If your recognize a ingredient that has available emoji (animal, fruit, а vegetable, spice) matching the ingredient name add the emoji before the name as a suffix with space.
+            If your recognize a ingredient that has available emoji (animal, fruit, a vegetable, spice) matching the ingredient name add the emoji before the name as a suffix with space.
             This apply for all ingredients.
+            !Note the emoji should be just before the recognised ingredient word not after or on different place!
             """
 
 additional_prompt_for_emojis_name = """
-            If you recognise that the name of the recipe include a word that has available emoji (animal, fruit, а vegetable or meal type) add the emoji before the recognized word.
+            If you recognise that the name of the recipe include a word that has available emoji (animal, fruit, a vegetable or meal type) add the emoji before the recognized word.
             That apply for all words in the name and description of the recipe.
+            !Note the emoji should be just before the recognised word not after or on different place!
             """
