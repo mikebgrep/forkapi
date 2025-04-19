@@ -85,7 +85,7 @@ def scrape_recipe(url: str, emoji_enabled: bool):
     # Edge case when the content contains more than one recipe after the prompt
     try:
         json_content_main_info['image']
-    except TypeError as ex:
+    except KeyError as ex:
         print(ex)
         return None, None, None
 

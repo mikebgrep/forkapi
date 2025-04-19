@@ -50,14 +50,20 @@ class Browser:
     def get_page_content_recipe(self, url: str) -> Tuple[str | None, str | None] | None:
         try:
             response = self.page.goto(url=url, timeout=7000)
+            if not response.ok:
+                raise ConnectionError(f"Response status was {response.status}")
+
             content = response.text()
-        except TimeoutError as ex:
+        except (TimeoutError, ConnectionError) as ex:
             print(ex)
             # Second try if not load at first
             try:
                 response = self.page.goto(url=url, timeout=7000)
+                if not response.ok:
+                    raise ConnectionError(f"Response status was {response.status}")
+
                 content = response.text()
-            except TimeoutError as ex:
+            except (TimeoutError, ConnectionError) as ex:
                 print(ex)
                 return None, None
 
