@@ -767,6 +767,9 @@
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a># Scrape functionality make sure to add &#39;&#39; for the API KEY
 </span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>OPENAI_API_KEY=
 </span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>OPENAI_MODEL=gpt-4o-mini
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a># Voice for TTS model one of alloy, ash, ballad, coral, echo, fable, onyx, nova, sage, shimmer
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>OPEN_AI_TTS_MODEL_VOICE=coral
 </span></code></pre></div>
 </details>
 <p>There are comments for each section, but I will explain quick.</p>
@@ -784,6 +787,7 @@
 <li><code>CORS_ALLOWED_HOSTS</code> are the front end domain names</li>
 <li><code>OPENAI_API_KEY</code> is the API KEY from OpenAI for the scraping recipe functionality</li>
 <li><code>OPENAI_MODEL</code> is the default model at this stage the <code>gpt-4o-mini</code> is most cost-efficient and is working ok for the scraping task</li>
+<li><code>OPEN_AI_TTS_MODEL_VOICE</code> is the voice which is used for generating the audio recipes</li>
 </ul>
 <div class="admonition info">
 <p class="admonition-title">Read for local deploy without domain name</p>
