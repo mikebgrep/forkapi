@@ -823,7 +823,8 @@ For TTS the model is <code>tts-4o-mini</code> which is the latest model can tran
 <li>We use it to scrape a recipe from external url.</li>
 <li>We use it to generate a recipes from ingredients and after this we scrape the recipes from the available url online.</li>
 <li>We use it to translate recipe to selected number of languages</li>
-<li>We use it for generating of a recipe audio file that record the recipe name, ingredients and insstructions</li>
+<li>We use it for generating of a recipe audio file that record the recipe name, ingredients and instructions</li>
+<li>We use it to add emojis in the recipe name and ingredients if recognise a word that has representing emoji</li>
 </ol>
 <h2 id="edge-cases">Edge cases<a class="headerlink" href="#edge-cases" title="Permanent link">&para;</a></h2>
 <p>There a case where the model fails and we return empty response with status code <code>204</code> from the endpoint that are responsible for generating or scraping the recipes.</p>
