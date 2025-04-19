@@ -13,9284 +13,1652 @@ hide:
     with value csrftoken=token to work proparly
 
 ------------------------------------------------------------------------------------------
-=== "v5.0"
 
-    <br />
+# Authentication
+#### Create admin user
 
-    # Authentication
-    #### Create admin user
+??? pied-piper "POST /api/auth/signup"
+
+    ##### Payload
+    ``` json title="authentication.UserSerializer"
+    {
+        "username": "username",
+        "password": "password",
+        "email": "email",
+        "is_superuser": true
+    }
+    ```
+
+    ##### Headers
     
-    ??? pied-piper "POST /api/auth/signup"
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
     
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
+    
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                            |
+    |---------------|-----------------------------------|---------------------------------------------------------------------|
+    | `201`         | `application/json`                | `User created successfully`                                         |
+    | `400`         | `application/json`                | `{"username":["user with this username already exists."]}`          |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'host/api/auth/signup' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"username":"username","password":"password","email":"email","is_superuser":true}'
+    > ```
+
+
+#### Obtain access token
+
+??? pied-piper "POST /api/auth/token"
+
+    ##### Payload
+    ``` json title="authentication.UserSerializer"
+    {
+        "email": "email",
+        "password": "password"
+    }
+    ```
+    
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
+    
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `200`         | `application/json`                | `{"token":"token","user":{"username":"username","email":"email","is_superuser":true}}`|
+    | `404`         | `application/json`                | `{"detail":"No User matches the given query."}`                       |
+    | `403`         | `application/json`                | `{"detail": "You must use authentication header"}`                    |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  `curl --location 'host/api/auth/token' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"email":"email","password":"password"}''
+    > ```
+
+#### Get user profile info
+
+??? pied-piper-get "GET /api/auth/user/info"
+
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                            |
+    |---------------|-----------------------------------|---------------------------------------------------------------------|
+    | `200`         | `application/json`                | `{"username":"username","email":"email","date_joined":"date"}`                                |
+    | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`        |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'localhost:8080/api/auth/user/info' --header 'Authorization: Token token_value' 
+    > ```
+
+#### Change user password
+    
+??? pied-piper-put "PUT /api/auth/user"
+
+    ##### Payload
+    ``` json 
+    {
+        "old_password": "password",
+        "new_password": "password"
+    }
+    ```
+    
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
+
+    
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `204`         | `application/json`                | `{}`                                                                  |
+    | `400`         | `application/json`                | `{"message": "Old password does not match current password"}`         |
+    | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location --request PUT 'host/api/auth/user' --header 'Authorization: Token token_value' --header 'Content-Type: application/json'  --data '{"old_password":"old_password","new_password":"new_password"}'
+    > ```
+
+#### Update user email and username
+    
+??? pied-piper-patch "PATCH /api/auth/user"
+    
+    ???+ Info 
+        
+        Individual fields can be updated only username or password.
+    
+    ##### Payload
+    ``` json title="authentication.UserSerializer"
+    {
+        "username": "new_username",
+        "email": "new_email"
+    }
+    ```
+    
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
+
+    
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `200`         | `application/json`                | `{"username":"new_username","email":"new_email","is_superuser":true}` |
+    | `400`         | `application/json`                | `{"email":["Enter a valid email address and password."]}`             |
+    | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location --request PATCH 'host/api/auth/user' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json' --data-raw '{"username":"new_username","email":"new_email"}'
+    > ```
+
+
+#### Delete user account
+    
+??? pied-piper-delete "DELETE /api/auth/delete-account"
+    
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
+
+    
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `204`         | `application/json`                | `No Content`                                                          |
+    | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location --request DELETE 'host/api/auth/delete-account' --header 'Authorization: Token token_value' 
+    > ```
+
+#### Request password reset token for user account
+    
+??? pied-piper "POST /api/auth/password_reset"
+
+    ##### Payload
+    ``` json title="authentication.ResetPasswordRequestSerializer"
+    {
+        "email": "user_email"
+    }
+    ```
+    
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
+
+    
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `201`         | `application/json`                | `{"token":"token_value"}`                                             |
+    | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
+    | `404`         | `application/json`                | `{"error":"User with provided email not found"}`                      |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'host/api/auth/password_reset' --header 'Content-Type: application/json' --header 'X-Auth-Header: auth_header_value'   --data-raw '{"email":"user_email"}' 
+    > ```
+
+#### Change user password with token
+    
+??? pied-piper "POST /api/auth/password_reset/reset"
+
+     ##### Parameters
+    
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `token`   |`query (required)` | `string`        | `Token obtained from POST /api/auth/password_reset`                      | 
+
+    ##### Payload
+    ``` json 
+    {
+        "password": "new_password",
+        "confirm_password": "new_password"
+    }
+    ```
+
+    
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `204`         | `application/json`                | `No Content`                                                          |
+    | `404`         | `application/json`                | `{"detail":"No PasswordResetToken matches the given query."}}`        |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'host/api/auth/password_reset/reset?token=token_value' --header 'Content-Type: application/json'  --data '{"password":"new_password","confirm_password":"new_password"}'
+    > ```
+
+
+
+------------------------------------------------------------------------------------------
+
+# User Settings
+
+#### Get User settings
+
+??? pied-piper-get "GET /api/auth/settings/"
+
+
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                            |
+    |---------------|-----------------------------------|---------------------------------------------------------------------|
+    | `200`         | `application/json`                | `{auth.models.UserSettingsSerializer}`                                |
+    | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
+
+    ##### Example cURL
+    
+    > ``` bash
+    > curl --location --request GET 'host/api/auth/settings' --header 'Authorization: Token token_value' 
+    > ```
+
+#### Update user settings
+
+??? pied-piper-patch "PATCH  /api/auth/settings/"
+    
+    ##### Payload
+    ``` json title="auth.serializers.UserSettingsSerializer object"
+    {
+        "preferred_translate_language": LANGUAGES_CHOICES
+    }
+    ```
+
+    ##### Languages choices (LANGUAGES_CHOICES)
+    ``` python title="recipe.models.LANGUAGES_CHOICES (use only the key in the request)"
+            ('English', 'English'),
+            ('Spanish', 'Español'),
+            ('French', 'Français'),
+            ('German', 'Deutsch'),
+            ('Chinese', '中文'),
+            ('Russian', 'Русский'),
+            ('Italian', 'Italiano'),
+            ('Japanese', '日本語'),
+            ('Dutch', 'Nederlands'),
+            ('Polish', 'Polski'),
+            ('Greek', 'Ελληνικά'),
+            ('Swedish', 'Svenska'),
+            ('Czech', 'Čeština'),
+            ('Bulgarian', 'Български'),
+    ```
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                            |
+    |---------------|-----------------------------------|---------------------------------------------------------------------|
+    | `201`         | `application/json`                | `{auth.models.UserSettingsSerializer}`                                |
+    | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
+
+    ##### Example cURL
+    
+    > ``` bash
+    > curl --location --request PATCH 'host/api/auth/settings' --header 'Authorization: Token token_value' --data '{"language":"recipe.models.LANGUAGES_CHOICES"}'
+    > ```
+
+------------------------------------------------------------------------------------------
+
+# Recipe
+
+#### Search for recipes
+
+??? pied-piper-get "GET /api/recipe/home/"
+
+    ##### Parameters
+    
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `search`  |`query (optional)` | `string`        | `Part or fulll name of the recipe.Recipe object`                      | 
+    | `page`    |`query (optional)` | `int`           | `Page number if there a mutilple pages result`                        | 
+    
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                            |
+    |---------------|-----------------------------------|---------------------------------------------------------------------|
+    | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}`                                |
+    | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'http://host:port/api/recipe/home/?name=name&page=1' --header 'X-Auth-Header: X_AUTH_HEADER
+    > ```
+
+#### Get favorite recipes
+
+??? pied-piper-get "GET /api/recipe/home/favorites/"
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                                           |
+    |---------------|-----------------------------------|------------------------------------------------------------------------------------|
+    | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}` |
+    | `404`         | `application/json`                | `{"detail":"No Recipe matches the given query."}`                                  |
+    | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'http://host:port/api/recipe/home/favorites/' --header 'X-Auth-Header: X_AUTH_HEADER
+    > ```
+
+
+
+#### Get trending recipes
+
+??? pied-piper-get "GET /api/recipe/trending"
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                                           |
+    |---------------|-----------------------------------|------------------------------------------------------------------------------------|
+    | `200`         | `application/json`                | `[recipe.Recipe objects list]`                                                     |
+    | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'localhost:8080/api/recipe/trending' --header 'X-Auth-Header: X_AUTH_HEADER
+    > ```
+
+#### Search for recipes preview
+
+??? pied-piper-get "GET /api/recipe/home/preview/"
+
+    ##### Parameters
+    
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `search`  |`query (optional)` | `string`        | `Part or fulll name of the recipe.Recipe object`                      | 
+    | `page`    |`query (optional)` | `int`           | `Page number if there a mutilple pages result`                        | 
+    
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                            |
+    |---------------|-----------------------------------|---------------------------------------------------------------------|
+    | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.RecipePreviewSerializer obj list]}`                                |
+    | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'http://host:port/api/recipe/home/preview/?name=name&page=1' --header 'X-Auth-Header: X_AUTH_HEADER
+    > ```
+
+#### Update favorite status
+
+??? pied-piper-patch "PATCH /api/recipe/int:pk/favorite"
+
+    ##### Parameters
+    
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be favorited or unfavorited`                   | 
+    
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
+
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                            |
+    |---------------|-----------------------------------|---------------------------------------------------------------------|
+    | `201`         | `application/json`        | `"Success favorite recipe"`                                |
+    | `201`         | `application/json`        | `"Success unfavorite recipe"`                                |
+    | `403`         | `application/json`                | `{"detail":"You must use authentication header"}     |
+    | `404`         | `application/json`                | `Not Found`          |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location --request PATCH 'host/api/recipe/1/favorite' --header 'X-Auth-Header: X_AUTH_HEADER'
+    > ```
+
+#### Get recipe by pk
+
+??? pied-piper-get "GET /api/recipe/int:pk/"
+
+    ##### Parameters
+    
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
+    
+    
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
+
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `200`         | `application/json`                | `{recipe.Recipe object}`                                              | 
+    | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
+    | `404`         | `application/json`                |  {"detail":"No Recipe matches the given query."}                      |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location --request GET 'host/api/recipe/1/' --header 'X-Auth-Header: X_AUTH_HEADER
+    > ```
+
+
+#### Create recipe
+
+??? pied-piper "POST /api/recipe/"
+
+    ##### Payload
+    ``` json title="recipe.Recipe object"
+    {
+        "image": file,
+        "name": string,
+        "serves": int,
+        "description": string,
+        "difficulty": string (DIFFICULTY_CHOICES),
+        "chef": string
+        "video": file (optional),
+        "category": <int:pk> (optional),
+        "tag": <int:pk> (optional), 
+        "prep_time": int,
+        "cook_time": int
+    }
+    ```
+
+    ##### Dificulty choices (DIFFICULTY_CHOICES)
+    ``` python title="recipe.models.DIFFICULTY_CHOICES (use only the key in the request)"
+        ('Easy', 'Easy'),
+        ('Intermediate', 'Intermediate'),
+        ('Advanced', 'Advanced'),
+        ('Expert', 'Expert'),
+    ```
+    
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
+    |`Content-Type`|`multipart/form-data`|  `Recipe object`  | `Recipe multipart/form-data object`                                | 
+
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `201`         | `application/json`                | `{recipe.Recipe object}`|
+    | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
+    | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'host/api/recipe/' --header 'Authorization: Token token_value' --form  'image=@"/path/image.jpg"' --form 'name="Recipe name"' --form 'servings="5"' --form 'category="1"' --form 'tag="1"' --form 'prep_time="20"' --form 'video=@"/path/video.mp4"' --form 'description="This is cool recipe"' --form 'cook_time="45"'
+    > ```
+
+
+#### Update recipe main info (without ingredients and steps)
+
+??? pied-piper-put "PUT /api/recipe/int:pk"
+
+    ##### Payload
+    ``` json title="recipe.Recipe object"
+    {
+        "image": file,
+        "name": string,
+        "serves": int,
+        "description": string,
+        "difficulty": string (DIFFICULTY_CHOICES),
+        "chef": string
+        "video": file (optional),
+        "category": <int:pk> (optional),
+        "tag": <int:pk> (optional), 
+        "prep_time": int,
+        "cook_time": int,
+        "clear_video": boolean (optional if you want to delete already set video)
+    }
+    ```
+
+    ##### Parameters
+    
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
+    
+    
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
+    |`Content-Type`|`multipart/form-data`|  `Recipe object`  | `Recipe multipart/form-data object`                                | 
+
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `200`         | `application/json`                | `{recipe.Recipe object}`|
+    | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
+    | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location --request PUT 'host/api/recipe/1' --header 'Authorization: Token token_value' --form  'image=@"/path/image.jpg"' --form 'name="Recipe name"' --form 'servings="5"' --form 'category="1"' --form 'tag="1"' --form 'prep_time="20"' --form 'video=@"/path/video.mp4"' --form 'description="This is cool recipe"' --form 'cook_time="45"'
+    > ```
+
+
+#### Delete recipes
+
+??? pied-piper-delete "DELETE /api/recipe/pk:int/"
+
+    ##### Parameters
+    
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be deleted`                   | 
+
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                            |
+    |---------------|-----------------------------------|---------------------------------------------------------------------|
+    | `204`         | `application/json`                |                                                                     |
+    | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location --request DELETE 'host/api/recipe/<int:pk>/' --header 'Authorization: Token token_value' 
+    > ```
+
+
+
+#### Get recipe variations (translation)
+
+??? pied-piper-get "GET /api/recipe/int:pk/variations"
+
+    ##### Parameters
+    
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
+    
+    
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
+
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `200`         | `application/json`                | `{recipe.serializers.TranslateRecipeSerializer object}`                                              | 
+    | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
+    | `404`         | `application/json`                |  {"detail":"No Recipe matches the given query."}                      |
+
+    ##### Example cURL
+    
+    > ``` bash
+    > curl --location 'host/api/recipe/20/variations' --header 'X-Auth-Header: X_AUTH_HEADER'
+    > ```
+
+------------------------------------------------------------------------------------------
+
+# Recipe OpenAI
+
+#### Scrape recipes
+
+??? pied-piper "POST /api/recipe/scrape"
+
+    ???+ Info 
+        
+        Valid OpenAI API Key is nedded for this endpoint
+    
+    ##### Payload
+    ``` json title="recipe.RecipeLink object"
+    {
+        "url": file
+    }
+    ```
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                            |
+    |---------------|-----------------------------------|---------------------------------------------------------------------|
+    | `200`         | `application/json`                |  `{recipe.Recipe object}`|                                          |
+    | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`        |
+
+    ##### Example cURL
+    
+    > ``` bash
+    > curl --location 'host/api/recipe/scrape' --header 'Authorization: Token token_value'  --data '{"url":"http://...."}'
+    > ```
+
+#### Generate recipes
+
+??? pied-piper "POST /api/recipe/generate"
+
+    ???+ Info 
+        
+        Valid OpenAI API Key is nedded for this endpoint
+    
+    ##### Payload
+    ``` json title="GenerateRecipeSerializer list of strings"
+    {
+        "ingredients": []
+    }
+    ```
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                            |
+    |---------------|-----------------------------------|---------------------------------------------------------------------|
+    | `200`         | `application/json`                |  `[GenerateRecipeResultSerializer objects]`                         |
+    | `204`         | `application/json`                |  `{Empty response if there a openai empty response}`                |
+    | `401`         | `application/json`                |  `{"detail":"Authentication credentials were not provided."}`       |
+
+    ##### Example cURL
+    
+    > ``` bash
+    > curl --location 'host/api/recipe/generate' --header 'Authorization: Token token_value' --header 'Content-Type: application/json' --data '{"ingredients":["tomato","onion","cheese","pasta","milk","red peparz"]}'
+    > ```
+
+#### Translate recipe
+
+??? pied-piper "POST /api/recipe/translate"
+    
+    ???+ Info 
+        
+        Valid OpenAI API Key is nedded for this endpoint
+
+    ##### Payload
+    ``` json title="recipe.Recipe object"
+    {
+        "pk": recipe.pk,
+        "language": recipe.models.LANGUAGES_CHOICES
+    }
+    ```
+
+    ##### Language choices (LANGUAGES_CHOICES)
+    ``` python title="recipe.models.LANGUAGES_CHOICES (use only the key in the request)"
+            ('English', 'English'),
+            ('Spanish', 'Español'),
+            ('French', 'Français'),
+            ('German', 'Deutsch'),
+            ('Chinese', '中文'),
+            ('Russian', 'Русский'),
+            ('Italian', 'Italiano'),
+            ('Japanese', '日本語'),
+            ('Dutch', 'Nederlands'),
+            ('Polish', 'Polski'),
+            ('Greek', 'Ελληνικά'),
+            ('Swedish', 'Svenska'),
+            ('Czech', 'Čeština'),
+            ('Bulgarian', 'Български'),
+    ```
+    
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
+
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `200`         | `application/json`                | `{recipe.Recipe object}`|
+    | `400`         | `application/json`                | `{"errors":["Default language for translation should be set"]}`                       |
+    | `400`         | `application/json`                | `{"errors":["Translation must be performed only on original recipes"]}`                       |
+    | `400`         | `application/json`                | `{"errors":["Translation language is already used and there a recipe translated with that language."]}`                       |
+    | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'host/api/recipe/translate' --header 'Authorization: Token token_value' --data '{"pk":15,"language":"German"}'
+    > ```
+
+#### Generate recipe audio
+
+??? pied-piper "POST /api/recipe/audio"
+    
+    ???+ Info 
+        
+        Valid OpenAI API Key is nedded for this endpoint. 
+        Current model used is tts-4o-mini that translate English language good and struggle for other languages.
+
+    ##### Payload
+    ``` json title="recipe.Recipe object"
+    {
+        "recipe_pk": int
+    }
+    ```
+    
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
+
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `200`         | `application/json`                | `{recipe.AudioInstructionsSerializer object}`|
+    | `400`         | `application/json`                | `{"errors":["Recipe is converted to audio instructions already"]}`                       |
+    | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
+    | `404`         | `application/json`                | `{"errors":["Recipe with that pk does not exists"]}`                       |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'host/api/recipe/audio' --header 'Authorization: Token token_value' --data '{"recipe_pk":15}'
+    > ```
+
+------------------------------------------------------------------------------------------
+
+# Category
+
+#### Get all categories
+
+??? pied-piper-get "GET /api/recipe/category"
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                                           |
+    |---------------|-----------------------------------|------------------------------------------------------------------------------------|
+    | `200`         | `application/json`                | `[recipe.Category objects list]`                                                     |
+    | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'host/api/recipe/category' --header 'X-Auth-Header: X_AUTH_HEADER'
+    > ```
+
+
+#### Get all categories recipes 
+
+??? pied-piper-get "GET /api/recipe/category/int:pk/recipes"
+
+    ##### Parameters
+    
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Category primary key`                   | 
+    
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                                           |
+    |---------------|-----------------------------------|------------------------------------------------------------------------------------|
+    | `200`         | `application/json`                | `[recipe.Recipe objects list]`                                                     |
+    | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'host/api/recipe/category/1/recipes' --header 'X-Auth-Header: X_AUTH_HEADER'
+    > ```
+
+#### Create category
+
+??? pied-piper "POST /api/recipe/category/add"
+
+    ##### Payload
+    ``` json title="recipe.Category object"
+    {
+        "name": string
+    }
+    ```
+    
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint`              | 
+    |`Content-Type`|`application/json`|                   | `Applicaton Json content header                                     | 
+ 
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `201`         | `application/json`                | `{recipe.Category object}`|
+    | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
+    | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'host/api/recipe/category/add' --header 'Authorization: Token token_value' --data '{"name":"Greek"}'
+    > ```
+
+#### Update category
+
+??? pied-piper-put "PUT /api/recipe/category/int:pk"
+
+    ##### Payload
+    ``` json title="recipe.Category object"
+    {
+        "name": string,
+
+    }
+    ```
+
+    ##### Parameters
+    
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Category primary key`                   | 
+    
+    
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `              | 
+    |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
+
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `200`         | `application/json`                | `{recipe.Recipe object}`|
+    | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
+    | `404`         | `application/json`                | `{"detail":"No Category matches the given query."}`                       |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location --request PUT 'host/api/recipe/category/6' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json'  --data '{"name":"Italiano"}'
+    > ```
+
+------------------------------------------------------------------------------------------
+
+# Tag
+
+#### Get all tags 
+
+??? pied-piper-get "GET /api/recipe/tags"
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                                           |
+    |---------------|-----------------------------------|------------------------------------------------------------------------------------|
+    | `200`         | `application/json`                | `[recipe.Tag objects list]`                                                     |
+    | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'host/api/recipe/tags' --header 'X-Auth-Header: X_AUTH_HEADER'
+    > ```
+
+#### Get all recipes from tag 
+
+??? pied-piper-get "GET /api/recipe/tag/int:pk/recipes"
+
+    ##### Parameters
+    
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Tag primary key`                   | 
+    
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                                           |
+    |---------------|-----------------------------------|------------------------------------------------------------------------------------|
+    | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}`                                                     |
+    | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'host/api/recipe/tag/<int:pk>/recipes' --header 'X-Auth-Header: X_AUTH_HEADER'
+    > ```
+
+#### Create tag
+
+??? pied-piper "POST /api/recipe/tag/add"
+
+    ##### Payload
+    ``` json title="recipe.Tag object"
+    {
+        "name": string
+    }
+    ```
+    
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `      | 
+    |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
+
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `201`         | `application/json`                | `{recipe.Category object}`|
+    | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
+    | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'host/api/recipe/tag/add' --header 'Authorization: Token token_value' --data '{"name":"Summer vibes"}'
+    > ```
+
+#### Update tag
+
+??? pied-piper-put "PUT /api/recipe/tag/int:pk"
+
+    ##### Payload
+    ``` json title="recipe.Category object"
+    {
+        "name": string,
+
+    }
+    ```
+
+    ##### Parameters
+    
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Tag primary key`                   | 
+    
+    
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
+    |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
+
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `200`         | `application/json`                | `{recipe.Tag object}`|
+    | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
+    | `404`         | `application/json`                | `{"detail":"No Category matches the given query."}`                       |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location --request PUT 'host/api/recipe/tag/1' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json'  --data '{"name":"Summer Vibes"}'
+    > ```
+
+
+------------------------------------------------------------------------------------------
+
+# Ingredients
+
+??? pied-piper "POST /api/recipe/int:pk/ingredients"
+
+    ???+ Info 
+        
+        Override already existing ingredients for the recipe
+
+    ##### Payload
+    ``` json title="recipe.Igredient object list"
+    [
         {
-            "username": "username",
-            "password": "password",
-            "email": "email",
-            "is_superuser": true
-        }
-        ```
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-        
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `201`         | `application/json`                | `User created successfully`                                         |
-        | `400`         | `application/json`                | `{"username":["user with this username already exists."]}`          |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/signup' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"username":"username","password":"password","email":"email","is_superuser":true}'
-        > ```
-    
-    
-    #### Obtain access token
-    
-    ??? pied-piper "POST /api/auth/token"
-    
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "email": "email",
-            "password": "password"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"token":"token","user":{"username":"username","email":"email","is_superuser":true}}`|
-        | `404`         | `application/json`                | `{"detail":"No User matches the given query."}`                       |
-        | `403`         | `application/json`                | `{"detail": "You must use authentication header"}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  `curl --location 'host/api/auth/token' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"email":"email","password":"password"}''
-        > ```
-
-    #### Get user profile info
-    
-    ??? pied-piper-get "GET /api/auth/user/info"
-    
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"username":"username","email":"email","date_joined":"date"}`                                |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`        |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'localhost:8080/api/auth/user/info' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Change user password
-        
-    ??? pied-piper-put "PUT /api/auth/user"
-    
-        ##### Payload
-        ``` json 
-        {
-            "old_password": "password",
-            "new_password": "password"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `{}`                                                                  |
-        | `400`         | `application/json`                | `{"message": "Old password does not match current password"}`         |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/auth/user' --header 'Authorization: Token token_value' --header 'Content-Type: application/json'  --data '{"old_password":"old_password","new_password":"new_password"}'
-        > ```
-
-    #### Update user email and username
-        
-    ??? pied-piper-patch "PATCH /api/auth/user"
-        
-        ???+ Info 
-            
-            Individual fields can be updated only username or password.
-        
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "username": "new_username",
-            "email": "new_email"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"username":"new_username","email":"new_email","is_superuser":true}` |
-        | `400`         | `application/json`                | `{"email":["Enter a valid email address and password."]}`             |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/auth/user' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json' --data-raw '{"username":"new_username","email":"new_email"}'
-        > ```
-
-
-    #### Delete user account
-        
-    ??? pied-piper-delete "DELETE /api/auth/delete-account"
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/auth/delete-account' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Request password reset token for user account
-        
-    ??? pied-piper "POST /api/auth/password_reset"
-
-        ##### Payload
-        ``` json title="authentication.ResetPasswordRequestSerializer"
-        {
-            "email": "user_email"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{"token":"token_value"}`                                             |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
-        | `404`         | `application/json`                | `{"error":"User with provided email not found"}`                      |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/password_reset' --header 'Content-Type: application/json' --header 'X-Auth-Header: auth_header_value'   --data-raw '{"email":"user_email"}' 
-        > ```
-    
-    #### Change user password with token
-        
-    ??? pied-piper "POST /api/auth/password_reset/reset"
-
-         ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `token`   |`query (required)` | `string`        | `Token obtained from POST /api/auth/password_reset`                      | 
-
-        ##### Payload
-        ``` json 
-        {
-            "password": "new_password",
-            "confirm_password": "new_password"
-        }
-        ```
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `404`         | `application/json`                | `{"detail":"No PasswordResetToken matches the given query."}}`        |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/password_reset/reset?token=token_value' --header 'Content-Type: application/json'  --data '{"password":"new_password","confirm_password":"new_password"}'
-        > ```
-    
-
-
-    ------------------------------------------------------------------------------------------
-
-    # User Settings
-    
-    #### Get User settings
-    
-    ??? pied-piper-get "GET /api/auth/settings/"
-
-
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{auth.models.UserSettingsSerializer}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        > curl --location --request GET 'host/api/auth/settings' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Update user settings
-
-    ??? pied-piper-patch "PATCH  /api/auth/settings/"
-        
-        ##### Payload
-        ``` json title="auth.serializers.UserSettingsSerializer object"
-        {
-            "preferred_translate_language": LANGUAGES_CHOICES
-        }
-        ```
-
-        ##### Languages choices (LANGUAGES_CHOICES)
-        ``` python title="recipe.models.LANGUAGES_CHOICES (use only the key in the request)"
-                ('English', 'English'),
-                ('Spanish', 'Español'),
-                ('French', 'Français'),
-                ('German', 'Deutsch'),
-                ('Chinese', '中文'),
-                ('Russian', 'Русский'),
-                ('Italian', 'Italiano'),
-                ('Japanese', '日本語'),
-                ('Dutch', 'Nederlands'),
-                ('Polish', 'Polski'),
-                ('Greek', 'Ελληνικά'),
-                ('Swedish', 'Svenska'),
-                ('Czech', 'Čeština'),
-                ('Bulgarian', 'Български'),
-        ```
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{auth.models.UserSettingsSerializer}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-
-        ##### Example cURL
-        
-        > ``` bash
-        > curl --location --request PATCH 'host/api/auth/settings' --header 'Authorization: Token token_value' --data '{"language":"recipe.models.LANGUAGES_CHOICES"}'
-        > ```
-
-    ------------------------------------------------------------------------------------------
-
-    # Recipe
-    
-    #### Search for recipes
-    
-    ??? pied-piper-get "GET /api/recipe/home/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `search`  |`query (optional)` | `string`        | `Part or fulll name of the recipe.Recipe object`                      | 
-        | `page`    |`query (optional)` | `int`           | `Page number if there a mutilple pages result`                        | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/?name=name&page=1' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    #### Get favorite recipes
-    
-    ??? pied-piper-get "GET /api/recipe/home/favorites/"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}` |
-        | `404`         | `application/json`                | `{"detail":"No Recipe matches the given query."}`                                  |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/favorites/' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    
-    
-    #### Get trending recipes
-    
-    ??? pied-piper-get "GET /api/recipe/trending"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Recipe objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'localhost:8080/api/recipe/trending' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-
-    #### Search for recipes preview
-    
-    ??? pied-piper-get "GET /api/recipe/home/preview/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `search`  |`query (optional)` | `string`        | `Part or fulll name of the recipe.Recipe object`                      | 
-        | `page`    |`query (optional)` | `int`           | `Page number if there a mutilple pages result`                        | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.RecipePreviewSerializer obj list]}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/preview/?name=name&page=1' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    #### Update favorite status
-    
-    ??? pied-piper-patch "PATCH /api/recipe/int:pk/favorite"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be favorited or unfavorited`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `201`         | `application/json`        | `"Success favorite recipe"`                                |
-        | `201`         | `application/json`        | `"Success unfavorite recipe"`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}     |
-        | `404`         | `application/json`                | `Not Found`          |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/recipe/1/favorite' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-
-    #### Get recipe by pk
-
-    ??? pied-piper-get "GET /api/recipe/int:pk/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`                                              | 
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
-        | `404`         | `application/json`                |  {"detail":"No Recipe matches the given query."}                      |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request GET 'host/api/recipe/1/' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-
-
-    #### Create recipe
-    
-    ??? pied-piper "POST /api/recipe/"
-    
-        ##### Payload
-        ``` json title="recipe.Recipe object"
-        {
-            "image": file,
-            "name": string,
-            "serves": int,
-            "description": string,
-            "difficulty": string (DIFFICULTY_CHOICES),
-            "chef": string
-            "video": file (optional),
-            "category": <int:pk> (optional),
-            "tag": <int:pk> (optional), 
-            "prep_time": int,
-            "cook_time": int
-        }
-        ```
-
-        ##### Dificulty choices (DIFFICULTY_CHOICES)
-        ``` python title="recipe.models.DIFFICULTY_CHOICES (use only the key in the request)"
-            ('Easy', 'Easy'),
-            ('Intermediate', 'Intermediate'),
-            ('Advanced', 'Advanced'),
-            ('Expert', 'Expert'),
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`multipart/form-data`|  `Recipe object`  | `Recipe multipart/form-data object`                                | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Recipe object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/' --header 'Authorization: Token token_value' --form  'image=@"/path/image.jpg"' --form 'name="Recipe name"' --form 'servings="5"' --form 'category="1"' --form 'tag="1"' --form 'prep_time="20"' --form 'video=@"/path/video.mp4"' --form 'description="This is cool recipe"' --form 'cook_time="45"'
-        > ```
-    
-    
-    #### Update recipe main info (without ingredients and steps)
-    
-    ??? pied-piper-put "PUT /api/recipe/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Recipe object"
-        {
-            "image": file,
-            "name": string,
-            "serves": int,
-            "description": string,
-            "difficulty": string (DIFFICULTY_CHOICES),
-            "chef": string
-            "video": file (optional),
-            "category": <int:pk> (optional),
-            "tag": <int:pk> (optional), 
-            "prep_time": int,
-            "cook_time": int,
-            "clear_video": boolean (optional if you want to delete already set video)
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-        |`Content-Type`|`multipart/form-data`|  `Recipe object`  | `Recipe multipart/form-data object`                                | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/1' --header 'Authorization: Token token_value' --form  'image=@"/path/image.jpg"' --form 'name="Recipe name"' --form 'servings="5"' --form 'category="1"' --form 'tag="1"' --form 'prep_time="20"' --form 'video=@"/path/video.mp4"' --form 'description="This is cool recipe"' --form 'cook_time="45"'
-        > ```
-    
-    
-    #### Delete recipes
-    
-    ??? pied-piper-delete "DELETE /api/recipe/pk:int/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be deleted`                   | 
-    
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `204`         | `application/json`                |                                                                     |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/recipe/<int:pk>/' --header 'Authorization: Token token_value' 
-        > ```
-
-    
-
-    #### Get recipe variations (translation)
-
-    ??? pied-piper-get "GET /api/recipe/int:pk/variations"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.serializers.TranslateRecipeSerializer object}`                                              | 
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
-        | `404`         | `application/json`                |  {"detail":"No Recipe matches the given query."}                      |
-
-        ##### Example cURL
-        
-        > ``` bash
-        > curl --location 'host/api/recipe/20/variations' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-
-    ------------------------------------------------------------------------------------------
-    
-    # Recipe OpenAI
-    
-    #### Scrape recipes
-    
-    ??? pied-piper "POST /api/recipe/scrape"
-
-        ???+ Info 
-            
-            Valid OpenAI API Key is nedded for this endpoint
-        
-        ##### Payload
-        ``` json title="recipe.RecipeLink object"
-        {
-            "url": file
-        }
-        ```
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                |  `{recipe.Recipe object}`|                                          |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`        |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        > curl --location 'host/api/recipe/scrape' --header 'Authorization: Token token_value'  --data '{"url":"http://...."}'
-        > ```
-
-    #### Generate recipes
-    
-    ??? pied-piper "POST /api/recipe/generate"
-
-        ???+ Info 
-            
-            Valid OpenAI API Key is nedded for this endpoint
-        
-        ##### Payload
-        ``` json title="GenerateRecipeSerializer list of strings"
-        {
-            "ingredients": []
-        }
-        ```
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                |  `[GenerateRecipeResultSerializer objects]`                         |
-        | `204`         | `application/json`                |  `{Empty response if there a openai empty response}`                |
-        | `401`         | `application/json`                |  `{"detail":"Authentication credentials were not provided."}`       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        > curl --location 'host/api/recipe/generate' --header 'Authorization: Token token_value' --header 'Content-Type: application/json' --data '{"ingredients":["tomato","onion","cheese","pasta","milk","red peparz"]}'
-        > ```
-    
-    #### Translate recipe
-    
-    ??? pied-piper "POST /api/recipe/translate"
-        
-        ???+ Info 
-            
-            Valid OpenAI API Key is nedded for this endpoint
-
-        ##### Payload
-        ``` json title="recipe.Recipe object"
-        {
-            "pk": recipe.pk,
-            "language": recipe.models.LANGUAGES_CHOICES
-        }
-        ```
-
-        ##### Language choices (LANGUAGES_CHOICES)
-        ``` python title="recipe.models.LANGUAGES_CHOICES (use only the key in the request)"
-                ('English', 'English'),
-                ('Spanish', 'Español'),
-                ('French', 'Français'),
-                ('German', 'Deutsch'),
-                ('Chinese', '中文'),
-                ('Russian', 'Русский'),
-                ('Italian', 'Italiano'),
-                ('Japanese', '日本語'),
-                ('Dutch', 'Nederlands'),
-                ('Polish', 'Polski'),
-                ('Greek', 'Ελληνικά'),
-                ('Swedish', 'Svenska'),
-                ('Czech', 'Čeština'),
-                ('Bulgarian', 'Български'),
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`|
-        | `400`         | `application/json`                | `{"errors":["Default language for translation should be set"]}`                       |
-        | `400`         | `application/json`                | `{"errors":["Translation must be performed only on original recipes"]}`                       |
-        | `400`         | `application/json`                | `{"errors":["Translation language is already used and there a recipe translated with that language."]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/translate' --header 'Authorization: Token token_value' --data '{"pk":15,"language":"German"}'
-        > ```
-
-    #### Generate recipe audio
-    
-    ??? pied-piper "POST /api/recipe/audio"
-        
-        ???+ Info 
-            
-            Valid OpenAI API Key is nedded for this endpoint. 
-            Current model used is tts-4o-mini that translate English language good and struggle for other languages.
-
-        ##### Payload
-        ``` json title="recipe.Recipe object"
-        {
-            "recipe_pk": int
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.AudioInstructionsSerializer object}`|
-        | `400`         | `application/json`                | `{"errors":["Recipe is converted to audio instructions already"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-        | `404`         | `application/json`                | `{"errors":["Recipe with that pk does not exists"]}`                       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/audio' --header 'Authorization: Token token_value' --data '{"recipe_pk":15}'
-        > ```
-
-    ------------------------------------------------------------------------------------------
-
-    # Category
-    
-    #### Get all categories
-    
-    ??? pied-piper-get "GET /api/recipe/category"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Category objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    
-    #### Get all categories recipes 
-    
-    ??? pied-piper-get "GET /api/recipe/category/int:pk/recipes"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Category primary key`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Recipe objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category/1/recipes' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Create category
-    
-    ??? pied-piper "POST /api/recipe/category/add"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint`              | 
-        |`Content-Type`|`application/json`|                   | `Applicaton Json content header                                     | 
-     
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Category object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category/add' --header 'Authorization: Token token_value' --data '{"name":"Greek"}'
-        > ```
-    
-    #### Update category
-    
-    ??? pied-piper-put "PUT /api/recipe/category/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string,
-    
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Category primary key`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `              | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`|
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-        | `404`         | `application/json`                | `{"detail":"No Category matches the given query."}`                       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/category/6' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json'  --data '{"name":"Italiano"}'
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Tag
-    
-    #### Get all tags 
-    
-    ??? pied-piper-get "GET /api/recipe/tags"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Tag objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tags' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Get all recipes from tag 
-    
-    ??? pied-piper-get "GET /api/recipe/tag/int:pk/recipes"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Tag primary key`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tag/<int:pk>/recipes' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Create tag
-    
-    ??? pied-piper "POST /api/recipe/tag/add"
-    
-        ##### Payload
-        ``` json title="recipe.Tag object"
-        {
-            "name": string
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `      | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Category object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tag/add' --header 'Authorization: Token token_value' --data '{"name":"Summer vibes"}'
-        > ```
-    
-    #### Update tag
-    
-    ??? pied-piper-put "PUT /api/recipe/tag/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string,
-    
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Tag primary key`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Tag object}`|
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-        | `404`         | `application/json`                | `{"detail":"No Category matches the given query."}`                       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/tag/1' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json'  --data '{"name":"Summer Vibes"}'
-        > ```
-    
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Ingredients
-    
-    ??? pied-piper "POST /api/recipe/int:pk/ingredients"
-    
-        ???+ Info 
-            
-            Override already existing ingredients for the recipe
-    
-        ##### Payload
-        ``` json title="recipe.Igredient object list"
-        [
-            {
-                "name": "string,
-                "quantity": string,
-                "metric": "string
-            },
-            {
-                "name": "string,
-                "quantity": string,
-                "metric": "string
-            },
-        ....
-        ]
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to which to link the ingredients`                   | 
-        
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `[{recipe.Ingrediant object}]`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/ingredients' --header 'Authorization: Token token_value' --data '[{"name":"Kasher salt","quantity":"1/5","metric":"tbsp","recipe":24}]'
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Steps
-    
-    ??? pied-piper "POST /api/recipe/int:pk/steps"
-    
-        ???+ Info 
-            
-            Override already existing steps for the recipe
-    
-        ##### Payload
-        ``` json title="recipe.Step object list"
-        [
-            {
-                "text": string
-            },
-            {
-                "text": string
-            },
-        ....
-        ]
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to which to link the steps`                   | 
-        
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `[{recipe.Step object}]`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/ingredients' --header 'Authorization: Token token_value' --data '[{"text":"Heat the oven","recipe":1}]'
-        > ```
-
-    ------------------------------------------------------------------------------------------
-
-    # Schedule (Meal Planner)
-    #### Get Schedule
-    
-    ??? pied-piper-get "GET /api/schedule/"
-
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `date`    |`path (required)` | `int`        | `Schedule date eg. 2025-1-26`                   | 
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[schedule.ScheduleRepresentationSerializer objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/schedule/?date=2025-02-15' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Create schedule
-    
-    ??? pied-piper "POST /api/schedule/"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "timing": schedule.models.TIMING_CHOICES,
-            "recipe": recipe.pk,
-            "date": date-format-YYYY-MM-DD
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint`              | 
-        |`Content-Type`|`application/json`|                   | `Applicaton Json content header                                     | 
-     
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{schedule.ScheduleRepresentationSerializer object}`|
-        | `400`         | `application/json`                | `{"error": "Invalid date format. Use YYYY-MM-DD."}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/schedule/' --header 'Authorization: Token token_value' --data '{"timing":"Breakfast","recipe":26,"date":"2025-02-15"}'
-        > ```
-
-    #### Delete schedule
-        
-    ??? pied-piper-delete "DELETE /api/schedule/<int:pk>"
-
-         ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Schedule pk`                   |         
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/schedule/<int:pk>' --header 'Authorization: Token token_value' 
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Shopping (Shopping List)
-    
-    #### Get Shopping lists
-
-    ??? pied-piper-get "GET /api/shopping/"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.ShoppingList objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/shopping/' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Get Shopping list (single)
-
-    ??? pied-piper-get "GET /api/shopping/single/int:pk/"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.ShoppingList object]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/shopping/single/<int:pk>/' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Create shopping
-    
-    ??? pied-piper "POST /api/shopping/"
-    
-        ##### Payload
-        ``` json title="shopping.ShoppingListSerializer partial object"
-        {
-            "name": "string"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint`              | 
-        |`Content-Type`|`application/json`|                   | `Applicaton Json content header                                     | 
-     
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{schedule.SingleShoppingListSerializer object}`|
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/shopping/'  --header 'Authorization: Token token_value'  --data '{"name":"asd12"}'
-        > ```
-
-    #### Update Schopping List
-    
-    ??? pied-piper-put "PUT /api/shopping/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.ShoppingListSerializer parital object"
-        {
-            "recipe": integer
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Shopping list primary key`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `              | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.ShoppingList object}`|
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-        | `404`         | `application/json`                | `{"detail":"No ShoppingList matches the given query."}`                       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/shopping/<int:recipe_pk>>/' --header 'Authorization: Token token_value' --data '{"recipe":recipe_pk}'
-        > ```
-    
-    
-    #### Complete Shopping List
-        
-    ??? pied-piper-patch "PATCH /api/shopping/complete-list/int:pk/"
-
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Shopping list primary key`                   | 
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{"Success complete shopping list"}` |
-        | `201`         | `application/json`                | `{"Success incomplete shopping list"}` |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-        | `404`         | `application/json`                | `{"detail": "No ShoppingList matches the given query."]}`             |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/shopping/complete-list/<int:pk>/'  --header 'Authorization: Token token_value'
-        > ```
-    
-    #### Delete Shopping List
-        
-    ??? pied-piper-delete "DELETE /api/shopping/int:pk/"
-        
-         ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Shopping list primary key`                   | 
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-        | `404`         | `application/json`                | `{"detail": "No ShoppingList matches the given query."}`         |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/shopping/<int:pk>/'  --header 'Authorization: Token token_value'
-        > ```
-
-
-    #### Add Item to Shopping List
-        
-    ??? pied-piper-patch "PATCH /api/shopping/single/int:pk/"
-
-        ##### Payload
-        ``` json title="shopping.ShoppingItemPatchSerializer partial object"
-        {
-            "name": string,
+            "name": "string,
             "quantity": string,
-            "metric": string
-        }
-        ```
-
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Shopping list primary key`                   | 
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{shopping.ShoppingItemSerializer object}` |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-        | `404`         | `application/json`                | `{"detail": "No ShoppingList matches the given query."]}`             |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/shopping/single/<int:pk>/' --header 'Authorization: Token token_value'  --data '{"name":"Test ingredient11","quantity":"1231","metric":"gr"}' 
-        > ```
-    
-    #### Update Item in Shopping List
-        
-    ??? pied-piper-patch "PATCH /api/shopping/item/int:pk/"
-
-        ##### Payload
-        ``` json title="shopping.ShoppingItemPatchSerializer partial object"
+            "metric": "string
+        },
         {
-            "name": string,
+            "name": "string,
             "quantity": string,
-            "metric": string
-        }
-        ```
-
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Shopping list Item primary key`                   | 
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{shopping.ShoppingItemSerializer object}` |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-        | `404`         | `application/json`                | `{"detail": "No ShoppingList matches the given query."]}`             |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/shopping/item/54/'  --header 'Authorization: Token token_value' --data '{"name":"Changed11","quantity":10001,"metric":"gr1"}' 
-        > ```
-    
-    #### Complete Item in Shopping List
-        
-    ??? pied-piper-patch "PATCH /api/shopping/item/int:pk/complete/"
-
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Shopping list Item primary key`                   | 
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{"Success completed item"}` |
-        | `201`         | `application/json`                | `{"Success incompleted item"}` |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-        | `404`         | `application/json`                | `{"detail": "No ShoppingItem matches the given query."]}`             |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'localhost:8081/api/shopping/item/<int:pk>>/complete/'  --header 'Authorization: Token token_value'
-        > ```
-    
-    #### Delete Shopping List Item
-        
-    ??? pied-piper-delete "DELETE /api/shopping/item/int:pk/"
-        
-         ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Shopping list item primary key`                   | 
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-        | `404`         | `application/json`                | `{"detail": "No ShoppingItem matches the given query."}`         |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/shopping/<int:pk>/'  --header 'Authorization: Token token_value'
-        > ```
+            "metric": "string
+        },
+    ....
+    ]
+    ```
 
-    ------------------------------------------------------------------------------------------
-
-=== "v4.1"
-
-    <br />
-
-    # Authentication
-    #### Create admin user
-    
-    ??? pied-piper "POST /api/auth/signup"
+    ##### Parameters
     
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "username": "username",
-            "password": "password",
-            "email": "email",
-            "is_superuser": true
-        }
-        ```
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-        
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `201`         | `application/json`                | `User created successfully`                                         |
-        | `400`         | `application/json`                | `{"username":["user with this username already exists."]}`          |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/signup' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"username":"username","password":"password","email":"email","is_superuser":true}'
-        > ```
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to which to link the ingredients`                   | 
     
     
-    #### Obtain access token
     
-    ??? pied-piper "POST /api/auth/token"
+    ##### Headers
     
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "email": "email",
-            "password": "password"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"token":"token","user":{"username":"username","email":"email","is_superuser":true}}`|
-        | `404`         | `application/json`                | `{"detail":"No User matches the given query."}`                       |
-        | `403`         | `application/json`                | `{"detail": "You must use authentication header"}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  `curl --location 'host/api/auth/token' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"email":"email","password":"password"}''
-        > ```
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
+    |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
 
-    #### Get user profile info
-    
-    ??? pied-piper-get "GET /api/auth/user/info"
-    
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"username":"username","email":"email","date_joined":"date"}`                                |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`        |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'localhost:8080/api/auth/user/info' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Change user password
-        
-    ??? pied-piper-put "PUT /api/auth/user"
+
+    ##### Responses
     
-        ##### Payload
-        ``` json 
-        {
-            "old_password": "password",
-            "new_password": "password"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `201`         | `application/json`                | `[{recipe.Ingrediant object}]`|
+    | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
+    | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
 
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `{}`                                                                  |
-        | `400`         | `application/json`                | `{"message": "Old password does not match current password"}`         |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/auth/user' --header 'Authorization: Token token_value' --header 'Content-Type: application/json'  --data '{"old_password":"old_password","new_password":"new_password"}'
-        > ```
-
-    #### Update user email and username
-        
-    ??? pied-piper-patch "PATCH /api/auth/user"
-        
-        ???+ Info 
-            
-            Individual fields can be updated only username or password.
-        
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "username": "new_username",
-            "email": "new_email"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'host/api/recipe/ingredients' --header 'Authorization: Token token_value' --data '[{"name":"Kasher salt","quantity":"1/5","metric":"tbsp","recipe":24}]'
+    > ```
 
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"username":"new_username","email":"new_email","is_superuser":true}` |
-        | `400`         | `application/json`                | `{"email":["Enter a valid email address and password."]}`             |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/auth/user' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json' --data-raw '{"username":"new_username","email":"new_email"}'
-        > ```
+------------------------------------------------------------------------------------------
 
+# Steps
 
-    #### Delete user account
-        
-    ??? pied-piper-delete "DELETE /api/auth/delete-account"
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
+??? pied-piper "POST /api/recipe/int:pk/steps"
 
-        
-        ##### Responses
+    ???+ Info 
         
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/auth/delete-account' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Request password reset token for user account
-        
-    ??? pied-piper "POST /api/auth/password_reset"
+        Override already existing steps for the recipe
 
-        ##### Payload
-        ``` json title="authentication.ResetPasswordRequestSerializer"
+    ##### Payload
+    ``` json title="recipe.Step object list"
+    [
         {
-            "email": "user_email"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{"token":"token_value"}`                                             |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
-        | `404`         | `application/json`                | `{"error":"User with provided email not found"}`                      |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/password_reset' --header 'Content-Type: application/json' --header 'X-Auth-Header: auth_header_value'   --data-raw '{"email":"user_email"}' 
-        > ```
-    
-    #### Change user password with token
-        
-    ??? pied-piper "POST /api/auth/password_reset/reset"
-
-         ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `token`   |`query (required)` | `string`        | `Token obtained from POST /api/auth/password_reset`                      | 
-
-        ##### Payload
-        ``` json 
+            "text": string
+        },
         {
-            "password": "new_password",
-            "confirm_password": "new_password"
-        }
-        ```
+            "text": string
+        },
+    ....
+    ]
+    ```
 
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `404`         | `application/json`                | `{"detail":"No PasswordResetToken matches the given query."}}`        |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/password_reset/reset?token=token_value' --header 'Content-Type: application/json'  --data '{"password":"new_password","confirm_password":"new_password"}'
-        > ```
+    ##### Parameters
     
-
-
-    ------------------------------------------------------------------------------------------
-
-    # User Settings
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to which to link the steps`                   | 
+    
     
-    #### Get User settings
     
-    ??? pied-piper-get "GET /api/auth/settings/"
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
+    |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
 
 
+    ##### Responses
     
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{auth.models.UserSettingsSerializer}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        > curl --location --request GET 'host/api/auth/settings' --header 'Authorization: Token token_value' 
-        > ```
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `201`         | `application/json`                | `[{recipe.Step object}]`|
+    | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
+    | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
 
-    #### Update user settings
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'host/api/recipe/ingredients' --header 'Authorization: Token token_value' --data '[{"text":"Heat the oven","recipe":1}]'
+    > ```
 
-    ??? pied-piper-patch "PATCH  /api/auth/settings/"
-        
-        ##### Payload
-        ``` json title="auth.serializers.UserSettingsSerializer object"
-        {
-            "preferred_translate_language": LANGUAGES_CHOICES
-        }
-        ```
-
-        ##### Languages choices (LANGUAGES_CHOICES)
-        ``` python title="recipe.models.LANGUAGES_CHOICES (use only the key in the request)"
-                ('English', 'English'),
-                ('Spanish', 'Español'),
-                ('French', 'Français'),
-                ('German', 'Deutsch'),
-                ('Chinese', '中文'),
-                ('Russian', 'Русский'),
-                ('Italian', 'Italiano'),
-                ('Japanese', '日本語'),
-                ('Dutch', 'Nederlands'),
-                ('Polish', 'Polski'),
-                ('Greek', 'Ελληνικά'),
-                ('Swedish', 'Svenska'),
-                ('Czech', 'Čeština'),
-                ('Bulgarian', 'Български'),
-        ```
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{auth.models.UserSettingsSerializer}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-
-        ##### Example cURL
-        
-        > ``` bash
-        > curl --location --request PATCH 'host/api/auth/settings' --header 'Authorization: Token token_value' --data '{"language":"recipe.models.LANGUAGES_CHOICES"}'
-        > ```
+------------------------------------------------------------------------------------------
 
-    ------------------------------------------------------------------------------------------
+# Schedule (Meal Planner)
+#### Get Schedule
 
-    # Recipe
-    
-    #### Search for recipes
-    
-    ??? pied-piper-get "GET /api/recipe/home/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `search`  |`query (optional)` | `string`        | `Part or fulll name of the recipe.Recipe object`                      | 
-        | `page`    |`query (optional)` | `int`           | `Page number if there a mutilple pages result`                        | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/?name=name&page=1' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
+??? pied-piper-get "GET /api/schedule/"
+
+    ##### Parameters
     
-    #### Get favorite recipes
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `date`    |`path (required)` | `int`        | `Schedule date eg. 2025-1-26`                   | 
+
+    ##### Headers
     
-    ??? pied-piper-get "GET /api/recipe/home/favorites/"
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
+
+    ##### Responses
     
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}` |
-        | `404`         | `application/json`                | `{"detail":"No Recipe matches the given query."}`                                  |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/favorites/' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
+    | http code     | content-type                      | response                                                                           |
+    |---------------|-----------------------------------|------------------------------------------------------------------------------------|
+    | `200`         | `application/json`                | `[schedule.ScheduleRepresentationSerializer objects list]`                                                     |
+    | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
+
+    ##### Example cURL
     
+    > ``` bash
+    >  curl --location 'host/api/schedule/?date=2025-02-15' --header 'X-Auth-Header: X_AUTH_HEADER'
+    > ```
+
+#### Create schedule
+
+??? pied-piper "POST /api/schedule/"
+
+    ##### Payload
+    ``` json title="recipe.Category object"
+    {
+        "timing": schedule.models.TIMING_CHOICES,
+        "recipe": recipe.pk,
+        "date": date-format-YYYY-MM-DD
+    }
+    ```
     
+    ##### Headers
     
-    #### Get trending recipes
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint`              | 
+    |`Content-Type`|`application/json`|                   | `Applicaton Json content header                                     | 
+ 
+
+    ##### Responses
     
-    ??? pied-piper-get "GET /api/recipe/trending"
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `201`         | `application/json`                | `{schedule.ScheduleRepresentationSerializer object}`|
+    | `400`         | `application/json`                | `{"error": "Invalid date format. Use YYYY-MM-DD."}`                       |
+    | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
+
+    ##### Example cURL
     
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Recipe objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'localhost:8080/api/recipe/trending' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
+    > ``` bash
+    >  curl --location 'host/api/schedule/' --header 'Authorization: Token token_value' --data '{"timing":"Breakfast","recipe":26,"date":"2025-02-15"}'
+    > ```
 
-    #### Search for recipes preview
+#### Delete schedule
     
-    ??? pied-piper-get "GET /api/recipe/home/preview/"
+??? pied-piper-delete "DELETE /api/schedule/<int:pk>"
+
+     ##### Parameters
     
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `search`  |`query (optional)` | `string`        | `Part or fulll name of the recipe.Recipe object`                      | 
-        | `page`    |`query (optional)` | `int`           | `Page number if there a mutilple pages result`                        | 
-        
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Schedule pk`                   |         
+
+    ##### Headers
     
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.RecipePreviewSerializer obj list]}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/preview/?name=name&page=1' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
+
     
-    #### Update favorite status
+    ##### Responses
     
-    ??? pied-piper-patch "PATCH /api/recipe/int:pk/favorite"
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `204`         | `application/json`                | `No Content`                                                          |
+    | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
+
+    ##### Example cURL
     
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be favorited or unfavorited`                   | 
-        
+    > ``` bash
+    >  curl --location --request DELETE 'host/api/schedule/<int:pk>' --header 'Authorization: Token token_value' 
+    > ```
+
+------------------------------------------------------------------------------------------
+
+# Shopping (Shopping List)
+
+#### Get Shopping lists
+
+??? pied-piper-get "GET /api/shopping/"
+
+    ##### Headers
     
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
+
+    ##### Responses
     
+    | http code     | content-type                      | response                                                                           |
+    |---------------|-----------------------------------|------------------------------------------------------------------------------------|
+    | `200`         | `application/json`                | `[recipe.ShoppingList objects list]`                                                     |
+    | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
+
+    ##### Example cURL
     
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `201`         | `application/json`        | `"Success favorite recipe"`                                |
-        | `201`         | `application/json`        | `"Success unfavorite recipe"`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}     |
-        | `404`         | `application/json`                | `Not Found`          |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/recipe/1/favorite' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
+    > ``` bash
+    >  curl --location 'host/api/shopping/' --header 'Authorization: Token token_value' 
+    > ```
+
+#### Get Shopping list (single)
 
-    #### Get recipe by pk
+??? pied-piper-get "GET /api/shopping/single/int:pk/"
 
-    ??? pied-piper-get "GET /api/recipe/int:pk/"
+    ##### Headers
     
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
+
+    ##### Responses
     
+    | http code     | content-type                      | response                                                                           |
+    |---------------|-----------------------------------|------------------------------------------------------------------------------------|
+    | `200`         | `application/json`                | `[recipe.ShoppingList object]`                                                     |
+    | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
+
+    ##### Example cURL
     
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`                                              | 
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
-        | `404`         | `application/json`                |  {"detail":"No Recipe matches the given query."}                      |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request GET 'host/api/recipe/1/' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
+    > ``` bash
+    >  curl --location 'host/api/shopping/single/<int:pk>/' --header 'Authorization: Token token_value' 
+    > ```
 
+#### Create shopping
 
-    #### Create recipe
-    
-    ??? pied-piper "POST /api/recipe/"
-    
-        ##### Payload
-        ``` json title="recipe.Recipe object"
-        {
-            "image": file,
-            "name": string,
-            "serves": int,
-            "description": string,
-            "difficulty": string (DIFFICULTY_CHOICES),
-            "chef": string
-            "video": file (optional),
-            "category": <int:pk> (optional),
-            "tag": <int:pk> (optional), 
-            "prep_time": int,
-            "cook_time": int
-        }
-        ```
-
-        ##### Dificulty choices (DIFFICULTY_CHOICES)
-        ``` python title="recipe.models.DIFFICULTY_CHOICES (use only the key in the request)"
-            ('Easy', 'Easy'),
-            ('Intermediate', 'Intermediate'),
-            ('Advanced', 'Advanced'),
-            ('Expert', 'Expert'),
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`multipart/form-data`|  `Recipe object`  | `Recipe multipart/form-data object`                                | 
+??? pied-piper "POST /api/shopping/"
+
+    ##### Payload
+    ``` json title="shopping.ShoppingListSerializer partial object"
+    {
+        "name": "string"
+    }
+    ```
     
+    ##### Headers
     
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Recipe object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/' --header 'Authorization: Token token_value' --form  'image=@"/path/image.jpg"' --form 'name="Recipe name"' --form 'servings="5"' --form 'category="1"' --form 'tag="1"' --form 'prep_time="20"' --form 'video=@"/path/video.mp4"' --form 'description="This is cool recipe"' --form 'cook_time="45"'
-        > ```
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint`              | 
+    |`Content-Type`|`application/json`|                   | `Applicaton Json content header                                     | 
+ 
+
+    ##### Responses
     
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `201`         | `application/json`                | `{schedule.SingleShoppingListSerializer object}`|
+    | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
+
+    ##### Example cURL
     
-    #### Update recipe main info (without ingredients and steps)
+    > ``` bash
+    >  curl --location 'host/api/shopping/'  --header 'Authorization: Token token_value'  --data '{"name":"asd12"}'
+    > ```
+
+#### Update Schopping List
+
+??? pied-piper-put "PUT /api/shopping/int:pk"
+
+    ##### Payload
+    ``` json title="recipe.ShoppingListSerializer parital object"
+    {
+        "recipe": integer
+    }
+    ```
+
+    ##### Parameters
     
-    ??? pied-piper-put "PUT /api/recipe/int:pk"
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Shopping list primary key`                   | 
     
-        ##### Payload
-        ``` json title="recipe.Recipe object"
-        {
-            "image": file,
-            "name": string,
-            "serves": int,
-            "description": string,
-            "difficulty": string (DIFFICULTY_CHOICES),
-            "chef": string
-            "video": file (optional),
-            "category": <int:pk> (optional),
-            "tag": <int:pk> (optional), 
-            "prep_time": int,
-            "cook_time": int,
-            "clear_video": boolean (optional if you want to delete already set video)
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-        |`Content-Type`|`multipart/form-data`|  `Recipe object`  | `Recipe multipart/form-data object`                                | 
     
+    ##### Headers
     
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/1' --header 'Authorization: Token token_value' --form  'image=@"/path/image.jpg"' --form 'name="Recipe name"' --form 'servings="5"' --form 'category="1"' --form 'tag="1"' --form 'prep_time="20"' --form 'video=@"/path/video.mp4"' --form 'description="This is cool recipe"' --form 'cook_time="45"'
-        > ```
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `              | 
+    |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
+
+
+    ##### Responses
     
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `200`         | `application/json`                | `{recipe.ShoppingList object}`|
+    | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
+    | `404`         | `application/json`                | `{"detail":"No ShoppingList matches the given query."}`                       |
+
+    ##### Example cURL
     
-    #### Delete recipes
+    > ``` bash
+    >  curl --location --request PUT 'host/api/shopping/<int:recipe_pk>>/' --header 'Authorization: Token token_value' --data '{"recipe":recipe_pk}'
+    > ```
+
+
+#### Complete Shopping List
     
-    ??? pied-piper-delete "DELETE /api/recipe/pk:int/"
+??? pied-piper-patch "PATCH /api/shopping/complete-list/int:pk/"
+
+    ##### Parameters
     
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be deleted`                   | 
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Shopping list primary key`                   | 
     
+    ##### Headers
     
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `204`         | `application/json`                |                                                                     |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/recipe/<int:pk>/' --header 'Authorization: Token token_value' 
-        > ```
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
 
-    #### Scrape recipes
     
-    ??? pied-piper "POST /api/recipe/scrape"
-
-        ???+ Info 
-            
-            Valid OpenAI API Key is nedded for this endpoint
-        
-        ##### Payload
-        ``` json title="recipe.RecipeLink object"
-        {
-            "url": file
-        }
-        ```
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                |  `{recipe.Recipe object}`|                                          |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`        |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        > curl --location 'host/api/recipe/scrape' --header 'Authorization: Token token_value'  --data '{"url":"http://...."}'
-        > ```
-
-    #### Generate recipes
+    ##### Responses
     
-    ??? pied-piper "POST /api/recipe/generate"
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `201`         | `application/json`                | `{"Success complete shopping list"}` |
+    | `201`         | `application/json`                | `{"Success incomplete shopping list"}` |
+    | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
+    | `404`         | `application/json`                | `{"detail": "No ShoppingList matches the given query."]}`             |
 
-        ???+ Info 
-            
-            Valid OpenAI API Key is nedded for this endpoint
-        
-        ##### Payload
-        ``` json title="GenerateRecipeSerializer list of strings"
-        {
-            "ingredients": []
-        }
-        ```
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                |  `[GenerateRecipeResultSerializer objects]`                         |
-        | `204`         | `application/json`                |  `{Empty response if there a openai empty response}`                |
-        | `401`         | `application/json`                |  `{"detail":"Authentication credentials were not provided."}`       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        > curl --location 'host/api/recipe/generate' --header 'Authorization: Token token_value' --header 'Content-Type: application/json' --data '{"ingredients":["tomato","onion","cheese","pasta","milk","red peparz"]}'
-        > ```
+    ##### Example cURL
     
-    #### Translate recipe
+    > ``` bash
+    >  curl --location --request PATCH 'host/api/shopping/complete-list/<int:pk>/'  --header 'Authorization: Token token_value'
+    > ```
+
+#### Delete Shopping List
     
-    ??? pied-piper "POST /api/recipe/translate"
-        
-        ???+ Info 
-            
-            Valid OpenAI API Key is nedded for this endpoint
-
-        ##### Payload
-        ``` json title="recipe.Recipe object"
-        {
-            "pk": recipe.pk,
-            "language": recipe.models.LANGUAGES_CHOICES
-        }
-        ```
-
-        ##### Language choices (LANGUAGES_CHOICES)
-        ``` python title="recipe.models.LANGUAGES_CHOICES (use only the key in the request)"
-                ('English', 'English'),
-                ('Spanish', 'Español'),
-                ('French', 'Français'),
-                ('German', 'Deutsch'),
-                ('Chinese', '中文'),
-                ('Russian', 'Русский'),
-                ('Italian', 'Italiano'),
-                ('Japanese', '日本語'),
-                ('Dutch', 'Nederlands'),
-                ('Polish', 'Polski'),
-                ('Greek', 'Ελληνικά'),
-                ('Swedish', 'Svenska'),
-                ('Czech', 'Čeština'),
-                ('Bulgarian', 'Български'),
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
+??? pied-piper-delete "DELETE /api/shopping/int:pk/"
     
+     ##### Parameters
     
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`|
-        | `400`         | `application/json`                | `{"errors":["Default language for translation should be set"]}`                       |
-        | `400`         | `application/json`                | `{"errors":["Translation must be performed only on original recipes"]}`                       |
-        | `400`         | `application/json`                | `{"errors":["Translation language is already used and there a recipe translated with that language."]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/translate' --header 'Authorization: Token token_value' --data '{"pk":15,"language":"German"}'
-        > ```
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Shopping list primary key`                   | 
 
-    #### Get recipe variations (translation)
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
 
-    ??? pied-piper-get "GET /api/recipe/int:pk/variations"
     
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
+    ##### Responses
     
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `204`         | `application/json`                | `No Content`                                                          |
+    | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
+    | `404`         | `application/json`                | `{"detail": "No ShoppingList matches the given query."}`         |
+
+    ##### Example cURL
     
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.serializers.TranslateRecipeSerializer object}`                                              | 
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
-        | `404`         | `application/json`                |  {"detail":"No Recipe matches the given query."}                      |
-
-        ##### Example cURL
-        
-        > ``` bash
-        > curl --location 'host/api/recipe/20/variations' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
+    > ``` bash
+    >  curl --location --request DELETE 'host/api/shopping/<int:pk>/'  --header 'Authorization: Token token_value'
+    > ```
 
-    ------------------------------------------------------------------------------------------
 
-    # Category
+#### Add Item to Shopping List
     
-    #### Get all categories
-    
-    ??? pied-piper-get "GET /api/recipe/category"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Category objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
+??? pied-piper-patch "PATCH /api/shopping/single/int:pk/"
+
+    ##### Payload
+    ``` json title="shopping.ShoppingItemPatchSerializer partial object"
+    {
+        "name": string,
+        "quantity": string,
+        "metric": string
+    }
+    ```
+
+    ##### Parameters
     
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Shopping list primary key`                   | 
     
-    #### Get all categories recipes 
+    ##### Headers
     
-    ??? pied-piper-get "GET /api/recipe/category/int:pk/recipes"
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
+
     
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Category primary key`                   | 
-        
+    ##### Responses
     
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Recipe objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category/1/recipes' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `201`         | `application/json`                | `{shopping.ShoppingItemSerializer object}` |
+    | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
+    | `404`         | `application/json`                | `{"detail": "No ShoppingList matches the given query."]}`             |
+
+    ##### Example cURL
     
-    #### Create category
+    > ``` bash
+    >  curl --location --request PATCH 'host/api/shopping/single/<int:pk>/' --header 'Authorization: Token token_value'  --data '{"name":"Test ingredient11","quantity":"1231","metric":"gr"}' 
+    > ```
+
+#### Update Item in Shopping List
     
-    ??? pied-piper "POST /api/recipe/category/add"
+??? pied-piper-patch "PATCH /api/shopping/item/int:pk/"
+
+    ##### Payload
+    ``` json title="shopping.ShoppingItemPatchSerializer partial object"
+    {
+        "name": string,
+        "quantity": string,
+        "metric": string
+    }
+    ```
+
+    ##### Parameters
     
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint`              | 
-        |`Content-Type`|`application/json`|                   | `Applicaton Json content header                                     | 
-     
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Category object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category/add' --header 'Authorization: Token token_value' --data '{"name":"Greek"}'
-        > ```
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Shopping list Item primary key`                   | 
     
-    #### Update category
+    ##### Headers
     
-    ??? pied-piper-put "PUT /api/recipe/category/int:pk"
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
+
     
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string,
+    ##### Responses
     
-        }
-        ```
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `200`         | `application/json`                | `{shopping.ShoppingItemSerializer object}` |
+    | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
+    | `404`         | `application/json`                | `{"detail": "No ShoppingList matches the given query."]}`             |
+
+    ##### Example cURL
     
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Category primary key`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `              | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
+    > ``` bash
+    >  curl --location --request PATCH 'host/api/shopping/item/54/'  --header 'Authorization: Token token_value' --data '{"name":"Changed11","quantity":10001,"metric":"gr1"}' 
+    > ```
+
+#### Complete Item in Shopping List
     
+??? pied-piper-patch "PATCH /api/shopping/item/int:pk/complete/"
+
+    ##### Parameters
     
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`|
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-        | `404`         | `application/json`                | `{"detail":"No Category matches the given query."}`                       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/category/6' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json'  --data '{"name":"Italiano"}'
-        > ```
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Shopping list Item primary key`                   | 
     
-    ------------------------------------------------------------------------------------------
+    ##### Headers
     
-    # Tag
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
+
     
-    #### Get all tags 
+    ##### Responses
     
-    ??? pied-piper-get "GET /api/recipe/tags"
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `201`         | `application/json`                | `{"Success completed item"}` |
+    | `201`         | `application/json`                | `{"Success incompleted item"}` |
+    | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
+    | `404`         | `application/json`                | `{"detail": "No ShoppingItem matches the given query."]}`             |
+
+    ##### Example cURL
     
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Tag objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tags' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
+    > ``` bash
+    >  curl --location --request PATCH 'localhost:8081/api/shopping/item/<int:pk>>/complete/'  --header 'Authorization: Token token_value'
+    > ```
+
+#### Delete Shopping List Item
     
-    #### Get all recipes from tag 
+??? pied-piper-delete "DELETE /api/shopping/item/int:pk/"
     
-    ??? pied-piper-get "GET /api/recipe/tag/int:pk/recipes"
+     ##### Parameters
     
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Tag primary key`                   | 
-        
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Shopping list item primary key`                   | 
+
+    ##### Headers
     
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tag/<int:pk>/recipes' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
+
     
-    #### Create tag
+    ##### Responses
     
-    ??? pied-piper "POST /api/recipe/tag/add"
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `204`         | `application/json`                | `No Content`                                                          |
+    | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
+    | `404`         | `application/json`                | `{"detail": "No ShoppingItem matches the given query."}`         |
+
+    ##### Example cURL
     
-        ##### Payload
-        ``` json title="recipe.Tag object"
-        {
-            "name": string
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `      | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Category object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tag/add' --header 'Authorization: Token token_value' --data '{"name":"Summer vibes"}'
-        > ```
-    
-    #### Update tag
-    
-    ??? pied-piper-put "PUT /api/recipe/tag/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string,
-    
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Tag primary key`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Tag object}`|
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-        | `404`         | `application/json`                | `{"detail":"No Category matches the given query."}`                       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/tag/1' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json'  --data '{"name":"Summer Vibes"}'
-        > ```
-    
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Ingredients
-    
-    ??? pied-piper "POST /api/recipe/int:pk/ingredients"
-    
-        ???+ Info 
-            
-            Override already existing ingredients for the recipe
-    
-        ##### Payload
-        ``` json title="recipe.Igredient object list"
-        [
-            {
-                "name": "string,
-                "quantity": string,
-                "metric": "string
-            },
-            {
-                "name": "string,
-                "quantity": string,
-                "metric": "string
-            },
-        ....
-        ]
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to which to link the ingredients`                   | 
-        
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `[{recipe.Ingrediant object}]`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/ingredients' --header 'Authorization: Token token_value' --data '[{"name":"Kasher salt","quantity":"1/5","metric":"tbsp","recipe":24}]'
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Steps
-    
-    ??? pied-piper "POST /api/recipe/int:pk/steps"
-    
-        ???+ Info 
-            
-            Override already existing steps for the recipe
-    
-        ##### Payload
-        ``` json title="recipe.Step object list"
-        [
-            {
-                "text": string
-            },
-            {
-                "text": string
-            },
-        ....
-        ]
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to which to link the steps`                   | 
-        
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `[{recipe.Step object}]`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/ingredients' --header 'Authorization: Token token_value' --data '[{"text":"Heat the oven","recipe":1}]'
-        > ```
-
-    ------------------------------------------------------------------------------------------
-
-    # Schedule (Meal Planner)
-    #### Get Schedule
-    
-    ??? pied-piper-get "GET /api/schedule/"
-
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `date`    |`path (required)` | `int`        | `Schedule date eg. 2025-1-26`                   | 
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[schedule.ScheduleRepresentationSerializer objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/schedule/?date=2025-02-15' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Create schedule
-    
-    ??? pied-piper "POST /api/schedule/"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "timing": schedule.models.TIMING_CHOICES,
-            "recipe": recipe.pk,
-            "date": date-format-YYYY-MM-DD
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint`              | 
-        |`Content-Type`|`application/json`|                   | `Applicaton Json content header                                     | 
-     
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{schedule.ScheduleRepresentationSerializer object}`|
-        | `400`         | `application/json`                | `{"error": "Invalid date format. Use YYYY-MM-DD."}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/schedule/' --header 'Authorization: Token token_value' --data '{"timing":"Breakfast","recipe":26,"date":"2025-02-15"}'
-        > ```
-
-    #### Delete schedule
-        
-    ??? pied-piper-delete "DELETE /api/schedule/<int:pk>"
-
-         ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Schedule pk`                   |         
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/schedule/<int:pk>' --header 'Authorization: Token token_value' 
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Shopping (Shopping List)
-    
-    #### Get Shopping lists
-
-    ??? pied-piper-get "GET /api/shopping/"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.ShoppingList objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/shopping/' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Get Shopping list (single)
-
-    ??? pied-piper-get "GET /api/shopping/single/int:pk/"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.ShoppingList object]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/shopping/single/<int:pk>/' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Create shopping
-    
-    ??? pied-piper "POST /api/shopping/"
-    
-        ##### Payload
-        ``` json title="shopping.ShoppingListSerializer partial object"
-        {
-            "name": "string"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint`              | 
-        |`Content-Type`|`application/json`|                   | `Applicaton Json content header                                     | 
-     
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{schedule.SingleShoppingListSerializer object}`|
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/shopping/'  --header 'Authorization: Token token_value'  --data '{"name":"asd12"}'
-        > ```
-
-    #### Update Schopping List
-    
-    ??? pied-piper-put "PUT /api/shopping/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.ShoppingListSerializer parital object"
-        {
-            "recipe": integer
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Shopping list primary key`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `              | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.ShoppingList object}`|
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-        | `404`         | `application/json`                | `{"detail":"No ShoppingList matches the given query."}`                       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/shopping/<int:recipe_pk>>/' --header 'Authorization: Token token_value' --data '{"recipe":recipe_pk}'
-        > ```
-    
-    
-    #### Complete Shopping List
-        
-    ??? pied-piper-patch "PATCH /api/shopping/complete-list/int:pk/"
-
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Shopping list primary key`                   | 
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{"Success complete shopping list"}` |
-        | `201`         | `application/json`                | `{"Success incomplete shopping list"}` |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-        | `404`         | `application/json`                | `{"detail": "No ShoppingList matches the given query."]}`             |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/shopping/complete-list/<int:pk>/'  --header 'Authorization: Token token_value'
-        > ```
-    
-    #### Delete Shopping List
-        
-    ??? pied-piper-delete "DELETE /api/shopping/int:pk/"
-        
-         ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Shopping list primary key`                   | 
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-        | `404`         | `application/json`                | `{"detail": "No ShoppingList matches the given query."}`         |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/shopping/<int:pk>/'  --header 'Authorization: Token token_value'
-        > ```
-
-
-    #### Add Item to Shopping List
-        
-    ??? pied-piper-patch "PATCH /api/shopping/single/int:pk/"
-
-        ##### Payload
-        ``` json title="shopping.ShoppingItemPatchSerializer partial object"
-        {
-            "name": string,
-            "quantity": string,
-            "metric": string
-        }
-        ```
-
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Shopping list primary key`                   | 
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{shopping.ShoppingItemSerializer object}` |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-        | `404`         | `application/json`                | `{"detail": "No ShoppingList matches the given query."]}`             |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/shopping/single/<int:pk>/' --header 'Authorization: Token token_value'  --data '{"name":"Test ingredient11","quantity":"1231","metric":"gr"}' 
-        > ```
-    
-    #### Update Item in Shopping List
-        
-    ??? pied-piper-patch "PATCH /api/shopping/item/int:pk/"
-
-        ##### Payload
-        ``` json title="shopping.ShoppingItemPatchSerializer partial object"
-        {
-            "name": string,
-            "quantity": string,
-            "metric": string
-        }
-        ```
-
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Shopping list Item primary key`                   | 
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{shopping.ShoppingItemSerializer object}` |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-        | `404`         | `application/json`                | `{"detail": "No ShoppingList matches the given query."]}`             |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/shopping/item/54/'  --header 'Authorization: Token token_value' --data '{"name":"Changed11","quantity":10001,"metric":"gr1"}' 
-        > ```
-    
-    #### Complete Item in Shopping List
-        
-    ??? pied-piper-patch "PATCH /api/shopping/item/int:pk/complete/"
-
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Shopping list Item primary key`                   | 
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{"Success completed item"}` |
-        | `201`         | `application/json`                | `{"Success incompleted item"}` |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-        | `404`         | `application/json`                | `{"detail": "No ShoppingItem matches the given query."]}`             |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'localhost:8081/api/shopping/item/<int:pk>>/complete/'  --header 'Authorization: Token token_value'
-        > ```
-    
-    #### Delete Shopping List Item
-        
-    ??? pied-piper-delete "DELETE /api/shopping/item/int:pk/"
-        
-         ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Shopping list item primary key`                   | 
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-        | `404`         | `application/json`                | `{"detail": "No ShoppingItem matches the given query."}`         |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/shopping/<int:pk>/'  --header 'Authorization: Token token_value'
-        > ```
-
-    ------------------------------------------------------------------------------------------
-
-=== "v4.0 - v3.x"
-
-    <br />
-
-    # Authentication
-    #### Create admin user
-    
-    ??? pied-piper "POST /api/auth/signup"
-    
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "username": "username",
-            "password": "password",
-            "email": "email",
-            "is_superuser": true
-        }
-        ```
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-        
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `201`         | `application/json`                | `User created successfully`                                         |
-        | `400`         | `application/json`                | `{"username":["user with this username already exists."]}`          |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/signup' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"username":"username","password":"password","email":"email","is_superuser":true}'
-        > ```
-    
-    
-    #### Obtain access token
-    
-    ??? pied-piper "POST /api/auth/token"
-    
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "email": "email",
-            "password": "password"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"token":"token","user":{"username":"username","email":"email","is_superuser":true}}`|
-        | `404`         | `application/json`                | `{"detail":"No User matches the given query."}`                       |
-        | `403`         | `application/json`                | `{"detail": "You must use authentication header"}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  `curl --location 'host/api/auth/token' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"email":"email","password":"password"}''
-        > ```
-
-    #### Get user profile info
-    
-    ??? pied-piper-get "GET /api/auth/user/info"
-    
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"username":"username","email":"email","date_joined":"date"}`                                |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`        |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'localhost:8080/api/auth/user/info' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Change user password
-        
-    ??? pied-piper-put "PUT /api/auth/user"
-    
-        ##### Payload
-        ``` json 
-        {
-            "old_password": "password",
-            "new_password": "password"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `{}`                                                                  |
-        | `400`         | `application/json`                | `{"message": "Old password does not match current password"}`         |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/auth/user' --header 'Authorization: Token token_value' --header 'Content-Type: application/json'  --data '{"old_password":"old_password","new_password":"new_password"}'
-        > ```
-
-    #### Update user email and username
-        
-    ??? pied-piper-patch "PATCH /api/auth/user"
-        
-        ???+ Info 
-            
-            Individual fields can be updated only username or password.
-        
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "username": "new_username",
-            "email": "new_email"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"username":"new_username","email":"new_email","is_superuser":true}` |
-        | `400`         | `application/json`                | `{"email":["Enter a valid email address and password."]}`             |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/auth/user' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json' --data-raw '{"username":"new_username","email":"new_email"}'
-        > ```
-
-
-    #### Delete user account
-        
-    ??? pied-piper-delete "DELETE /api/auth/delete-account"
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/auth/delete-account' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Request password reset token for user account
-        
-    ??? pied-piper "POST /api/auth/password_reset"
-
-        ##### Payload
-        ``` json title="authentication.ResetPasswordRequestSerializer"
-        {
-            "email": "user_email"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{"token":"token_value"}`                                             |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
-        | `404`         | `application/json`                | `{"error":"User with provided email not found"}`                      |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/password_reset' --header 'Content-Type: application/json' --header 'X-Auth-Header: auth_header_value'   --data-raw '{"email":"user_email"}' 
-        > ```
-    
-    #### Change user password with token
-        
-    ??? pied-piper "POST /api/auth/password_reset/reset"
-
-         ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `token`   |`query (required)` | `string`        | `Token obtained from POST /api/auth/password_reset`                      | 
-
-        ##### Payload
-        ``` json 
-        {
-            "password": "new_password",
-            "confirm_password": "new_password"
-        }
-        ```
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `404`         | `application/json`                | `{"detail":"No PasswordResetToken matches the given query."}}`        |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/password_reset/reset?token=token_value' --header 'Content-Type: application/json'  --data '{"password":"new_password","confirm_password":"new_password"}'
-        > ```
-    
-
-
-    ------------------------------------------------------------------------------------------
-
-    # User Settings
-    
-    #### Get User settings
-    
-    ??? pied-piper-get "GET /api/auth/settings/"
-
-
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{auth.models.UserSettingsSerializer}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        > curl --location --request GET 'host/api/auth/settings' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Update user settings
-
-    ??? pied-piper-patch "PATCH  /api/auth/settings/"
-        
-        ##### Payload
-        ``` json title="auth.serializers.UserSettingsSerializer object"
-        {
-            "preferred_translate_language": LANGUAGES_CHOICES
-        }
-        ```
-
-        ##### Languages choices (LANGUAGES_CHOICES)
-        ``` python title="recipe.models.LANGUAGES_CHOICES (use only the key in the request)"
-                ('English', 'English'),
-                ('Spanish', 'Español'),
-                ('French', 'Français'),
-                ('German', 'Deutsch'),
-                ('Chinese', '中文'),
-                ('Russian', 'Русский'),
-                ('Italian', 'Italiano'),
-                ('Japanese', '日本語'),
-                ('Dutch', 'Nederlands'),
-                ('Polish', 'Polski'),
-                ('Greek', 'Ελληνικά'),
-                ('Swedish', 'Svenska'),
-                ('Czech', 'Čeština'),
-                ('Bulgarian', 'Български'),
-        ```
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{auth.models.UserSettingsSerializer}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-
-        ##### Example cURL
-        
-        > ``` bash
-        > curl --location --request PATCH 'host/api/auth/settings' --header 'Authorization: Token token_value' --data '{"language":"recipe.models.LANGUAGES_CHOICES"}'
-        > ```
-
-    ------------------------------------------------------------------------------------------
-
-    # Recipe
-    
-    #### Search for recipes
-    
-    ??? pied-piper-get "GET /api/recipe/home/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `search`  |`query (optional)` | `string`        | `Part or fulll name of the recipe.Recipe object`                      | 
-        | `page`    |`query (optional)` | `int`           | `Page number if there a mutilple pages result`                        | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/?name=name&page=1' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    #### Get favorite recipes
-    
-    ??? pied-piper-get "GET /api/recipe/home/favorites/"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}` |
-        | `404`         | `application/json`                | `{"detail":"No Recipe matches the given query."}`                                  |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/favorites/' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    
-    
-    #### Get trending recipes
-    
-    ??? pied-piper-get "GET /api/recipe/trending"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Recipe objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'localhost:8080/api/recipe/trending' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-
-    #### Search for recipes preview
-    
-    ??? pied-piper-get "GET /api/recipe/home/preview/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `search`  |`query (optional)` | `string`        | `Part or fulll name of the recipe.Recipe object`                      | 
-        | `page`    |`query (optional)` | `int`           | `Page number if there a mutilple pages result`                        | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.RecipePreviewSerializer obj list]}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/preview/?name=name&page=1' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    #### Update favorite status
-    
-    ??? pied-piper-patch "PATCH /api/recipe/int:pk/favorite"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be favorited or unfavorited`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `201`         | `application/json`        | `"Success favorite recipe"`                                |
-        | `201`         | `application/json`        | `"Success unfavorite recipe"`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}     |
-        | `404`         | `application/json`                | `Not Found`          |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/recipe/1/favorite' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-
-    #### Get recipe by pk
-
-    ??? pied-piper-get "GET /api/recipe/int:pk/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`                                              | 
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
-        | `404`         | `application/json`                |  {"detail":"No Recipe matches the given query."}                      |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request GET 'host/api/recipe/1/' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-
-
-    #### Create recipe
-    
-    ??? pied-piper "POST /api/recipe/"
-    
-        ##### Payload
-        ``` json title="recipe.Recipe object"
-        {
-            "image": file,
-            "name": string,
-            "serves": int,
-            "description": string,
-            "difficulty": string (DIFFICULTY_CHOICES),
-            "chef": string
-            "video": file (optional),
-            "category": <int:pk> (optional),
-            "tag": <int:pk> (optional), 
-            "prep_time": int,
-            "cook_time": int
-        }
-        ```
-
-        ##### Dificulty choices (DIFFICULTY_CHOICES)
-        ``` python title="recipe.models.DIFFICULTY_CHOICES (use only the key in the request)"
-            ('Easy', 'Easy'),
-            ('Intermediate', 'Intermediate'),
-            ('Advanced', 'Advanced'),
-            ('Expert', 'Expert'),
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`multipart/form-data`|  `Recipe object`  | `Recipe multipart/form-data object`                                | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Recipe object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/' --header 'Authorization: Token token_value' --form  'image=@"/path/image.jpg"' --form 'name="Recipe name"' --form 'servings="5"' --form 'category="1"' --form 'tag="1"' --form 'prep_time="20"' --form 'video=@"/path/video.mp4"' --form 'description="This is cool recipe"' --form 'cook_time="45"'
-        > ```
-    
-    
-    #### Update recipe main info (without ingredients and steps)
-    
-    ??? pied-piper-put "PUT /api/recipe/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Recipe object"
-        {
-            "image": file,
-            "name": string,
-            "serves": int,
-            "description": string,
-            "difficulty": string (DIFFICULTY_CHOICES),
-            "chef": string
-            "video": file (optional),
-            "category": <int:pk> (optional),
-            "tag": <int:pk> (optional), 
-            "prep_time": int,
-            "cook_time": int,
-            "clear_video": boolean (optional if you want to delete already set video)
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-        |`Content-Type`|`multipart/form-data`|  `Recipe object`  | `Recipe multipart/form-data object`                                | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/1' --header 'Authorization: Token token_value' --form  'image=@"/path/image.jpg"' --form 'name="Recipe name"' --form 'servings="5"' --form 'category="1"' --form 'tag="1"' --form 'prep_time="20"' --form 'video=@"/path/video.mp4"' --form 'description="This is cool recipe"' --form 'cook_time="45"'
-        > ```
-    
-    
-    #### Delete recipes
-    
-    ??? pied-piper-delete "DELETE /api/recipe/pk:int/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be deleted`                   | 
-    
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `204`         | `application/json`                |                                                                     |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/recipe/<int:pk>/' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Scrape recipes
-    
-    ??? pied-piper "POST /api/recipe/scrape"
-
-        ???+ Info 
-            
-            Valid OpenAI API Key is nedded for this endpoint
-        
-        ##### Payload
-        ``` json title="recipe.RecipeLink object"
-        {
-            "url": file
-        }
-        ```
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                |  `{recipe.Recipe object}`|                                          |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`        |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        > curl --location 'host/api/recipe/scrape' --header 'Authorization: Token token_value'  --data '{"url":"http://...."}'
-        > ```
-
-    #### Generate recipes
-    
-    ??? pied-piper "POST /api/recipe/generate"
-
-        ???+ Info 
-            
-            Valid OpenAI API Key is nedded for this endpoint
-        
-        ##### Payload
-        ``` json title="GenerateRecipeSerializer list of strings"
-        {
-            "ingredients": []
-        }
-        ```
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                |  `[GenerateRecipeResultSerializer objects]`                         |
-        | `204`         | `application/json`                |  `{Empty response if there a openai empty response}`                |
-        | `401`         | `application/json`                |  `{"detail":"Authentication credentials were not provided."}`       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        > curl --location 'host/api/recipe/generate' --header 'Authorization: Token token_value' --header 'Content-Type: application/json' --data '{"ingredients":["tomato","onion","cheese","pasta","milk","red peparz"]}'
-        > ```
-    
-    #### Translate recipe
-    
-    ??? pied-piper "POST /api/recipe/translate"
-        
-         ???+ Info 
-            
-            Valid OpenAI API Key is nedded for this endpoint
-    
-        ##### Payload
-        ``` json title="recipe.Recipe object"
-        {
-            "pk": recipe.pk,
-            "language": recipe.models.LANGUAGES_CHOICES
-        }
-        ```
-
-        ##### Language choices (LANGUAGES_CHOICES)
-        ``` python title="recipe.models.LANGUAGES_CHOICES (use only the key in the request)"
-                ('English', 'English'),
-                ('Spanish', 'Español'),
-                ('French', 'Français'),
-                ('German', 'Deutsch'),
-                ('Chinese', '中文'),
-                ('Russian', 'Русский'),
-                ('Italian', 'Italiano'),
-                ('Japanese', '日本語'),
-                ('Dutch', 'Nederlands'),
-                ('Polish', 'Polski'),
-                ('Greek', 'Ελληνικά'),
-                ('Swedish', 'Svenska'),
-                ('Czech', 'Čeština'),
-                ('Bulgarian', 'Български'),
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`|
-        | `400`         | `application/json`                | `{"errors":["Default language for translation should be set"]}`                       |
-        | `400`         | `application/json`                | `{"errors":["Translation must be performed only on original recipes"]}`                       |
-        | `400`         | `application/json`                | `{"errors":["Translation language is already used and there a recipe translated with that language."]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/translate' --header 'Authorization: Token token_value' --data '{"pk":15,"language":"German"}'
-        > ```
-
-    #### Get recipe variations (translation)
-
-    ??? pied-piper-get "GET /api/recipe/int:pk/variations"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.serializers.TranslateRecipeSerializer object}`                                              | 
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
-        | `404`         | `application/json`                |  {"detail":"No Recipe matches the given query."}                      |
-
-        ##### Example cURL
-        
-        > ``` bash
-        > curl --location 'host/api/recipe/20/variations' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-
-    ------------------------------------------------------------------------------------------
-
-    # Schedule (Meal Planner)
-    #### Get Schedule
-    
-    ??? pied-piper-get "GET /api/schedule/"
-
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `date`    |`path (required)` | `int`        | `Schedule date eg. 2025-1-26`                   | 
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[schedule.ScheduleRepresentationSerializer objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/schedule/?date=2025-02-15' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Create schedule
-    
-    ??? pied-piper "POST /api/schedule/"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "timing": schedule.models.TIMING_CHOICES,
-            "recipe": recipe.pk,
-            "date": date-format-YYYY-MM-DD
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint`              | 
-        |`Content-Type`|`application/json`|                   | `Applicaton Json content header                                     | 
-     
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{schedule.ScheduleRepresentationSerializer object}`|
-        | `400`         | `application/json`                | `{"error": "Invalid date format. Use YYYY-MM-DD."}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/schedule/' --header 'Authorization: Token token_value' --data '{"timing":"Breakfast","recipe":26,"date":"2025-02-15"}'
-        > ```
-
-    #### Delete schedule
-        
-    ??? pied-piper-delete "DELETE /api/schedule/<int:pk>"
-
-         ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Schedule pk`                   |         
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host//api/schedule/<int:pk>' --header 'Authorization: Token token_value' 
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-
-    # Category
-    
-    #### Get all categories
-    
-    ??? pied-piper-get "GET /api/recipe/category"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Category objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    
-    #### Get all categories recipes 
-    
-    ??? pied-piper-get "GET /api/recipe/category/int:pk/recipes"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Category primary key`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Recipe objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category/1/recipes' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Create category
-    
-    ??? pied-piper "POST /api/recipe/category/add"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint`              | 
-        |`Content-Type`|`application/json`|                   | `Applicaton Json content header                                     | 
-     
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Category object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category/add' --header 'Authorization: Token token_value' --data '{"name":"Greek"}'
-        > ```
-    
-    #### Update category
-    
-    ??? pied-piper-put "PUT /api/recipe/category/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string,
-    
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Category primary key`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `              | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`|
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-        | `404`         | `application/json`                | `{"detail":"No Category matches the given query."}`                       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/category/6' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json'  --data '{"name":"Italiano"}'
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Tag
-    
-    #### Get all tags 
-    
-    ??? pied-piper-get "GET /api/recipe/tags"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Tag objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tags' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Get all recipes from tag 
-    
-    ??? pied-piper-get "GET /api/recipe/tag/int:pk/recipes"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Tag primary key`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tag/<int:pk>/recipes' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Create tag
-    
-    ??? pied-piper "POST /api/recipe/tag/add"
-    
-        ##### Payload
-        ``` json title="recipe.Tag object"
-        {
-            "name": string
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `      | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Category object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tag/add' --header 'Authorization: Token token_value' --data '{"name":"Summer vibes"}'
-        > ```
-    
-    #### Update tag
-    
-    ??? pied-piper-put "PUT /api/recipe/tag/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string,
-    
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Tag primary key`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Tag object}`|
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-        | `404`         | `application/json`                | `{"detail":"No Category matches the given query."}`                       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/tag/1' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json'  --data '{"name":"Summer Vibes"}'
-        > ```
-    
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Ingredients
-    
-    ??? pied-piper "POST /api/recipe/int:pk/ingredients"
-    
-        ???+ Info 
-            
-            Override already existing ingredients for the recipe
-    
-        ##### Payload
-        ``` json title="recipe.Igredient object list"
-        [
-            {
-                "name": "string,
-                "quantity": string,
-                "metric": "string
-            },
-            {
-                "name": "string,
-                "quantity": string,
-                "metric": "string
-            },
-        ....
-        ]
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to which to link the ingredients`                   | 
-        
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `[{recipe.Ingrediant object}]`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/ingredients' --header 'Authorization: Token token_value' --data '[{"name":"Kasher salt","quantity":"1/5","metric":"tbsp","recipe":24}]'
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Steps
-    
-    ??? pied-piper "POST /api/recipe/int:pk/steps"
-    
-        ???+ Info 
-            
-            Override already existing steps for the recipe
-    
-        ##### Payload
-        ``` json title="recipe.Step object list"
-        [
-            {
-                "text": string
-            },
-            {
-                "text": string
-            },
-        ....
-        ]
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to which to link the steps`                   | 
-        
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `[{recipe.Step object}]`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/ingredients' --header 'Authorization: Token token_value' --data '[{"text":"Heat the oven","recipe":1}]'
-        > ```
-
-
-
-=== "v2.3"
-
-    <br />
-
-    # Authentication
-    #### Create admin user
-    
-    ??? pied-piper "POST /api/auth/signup"
-    
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "username": "username",
-            "password": "password",
-            "email": "email",
-            "is_superuser": true
-        }
-        ```
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-        
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `201`         | `application/json`                | `User created successfully`                                         |
-        | `400`         | `application/json`                | `{"username":["user with this username already exists."]}`          |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/signup' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"username":"username","password":"password","email":"email","is_superuser":true}'
-        > ```
-    
-    
-    #### Obtain access token
-    
-    ??? pied-piper "POST /api/auth/token"
-    
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "email": "email",
-            "password": "password"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"token":"token","user":{"username":"username","email":"email","is_superuser":true}}`|
-        | `404`         | `application/json`                | `{"detail":"No User matches the given query."}`                       |
-        | `403`         | `application/json`                | `{"detail": "You must use authentication header"}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  `curl --location 'host/api/auth/token' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"email":"email","password":"password"}''
-        > ```
-
-    #### Get user profile info
-    
-    ??? pied-piper-get "GET /api/auth/user/info"
-    
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"username":"username","email":"email","date_joined":"date"}`                                |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`        |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'localhost:8080/api/auth/user/info' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Change user password
-        
-    ??? pied-piper-put "PUT /api/auth/user"
-    
-        ##### Payload
-        ``` json 
-        {
-            "old_password": "password",
-            "new_password": "password"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `{}`                                                                  |
-        | `400`         | `application/json`                | `{"message": "Old password does not match current password"}`         |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/auth/user' --header 'Authorization: Token token_value' --header 'Content-Type: application/json'  --data '{"old_password":"old_password","new_password":"new_password"}'
-        > ```
-
-    #### Update user email and username
-        
-    ??? pied-piper-patch "PATCH /api/auth/user"
-        
-        ???+ Info 
-            
-            Individual fields can be updated only username or password.
-        
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "username": "new_username",
-            "email": "new_email"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"username":"new_username","email":"new_email","is_superuser":true}` |
-        | `400`         | `application/json`                | `{"email":["Enter a valid email address and password."]}`             |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/auth/user' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json' --data-raw '{"username":"new_username","email":"new_email"}'
-        > ```
-
-
-    #### Delete user account
-        
-    ??? pied-piper-delete "DELETE /api/auth/delete-account"
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/auth/delete-account' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Request password reset token for user account
-        
-    ??? pied-piper "POST /api/auth/password_reset"
-
-        ##### Payload
-        ``` json title="authentication.ResetPasswordRequestSerializer"
-        {
-            "email": "user_email"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{"token":"token_value"}`                                             |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
-        | `404`         | `application/json`                | `{"error":"User with provided email not found"}`                      |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/password_reset' --header 'Content-Type: application/json' --header 'X-Auth-Header: auth_header_value'   --data-raw '{"email":"user_email"}' 
-        > ```
-    
-    #### Change user password with token
-        
-    ??? pied-piper "POST /api/auth/password_reset/reset"
-
-         ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `token`   |`query (required)` | `string`        | `Token obtained from POST /api/auth/password_reset`                      | 
-
-        ##### Payload
-        ``` json 
-        {
-            "password": "new_password",
-            "confirm_password": "new_password"
-        }
-        ```
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `404`         | `application/json`                | `{"detail":"No PasswordResetToken matches the given query."}}`        |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/password_reset/reset?token=token_value' --header 'Content-Type: application/json'  --data '{"password":"new_password","confirm_password":"new_password"}'
-        > ```
-    
-
-
-    ------------------------------------------------------------------------------------------
-    
-    # Recipe
-    
-    #### Search for recipes
-    
-    ??? pied-piper-get "GET /api/recipe/home/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `search`  |`query (optional)` | `string`        | `Part or fulll name of the recipe.Recipe object`                      | 
-        | `page`    |`query (optional)` | `int`           | `Page number if there a mutilple pages result`                        | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/?name=name&page=1' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    #### Get favorite recipes
-    
-    ??? pied-piper-get "GET /api/recipe/home/favorites/"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}` |
-        | `404`         | `application/json`                | `{"detail":"No Recipe matches the given query."}`                                  |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/favorites/' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    
-    
-    #### Get trending recipes
-    
-    ??? pied-piper-get "GET /api/recipe/trending"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Recipe objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'localhost:8080/api/recipe/trending' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-
-    #### Search for recipes preview
-    
-    ??? pied-piper-get "GET /api/recipe/home/preview/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `search`  |`query (optional)` | `string`        | `Part or fulll name of the recipe.Recipe object`                      | 
-        | `page`    |`query (optional)` | `int`           | `Page number if there a mutilple pages result`                        | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.RecipePreviewSerializer obj list]}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/preview/?name=name&page=1' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    #### Update favorite status
-    
-    ??? pied-piper-patch "PATCH /api/recipe/int:pk/favorite"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be favorited or unfavorited`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `201`         | `application/json`        | `"Success favorite recipe"`                                |
-        | `201`         | `application/json`        | `"Success unfavorite recipe"`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}     |
-        | `404`         | `application/json`                | `Not Found`          |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/recipe/1/favorite' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-
-    #### Get recipe by pk
-
-    ??? pied-piper-get "GET /api/recipe/int:pk/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`                                              | 
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
-        | `404`         | `application/json`                |  {"detail":"No Recipe matches the given query."}                      |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request GET 'host/api/recipe/1/' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-
-
-    #### Create recipe
-    
-    ??? pied-piper "POST /api/recipe/"
-    
-        ##### Payload
-        ``` json title="recipe.Recipe object"
-        {
-            "image": file,
-            "name": string,
-            "serves": int,
-            "description": string,
-            "difficulty": string (DIFFICULTY_CHOICES),
-            "chef": string
-            "video": file (optional),
-            "category": <int:pk> (optional),
-            "tag": <int:pk> (optional), 
-            "prep_time": int,
-            "cook_time": int
-        }
-        ```
-
-        ##### Dificulty choices (DIFFICULTY_CHOICES)
-        ``` python title="recipe.Recipe.DIFFICULTY_CHOICES (use only the key in the request)"
-            ('Easy', 'Easy'),
-            ('Intermediate', 'Intermediate'),
-            ('Advanced', 'Advanced'),
-            ('Expert', 'Expert'),
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`multipart/form-data`|  `Recipe object`  | `Recipe multipart/form-data object`                                | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Recipe object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/' --header 'Authorization: Token token_value' --form  'image=@"/path/image.jpg"' --form 'name="Recipe name"' --form 'servings="5"' --form 'category="1"' --form 'tag="1"' --form 'prep_time="20"' --form 'video=@"/path/video.mp4"' --form 'description="This is cool recipe"' --form 'cook_time="45"'
-        > ```
-    
-    
-    #### Update recipe main info (without ingredients and steps)
-    
-    ??? pied-piper-put "PUT /api/recipe/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Recipe object"
-        {
-            "image": file,
-            "name": string,
-            "serves": int,
-            "description": string,
-            "difficulty": string (DIFFICULTY_CHOICES),
-            "chef": string
-            "video": file (optional),
-            "category": <int:pk> (optional),
-            "tag": <int:pk> (optional), 
-            "prep_time": int,
-            "cook_time": int,
-            "clear_video": boolean (optional if you want to delete already set video)
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-        |`Content-Type`|`multipart/form-data`|  `Recipe object`  | `Recipe multipart/form-data object`                                | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/1' --header 'Authorization: Token token_value' --form  'image=@"/path/image.jpg"' --form 'name="Recipe name"' --form 'servings="5"' --form 'category="1"' --form 'tag="1"' --form 'prep_time="20"' --form 'video=@"/path/video.mp4"' --form 'description="This is cool recipe"' --form 'cook_time="45"'
-        > ```
-    
-    
-    #### Delete recipes
-    
-    ??? pied-piper-delete "DELETE /api/recipe/pk:int/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be deleted`                   | 
-    
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `204`         | `application/json`                |                                                                     |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/recipe/<int:pk>/' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Scrape recipes
-    
-    ??? pied-piper "POST /api/recipe/scrape"
-
-        ???+ Info 
-            
-            Valid OpenAI API Key is nedded for this endpoint
-        
-        ##### Payload
-        ``` json title="recipe.RecipeLink object"
-        {
-            "url": file
-        }
-        ```
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                |  `{recipe.Recipe object}`|                                          |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`        |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        > curl --location 'host/api/recipe/scrape' --header 'Authorization: Token token_value'  --data '{"url":"http://...."}'
-        > ```
-
-    #### Generate recipes
-    
-    ??? pied-piper "POST /api/recipe/generate"
-
-        ???+ Info 
-            
-            Valid OpenAI API Key is nedded for this endpoint
-        
-        ##### Payload
-        ``` json title="GenerateRecipeSerializer list of strings"
-        {
-            "ingredients": []
-        }
-        ```
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                |  `[GenerateRecipeResultSerializer objects]`                         |
-        | `204`         | `application/json`                |  `{Empty response if there a openai empty response}`                |
-        | `401`         | `application/json`                |  `{"detail":"Authentication credentials were not provided."}`       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        > curl --location 'host/api/recipe/generate' --header 'Authorization: Token token_value' --header 'Content-Type: application/json' --data '{"ingredients":["tomato","onion","cheese","pasta","milk","red peparz"]}'
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-
-    # Schedule (Meal Planner)
-    #### Get Schedule
-    
-    ??? pied-piper-get "GET /api/schedule/"
-
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `date`    |`path (required)` | `int`        | `Schedule date eg. 2025-1-26`                   | 
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[schedule.ScheduleRepresentationSerializer objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/schedule/?date=2025-02-15' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Create schedule
-    
-    ??? pied-piper "POST /api/schedule/"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "timing": schedule.models.TIMING_CHOICES,
-            "recipe": recipe.pk,
-            "date": date-format-YYYY-MM-DD
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint`              | 
-        |`Content-Type`|`application/json`|                   | `Applicaton Json content header                                     | 
-     
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{schedule.ScheduleRepresentationSerializer object}`|
-        | `400`         | `application/json`                | `{"error": "Invalid date format. Use YYYY-MM-DD."}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/schedule/' --header 'Authorization: Token token_value' --data '{"timing":"Breakfast","recipe":26,"date":"2025-02-15"}'
-        > ```
-
-    #### Delete schedule
-        
-    ??? pied-piper-delete "DELETE /api/schedule/<int:pk>"
-
-         ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Schedule pk`                   |         
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host//api/schedule/<int:pk>' --header 'Authorization: Token token_value' 
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-
-    # Category
-    
-    #### Get all categories
-    
-    ??? pied-piper-get "GET /api/recipe/category"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Category objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    
-    #### Get all categories recipes 
-    
-    ??? pied-piper-get "GET /api/recipe/category/int:pk/recipes"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Category primary key`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Recipe objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category/1/recipes' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Create category
-    
-    ??? pied-piper "POST /api/recipe/category/add"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint`              | 
-        |`Content-Type`|`application/json`|                   | `Applicaton Json content header                                     | 
-     
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Category object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category/add' --header 'Authorization: Token token_value' --data '{"name":"Greek"}'
-        > ```
-    
-    #### Update category
-    
-    ??? pied-piper-put "PUT /api/recipe/category/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string,
-    
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Category primary key`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `              | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`|
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-        | `404`         | `application/json`                | `{"detail":"No Category matches the given query."}`                       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/category/6' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json'  --data '{"name":"Italiano"}'
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Tag
-    
-    #### Get all tags 
-    
-    ??? pied-piper-get "GET /api/recipe/tags"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Tag objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tags' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Get all recipes from tag 
-    
-    ??? pied-piper-get "GET /api/recipe/tag/int:pk/recipes"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Tag primary key`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tag/<int:pk>/recipes' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Create tag
-    
-    ??? pied-piper "POST /api/recipe/tag/add"
-    
-        ##### Payload
-        ``` json title="recipe.Tag object"
-        {
-            "name": string
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `      | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Category object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tag/add' --header 'Authorization: Token token_value' --data '{"name":"Summer vibes"}'
-        > ```
-    
-    #### Update tag
-    
-    ??? pied-piper-put "PUT /api/recipe/tag/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string,
-    
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Tag primary key`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Tag object}`|
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-        | `404`         | `application/json`                | `{"detail":"No Category matches the given query."}`                       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/tag/1' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json'  --data '{"name":"Summer Vibes"}'
-        > ```
-    
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Ingredients
-    
-    ??? pied-piper "POST /api/recipe/int:pk/ingredients"
-    
-        ???+ Info 
-            
-            Override already existing ingredients for the recipe
-    
-        ##### Payload
-        ``` json title="recipe.Igredient object list"
-        [
-            {
-                "name": "string,
-                "quantity": string,
-                "metric": "string
-            },
-            {
-                "name": "string,
-                "quantity": string,
-                "metric": "string
-            },
-        ....
-        ]
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to which to link the ingredients`                   | 
-        
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `[{recipe.Ingrediant object}]`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/ingredients' --header 'Authorization: Token token_value' --data '[{"name":"Kasher salt","quantity":"1/5","metric":"tbsp","recipe":24}]'
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Steps
-    
-    ??? pied-piper "POST /api/recipe/int:pk/steps"
-    
-        ???+ Info 
-            
-            Override already existing steps for the recipe
-    
-        ##### Payload
-        ``` json title="recipe.Step object list"
-        [
-            {
-                "text": string
-            },
-            {
-                "text": string
-            },
-        ....
-        ]
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to which to link the steps`                   | 
-        
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `[{recipe.Step object}]`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/ingredients' --header 'Authorization: Token token_value' --data '[{"text":"Heat the oven","recipe":1}]'
-        > ```
-
-
-
-=== "v2.2"
-
-    <br />
-
-    # Authentication
-    #### Create admin user
-    
-    ??? pied-piper "POST /api/auth/signup"
-    
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "username": "username",
-            "password": "password",
-            "email": "email",
-            "is_superuser": true
-        }
-        ```
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-        
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `201`         | `application/json`                | `User created successfully`                                         |
-        | `400`         | `application/json`                | `{"username":["user with this username already exists."]}`          |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/signup' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"username":"username","password":"password","email":"email","is_superuser":true}'
-        > ```
-    
-    
-    #### Obtain access token
-    
-    ??? pied-piper "POST /api/auth/token"
-    
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "email": "email",
-            "password": "password"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"token":"token","user":{"username":"username","email":"email","is_superuser":true}}`|
-        | `404`         | `application/json`                | `{"detail":"No User matches the given query."}`                       |
-        | `403`         | `application/json`                | `{"detail": "You must use authentication header"}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  `curl --location 'host/api/auth/token' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"email":"email","password":"password"}''
-        > ```
-
-    #### Get user profile info
-    
-    ??? pied-piper-get "GET /api/auth/user/info"
-    
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"username":"username","email":"email","date_joined":"date"}`                                |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`        |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'localhost:8080/api/auth/user/info' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Change user password
-        
-    ??? pied-piper-put "PUT /api/auth/user"
-    
-        ##### Payload
-        ``` json 
-        {
-            "old_password": "password",
-            "new_password": "password"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `{}`                                                                  |
-        | `400`         | `application/json`                | `{"message": "Old password does not match current password"}`         |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/auth/user' --header 'Authorization: Token token_value' --header 'Content-Type: application/json'  --data '{"old_password":"old_password","new_password":"new_password"}'
-        > ```
-
-    #### Update user email and username
-        
-    ??? pied-piper-patch "PATCH /api/auth/user"
-        
-        ???+ Info 
-            
-            Individual fields can be updated only username or password.
-        
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "username": "new_username",
-            "email": "new_email"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"username":"new_username","email":"new_email","is_superuser":true}` |
-        | `400`         | `application/json`                | `{"email":["Enter a valid email address and password."]}`             |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/auth/user' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json' --data-raw '{"username":"new_username","email":"new_email"}'
-        > ```
-
-
-    #### Delete user account
-        
-    ??? pied-piper-delete "DELETE /api/auth/delete-account"
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/auth/delete-account' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Request password reset token for user account
-        
-    ??? pied-piper "POST /api/auth/password_reset"
-
-        ##### Payload
-        ``` json title="authentication.ResetPasswordRequestSerializer"
-        {
-            "email": "user_email"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{"token":"token_value"}`                                             |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
-        | `404`         | `application/json`                | `{"error":"User with provided email not found"}`                      |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/password_reset' --header 'Content-Type: application/json' --header 'X-Auth-Header: auth_header_value'   --data-raw '{"email":"user_email"}' 
-        > ```
-    
-    #### Change user password with token
-        
-    ??? pied-piper "POST /api/auth/password_reset/reset"
-
-         ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `token`   |`query (required)` | `string`        | `Token obtained from POST /api/auth/password_reset`                      | 
-
-        ##### Payload
-        ``` json 
-        {
-            "password": "new_password",
-            "confirm_password": "new_password"
-        }
-        ```
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `404`         | `application/json`                | `{"detail":"No PasswordResetToken matches the given query."}}`        |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/password_reset/reset?token=token_value' --header 'Content-Type: application/json'  --data '{"password":"new_password","confirm_password":"new_password"}'
-        > ```
-    
-
-
-    ------------------------------------------------------------------------------------------
-    
-    # Recipe
-    
-    #### Search for recipes
-    
-    ??? pied-piper-get "GET /api/recipe/home/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `search`  |`query (optional)` | `string`        | `Part or fulll name of the recipe.Recipe object`                      | 
-        | `page`    |`query (optional)` | `int`           | `Page number if there a mutilple pages result`                        | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/?name=name&page=1' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    #### Get favorite recipes
-    
-    ??? pied-piper-get "GET /api/recipe/home/favorites/"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}` |
-        | `404`         | `application/json`                | `{"detail":"No Recipe matches the given query."}`                                  |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/favorites/' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    
-    
-    #### Get trending recipes
-    
-    ??? pied-piper-get "GET /api/recipe/trending"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Recipe objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'localhost:8080/api/recipe/trending' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-
-    #### Search for recipes preview
-    
-    ??? pied-piper-get "GET /api/recipe/home/preview/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `search`  |`query (optional)` | `string`        | `Part or fulll name of the recipe.Recipe object`                      | 
-        | `page`    |`query (optional)` | `int`           | `Page number if there a mutilple pages result`                        | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.RecipePreviewSerializer obj list]}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/preview/?name=name&page=1' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    #### Update favorite status
-    
-    ??? pied-piper-patch "PATCH /api/recipe/int:pk/favorite"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be favorited or unfavorited`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `201`         | `application/json`        | `"Success favorite recipe"`                                |
-        | `201`         | `application/json`        | `"Success unfavorite recipe"`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}     |
-        | `404`         | `application/json`                | `Not Found`          |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/recipe/1/favorite' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-
-    #### Get recipe by pk
-
-    ??? pied-piper-get "GET /api/recipe/int:pk/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`                                              | 
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
-        | `404`         | `application/json`                |  {"detail":"No Recipe matches the given query."}                      |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request GET 'host/api/recipe/1/' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-
-
-    #### Create recipe
-    
-    ??? pied-piper "POST /api/recipe/"
-    
-        ##### Payload
-        ``` json title="recipe.Recipe object"
-        {
-            "image": file,
-            "name": string,
-            "serves": int,
-            "description": string,
-            "difficulty": string (DIFFICULTY_CHOICES),
-            "chef": string
-            "video": file (optional),
-            "category": <int:pk> (optional),
-            "tag": <int:pk> (optional), 
-            "prep_time": int,
-            "cook_time": int
-        }
-        ```
-
-        ##### Dificulty choices (DIFFICULTY_CHOICES)
-        ``` python title="recipe.Recipe.DIFFICULTY_CHOICES (use only the key in the request)"
-            ('Easy', 'Easy'),
-            ('Intermediate', 'Intermediate'),
-            ('Advanced', 'Advanced'),
-            ('Expert', 'Expert'),
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`multipart/form-data`|  `Recipe object`  | `Recipe multipart/form-data object`                                | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Recipe object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/' --header 'Authorization: Token token_value' --form  'image=@"/path/image.jpg"' --form 'name="Recipe name"' --form 'servings="5"' --form 'category="1"' --form 'tag="1"' --form 'prep_time="20"' --form 'video=@"/path/video.mp4"' --form 'description="This is cool recipe"' --form 'cook_time="45"'
-        > ```
-    
-    
-    #### Update recipe main info (without ingredients and steps)
-    
-    ??? pied-piper-put "PUT /api/recipe/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Recipe object"
-        {
-            "image": file,
-            "name": string,
-            "serves": int,
-            "description": string,
-            "difficulty": string (DIFFICULTY_CHOICES),
-            "chef": string
-            "video": file (optional),
-            "category": <int:pk> (optional),
-            "tag": <int:pk> (optional), 
-            "prep_time": int,
-            "cook_time": int,
-            "clear_video": boolean (optional if you want to delete already set video)
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-        |`Content-Type`|`multipart/form-data`|  `Recipe object`  | `Recipe multipart/form-data object`                                | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/1' --header 'Authorization: Token token_value' --form  'image=@"/path/image.jpg"' --form 'name="Recipe name"' --form 'servings="5"' --form 'category="1"' --form 'tag="1"' --form 'prep_time="20"' --form 'video=@"/path/video.mp4"' --form 'description="This is cool recipe"' --form 'cook_time="45"'
-        > ```
-    
-    
-    #### Delete recipes
-    
-    ??? pied-piper-delete "DELETE /api/recipe/pk:int/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be deleted`                   | 
-    
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `204`         | `application/json`                |                                                                     |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/recipe/<int:pk>/' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Scrape recipes
-    
-    ??? pied-piper "POST /api/recipe/scrape"
-
-        ???+ Info 
-            
-            Valid OpenAI API Key is nedded for this endpoint
-        
-        ##### Payload
-        ``` json title="recipe.RecipeLink object"
-        {
-            "url": file
-        }
-        ```
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                |  `{recipe.Recipe object}`|                                          |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`        |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        > curl --location 'host/api/recipe/scrape' --header 'Authorization: Token token_value'  --data '{"url":"http://...."}'
-        > ```
-
-    #### Generate recipes
-    
-    ??? pied-piper "POST /api/recipe/generate"
-
-        ???+ Info 
-            
-            Valid OpenAI API Key is nedded for this endpoint
-        
-        ##### Payload
-        ``` json title="GenerateRecipeSerializer list of strings"
-        {
-            "ingredients": []
-        }
-        ```
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                |  `[GenerateRecipeResultSerializer objects]`                         |
-        | `204`         | `application/json`                |  `{Empty response if there a openai empty response}`                |
-        | `401`         | `application/json`                |  `{"detail":"Authentication credentials were not provided."}`       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        > curl --location 'host/api/recipe/generate' --header 'Authorization: Token token_value' --header 'Content-Type: application/json' --data '{"ingredients":["tomato","onion","cheese","pasta","milk","red peparz"]}'
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Category
-    
-    #### Get all categories
-    
-    ??? pied-piper-get "GET /api/recipe/category"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Category objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    
-    #### Get all categories recipes 
-    
-    ??? pied-piper-get "GET /api/recipe/category/int:pk/recipes"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Category primary key`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Recipe objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category/1/recipes' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Create category
-    
-    ??? pied-piper "POST /api/recipe/category/add"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint`              | 
-        |`Content-Type`|`application/json`|                   | `Applicaton Json content header                                     | 
-     
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Category object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category/add' --header 'Authorization: Token token_value' --data '{"name":"Greek"}'
-        > ```
-    
-    #### Update category
-    
-    ??? pied-piper-put "PUT /api/recipe/category/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string,
-    
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Category primary key`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `              | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`|
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-        | `404`         | `application/json`                | `{"detail":"No Category matches the given query."}`                       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/category/6' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json'  --data '{"name":"Italiano"}'
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Tag
-    
-    #### Get all tags 
-    
-    ??? pied-piper-get "GET /api/recipe/tags"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Tag objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tags' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Get all recipes from tag 
-    
-    ??? pied-piper-get "GET /api/recipe/tag/int:pk/recipes"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Tag primary key`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tag/<int:pk>/recipes' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Create tag
-    
-    ??? pied-piper "POST /api/recipe/tag/add"
-    
-        ##### Payload
-        ``` json title="recipe.Tag object"
-        {
-            "name": string
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `      | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Category object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tag/add' --header 'Authorization: Token token_value' --data '{"name":"Summer vibes"}'
-        > ```
-    
-    #### Update tag
-    
-    ??? pied-piper-put "PUT /api/recipe/tag/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string,
-    
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Tag primary key`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Tag object}`|
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-        | `404`         | `application/json`                | `{"detail":"No Category matches the given query."}`                       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/tag/1' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json'  --data '{"name":"Summer Vibes"}'
-        > ```
-    
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Ingredients
-    
-    ??? pied-piper "POST /api/recipe/int:pk/ingredients"
-    
-        ???+ Info 
-            
-            Override already existing ingredients for the recipe
-    
-        ##### Payload
-        ``` json title="recipe.Igredient object list"
-        [
-            {
-                "name": "string,
-                "quantity": string,
-                "metric": "string
-            },
-            {
-                "name": "string,
-                "quantity": string,
-                "metric": "string
-            },
-        ....
-        ]
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to which to link the ingredients`                   | 
-        
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `[{recipe.Ingrediant object}]`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/ingredients' --header 'Authorization: Token token_value' --data '[{"name":"Kasher salt","quantity":"1/5","metric":"tbsp","recipe":24}]'
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Steps
-    
-    ??? pied-piper "POST /api/recipe/int:pk/steps"
-    
-        ???+ Info 
-            
-            Override already existing steps for the recipe
-    
-        ##### Payload
-        ``` json title="recipe.Step object list"
-        [
-            {
-                "text": string
-            },
-            {
-                "text": string
-            },
-        ....
-        ]
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to which to link the steps`                   | 
-        
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `[{recipe.Step object}]`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/ingredients' --header 'Authorization: Token token_value' --data '[{"text":"Heat the oven","recipe":1}]'
-        > ```
-
-
-=== "v2.1"
-
-    <br />
-
-    # Authentication
-    #### Create admin user
-    
-    ??? pied-piper "POST /api/auth/signup"
-    
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "username": "username",
-            "password": "password",
-            "email": "email",
-            "is_superuser": true
-        }
-        ```
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-        
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `201`         | `application/json`                | `User created successfully`                                         |
-        | `400`         | `application/json`                | `{"username":["user with this username already exists."]}`          |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/signup' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"username":"username","password":"password","email":"email","is_superuser":true}'
-        > ```
-    
-    
-    #### Obtain access token
-    
-    ??? pied-piper "POST /api/auth/token"
-    
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "email": "email",
-            "password": "password"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"token":"token","user":{"username":"username","email":"email","is_superuser":true}}`|
-        | `404`         | `application/json`                | `{"detail":"No User matches the given query."}`                       |
-        | `403`         | `application/json`                | `{"detail": "You must use authentication header"}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  `curl --location 'host/api/auth/token' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"email":"email","password":"password"}''
-        > ```
-
-    #### Get user profile info
-    
-    ??? pied-piper-get "GET /api/auth/user/info"
-    
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"username":"username","email":"email","date_joined":"date"}`                                |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`        |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'localhost:8080/api/auth/user/info' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Change user password
-        
-    ??? pied-piper-put "PUT /api/auth/user"
-    
-        ##### Payload
-        ``` json 
-        {
-            "old_password": "password",
-            "new_password": "password"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `{}`                                                                  |
-        | `400`         | `application/json`                | `{"message": "Old password does not match current password"}`         |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/auth/user' --header 'Authorization: Token token_value' --header 'Content-Type: application/json'  --data '{"old_password":"old_password","new_password":"new_password"}'
-        > ```
-
-    #### Update user email and username
-        
-    ??? pied-piper-patch "PATCH /api/auth/user"
-        
-        ???+ Info 
-            
-            Individual fields can be updated only username or password.
-        
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "username": "new_username",
-            "email": "new_email"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"username":"new_username","email":"new_email","is_superuser":true}` |
-        | `400`         | `application/json`                | `{"email":["Enter a valid email address and password."]}`             |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/auth/user' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json' --data-raw '{"username":"new_username","email":"new_email"}'
-        > ```
-
-
-    #### Delete user account
-        
-    ??? pied-piper-delete "DELETE /api/auth/delete-account"
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/auth/delete-account' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Request password reset token for user account
-        
-    ??? pied-piper "POST /api/auth/password_reset"
-
-        ##### Payload
-        ``` json title="authentication.ResetPasswordRequestSerializer"
-        {
-            "email": "user_email"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{"token":"token_value"}`                                             |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
-        | `404`         | `application/json`                | `{"error":"User with provided email not found"}`                      |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/password_reset' --header 'Content-Type: application/json' --header 'X-Auth-Header: auth_header_value'   --data-raw '{"email":"user_email"}' 
-        > ```
-    
-    #### Change user password with token
-        
-    ??? pied-piper "POST /api/auth/password_reset/reset"
-
-         ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `token`   |`query (required)` | `string`        | `Token obtained from POST /api/auth/password_reset`                      | 
-
-        ##### Payload
-        ``` json 
-        {
-            "password": "new_password",
-            "confirm_password": "new_password"
-        }
-        ```
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `404`         | `application/json`                | `{"detail":"No PasswordResetToken matches the given query."}}`        |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/password_reset/reset?token=token_value' --header 'Content-Type: application/json'  --data '{"password":"new_password","confirm_password":"new_password"}'
-        > ```
-    
-
-
-    ------------------------------------------------------------------------------------------
-    
-    # Recipe
-    
-    #### Search for recipes
-    
-    ??? pied-piper-get "GET /api/recipe/home/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `search`  |`query (optional)` | `string`        | `Part or fulll name of the recipe.Recipe object`                      | 
-        | `page`    |`query (optional)` | `int`           | `Page number if there a mutilple pages result`                        | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/?name=name&page=1' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    #### Get favorite recipes
-    
-    ??? pied-piper-get "GET /api/recipe/home/favorites/"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}` |
-        | `404`         | `application/json`                | `{"detail":"No Recipe matches the given query."}`                                  |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/favorites/' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    
-    
-    #### Get trending recipes
-    
-    ??? pied-piper-get "GET /api/recipe/trending"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Recipe objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'localhost:8080/api/recipe/trending' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-
-    #### Search for recipes preview
-    
-    ??? pied-piper-get "GET /api/recipe/home/preview/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `search`  |`query (optional)` | `string`        | `Part or fulll name of the recipe.Recipe object`                      | 
-        | `page`    |`query (optional)` | `int`           | `Page number if there a mutilple pages result`                        | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.RecipePreviewSerializer obj list]}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/preview/?name=name&page=1' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    #### Update favorite status
-    
-    ??? pied-piper-patch "PATCH /api/recipe/int:pk/favorite"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be favorited or unfavorited`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `201`         | `application/json`        | `"Success favorite recipe"`                                |
-        | `201`         | `application/json`        | `"Success unfavorite recipe"`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}     |
-        | `404`         | `application/json`                | `Not Found`          |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/recipe/1/favorite' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-
-    #### Get recipe by pk
-
-    ??? pied-piper-get "GET /api/recipe/int:pk/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`                                              | 
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
-        | `404`         | `application/json`                |  {"detail":"No Recipe matches the given query."}                      |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request GET 'host/api/recipe/1/' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-
-
-    #### Create recipe
-    
-    ??? pied-piper "POST /api/recipe/"
-    
-        ##### Payload
-        ``` json title="recipe.Recipe object"
-        {
-            "image": file,
-            "name": string,
-            "serves": int,
-            "description": string,
-            "difficulty": string (DIFFICULTY_CHOICES),
-            "chef": string
-            "video": file (optional),
-            "category": <int:pk> (optional),
-            "tag": <int:pk> (optional), 
-            "prep_time": int,
-            "cook_time": int
-        }
-        ```
-
-        ##### Dificulty choices (DIFFICULTY_CHOICES)
-        ``` python title="recipe.Recipe.DIFFICULTY_CHOICES (use only the key in the request)"
-            ('Easy', 'Easy'),
-            ('Intermediate', 'Intermediate'),
-            ('Advanced', 'Advanced'),
-            ('Expert', 'Expert'),
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`multipart/form-data`|  `Recipe object`  | `Recipe multipart/form-data object`                                | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Recipe object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/' --header 'Authorization: Token token_value' --form  'image=@"/path/image.jpg"' --form 'name="Recipe name"' --form 'servings="5"' --form 'category="1"' --form 'tag="1"' --form 'prep_time="20"' --form 'video=@"/path/video.mp4"' --form 'description="This is cool recipe"' --form 'cook_time="45"'
-        > ```
-    
-    
-    #### Update recipe main info (without ingredients and steps)
-    
-    ??? pied-piper-put "PUT /api/recipe/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Recipe object"
-        {
-            "image": file,
-            "name": string,
-            "serves": int,
-            "description": string,
-            "difficulty": string (DIFFICULTY_CHOICES),
-            "chef": string
-            "video": file (optional),
-            "category": <int:pk> (optional),
-            "tag": <int:pk> (optional), 
-            "prep_time": int,
-            "cook_time": int,
-            "clear_video": boolean (optional if you want to delete already set video)
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-        |`Content-Type`|`multipart/form-data`|  `Recipe object`  | `Recipe multipart/form-data object`                                | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/1' --header 'Authorization: Token token_value' --form  'image=@"/path/image.jpg"' --form 'name="Recipe name"' --form 'servings="5"' --form 'category="1"' --form 'tag="1"' --form 'prep_time="20"' --form 'video=@"/path/video.mp4"' --form 'description="This is cool recipe"' --form 'cook_time="45"'
-        > ```
-    
-    
-    #### Delete recipes
-    
-    ??? pied-piper-delete "DELETE /api/recipe/pk:int/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be deleted`                   | 
-    
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `204`         | `application/json`                |                                                                     |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/recipe/<int:pk>/' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Scrape recipes
-    
-    ??? pied-piper "POST /api/recipe/scrape"
-
-        ???+ Info 
-            
-            Valid OpenAI API Key is nedded for this endpoint
-        
-        ##### Payload
-        ``` json title="recipe.RecipeLink object"
-        {
-            "url": file
-        }
-        ```
-
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                |  `{recipe.Recipe object}`|                                          |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`        |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        > curl --location 'host/api/recipe/scrape' --header 'Authorization: Token token_value'  --data '{"url":"http://...."}'
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Category
-    
-    #### Get all categories
-    
-    ??? pied-piper-get "GET /api/recipe/category"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Category objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    
-    #### Get all categories recipes 
-    
-    ??? pied-piper-get "GET /api/recipe/category/int:pk/recipes"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Category primary key`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Recipe objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category/1/recipes' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Create category
-    
-    ??? pied-piper "POST /api/recipe/category/add"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint`              | 
-        |`Content-Type`|`application/json`|                   | `Applicaton Json content header                                     | 
-     
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Category object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category/add' --header 'Authorization: Token token_value' --data '{"name":"Greek"}'
-        > ```
-    
-    #### Update category
-    
-    ??? pied-piper-put "PUT /api/recipe/category/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string,
-    
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Category primary key`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `              | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`|
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-        | `404`         | `application/json`                | `{"detail":"No Category matches the given query."}`                       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/category/6' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json'  --data '{"name":"Italiano"}'
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Tag
-    
-    #### Get all tags 
-    
-    ??? pied-piper-get "GET /api/recipe/tags"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Tag objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tags' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Get all recipes from tag 
-    
-    ??? pied-piper-get "GET /api/recipe/tag/int:pk/recipes"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Tag primary key`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tag/<int:pk>/recipes' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Create tag
-    
-    ??? pied-piper "POST /api/recipe/tag/add"
-    
-        ##### Payload
-        ``` json title="recipe.Tag object"
-        {
-            "name": string
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `      | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Category object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tag/add' --header 'Authorization: Token token_value' --data '{"name":"Summer vibes"}'
-        > ```
-    
-    #### Update tag
-    
-    ??? pied-piper-put "PUT /api/recipe/tag/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string,
-    
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Tag primary key`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Tag object}`|
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-        | `404`         | `application/json`                | `{"detail":"No Category matches the given query."}`                       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/tag/1' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json'  --data '{"name":"Summer Vibes"}'
-        > ```
-    
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Ingredients
-    
-    ??? pied-piper "POST /api/recipe/int:pk/ingredients"
-    
-        ???+ Info 
-            
-            Override already existing ingredients for the recipe
-    
-        ##### Payload
-        ``` json title="recipe.Igredient object list"
-        [
-            {
-                "name": "string,
-                "quantity": string,
-                "metric": "string
-            },
-            {
-                "name": "string,
-                "quantity": string,
-                "metric": "string
-            },
-        ....
-        ]
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to which to link the ingredients`                   | 
-        
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `[{recipe.Ingrediant object}]`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/ingredients' --header 'Authorization: Token token_value' --data '[{"name":"Kasher salt","quantity":"1/5","metric":"tbsp","recipe":24}]'
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Steps
-    
-    ??? pied-piper "POST /api/recipe/int:pk/steps"
-    
-        ???+ Info 
-            
-            Override already existing steps for the recipe
-    
-        ##### Payload
-        ``` json title="recipe.Step object list"
-        [
-            {
-                "text": string
-            },
-            {
-                "text": string
-            },
-        ....
-        ]
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to which to link the steps`                   | 
-        
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `[{recipe.Step object}]`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/ingredients' --header 'Authorization: Token token_value' --data '[{"text":"Heat the oven","recipe":1}]'
-        > ```
-
-=== "v2.0"
-
-    <br />
-
-    # Authentication
-    #### Create admin user
-    
-    ??? pied-piper "POST /api/auth/signup"
-    
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "username": "username",
-            "password": "password",
-            "email": "email",
-            "is_superuser": true
-        }
-        ```
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-        
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `201`         | `application/json`                | `User created successfully`                                         |
-        | `400`         | `application/json`                | `{"username":["user with this username already exists."]}`          |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/signup' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"username":"username","password":"password","email":"email","is_superuser":true}'
-        > ```
-    
-    
-    #### Obtain access token
-    
-    ??? pied-piper "POST /api/auth/token"
-    
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "email": "email",
-            "password": "password"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"token":"token","user":{"username":"username","email":"email","is_superuser":true}}`|
-        | `404`         | `application/json`                | `{"detail":"No User matches the given query."}`                       |
-        | `403`         | `application/json`                | `{"detail": "You must use authentication header"}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  `curl --location 'host/api/auth/token' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"email":"email","password":"password"}''
-        > ```
-
-    #### Get user profile info
-    
-    ??? pied-piper-get "GET /api/auth/user/info"
-    
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"username":"username","email":"email","date_joined":"date"}`                                |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`        |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'localhost:8080/api/auth/user/info' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Change user password
-        
-    ??? pied-piper-put "PUT /api/auth/user"
-    
-        ##### Payload
-        ``` json 
-        {
-            "old_password": "password",
-            "new_password": "password"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `{}`                                                                  |
-        | `400`         | `application/json`                | `{"message": "Old password does not match current password"}`         |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/auth/user' --header 'Authorization: Token token_value' --header 'Content-Type: application/json'  --data '{"old_password":"old_password","new_password":"new_password"}'
-        > ```
-
-    #### Update user email and username
-        
-    ??? pied-piper-patch "PATCH /api/auth/user"
-        
-        ???+ Info 
-            
-            Individual fields can be updated only username or password.
-        
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "username": "new_username",
-            "email": "new_email"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"username":"new_username","email":"new_email","is_superuser":true}` |
-        | `400`         | `application/json`                | `{"email":["Enter a valid email address and password."]}`             |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/auth/user' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json' --data-raw '{"username":"new_username","email":"new_email"}'
-        > ```
-
-
-    #### Delete user account
-        
-    ??? pied-piper-delete "DELETE /api/auth/delete-account"
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/auth/delete-account' --header 'Authorization: Token token_value' 
-        > ```
-
-    #### Request password reset token for user account
-        
-    ??? pied-piper "POST /api/auth/password_reset"
-
-        ##### Payload
-        ``` json title="authentication.ResetPasswordRequestSerializer"
-        {
-            "email": "user_email"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{"token":"token_value"}`                                             |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
-        | `404`         | `application/json`                | `{"error":"User with provided email not found"}`                      |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/password_reset' --header 'Content-Type: application/json' --header 'X-Auth-Header: auth_header_value'   --data-raw '{"email":"user_email"}' 
-        > ```
-    
-    #### Change user password with token
-        
-    ??? pied-piper "POST /api/auth/password_reset/reset"
-
-         ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `token`   |`query (required)` | `string`        | `Token obtained from POST /api/auth/password_reset`                      | 
-
-        ##### Payload
-        ``` json 
-        {
-            "password": "new_password",
-            "confirm_password": "new_password"
-        }
-        ```
-
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `204`         | `application/json`                | `No Content`                                                          |
-        | `404`         | `application/json`                | `{"detail":"No PasswordResetToken matches the given query."}}`        |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/password_reset/reset?token=token_value' --header 'Content-Type: application/json'  --data '{"password":"new_password","confirm_password":"new_password"}'
-        > ```
-    
-
-
-    ------------------------------------------------------------------------------------------
-    
-    # Recipe
-    
-    #### Search for recipes
-    
-    ??? pied-piper-get "GET /api/recipe/home/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `search`  |`query (optional)` | `string`        | `Part or fulll name of the recipe.Recipe object`                      | 
-        | `page`    |`query (optional)` | `int`           | `Page number if there a mutilple pages result`                        | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/?name=name&page=1' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    #### Get favorite recipes
-    
-    ??? pied-piper-get "GET /api/recipe/home/favorites/"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}` |
-        | `404`         | `application/json`                | `{"detail":"No Recipe matches the given query."}`                                  |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/favorites/' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    
-    
-    #### Get trending recipes
-    
-    ??? pied-piper-get "GET /api/recipe/trending"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Recipe objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'localhost:8080/api/recipe/trending' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-
-    #### Search for recipes preview
-    
-    ??? pied-piper-get "GET /api/recipe/home/preview/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `search`  |`query (optional)` | `string`        | `Part or fulll name of the recipe.Recipe object`                      | 
-        | `page`    |`query (optional)` | `int`           | `Page number if there a mutilple pages result`                        | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.RecipePreviewSerializer obj list]}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/preview/?name=name&page=1' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    #### Update favorite status
-    
-    ??? pied-piper-patch "PATCH /api/recipe/int:pk/favorite"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be favorited or unfavorited`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `201`         | `application/json`        | `"Success favorite recipe"`                                |
-        | `201`         | `application/json`        | `"Success unfavorite recipe"`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}     |
-        | `404`         | `application/json`                | `Not Found`          |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/recipe/1/favorite' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-
-    #### Get recipe by pk
-
-    ??? pied-piper-get "GET /api/recipe/int:pk/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`                                              | 
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
-        | `404`         | `application/json`                |  {"detail":"No Recipe matches the given query."}                      |
-
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request GET 'host/api/recipe/1/' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-
-
-    #### Create recipe
-    
-    ??? pied-piper "POST /api/recipe/"
-    
-        ##### Payload
-        ``` json title="recipe.Recipe object"
-        {
-            "image": file,
-            "name": string,
-            "serves": int,
-            "description": string,
-            "difficulty": string (DIFFICULTY_CHOICES),
-            "chef": string
-            "video": file (optional),
-            "category": <int:pk> (optional),
-            "tag": <int:pk> (optional), 
-            "prep_time": int,
-            "cook_time": int
-        }
-        ```
-
-        ##### Dificulty choices (DIFFICULTY_CHOICES)
-        ``` python title="recipe.Recipe.DIFFICULTY_CHOICES (use only the key in the request)"
-            ('Easy', 'Easy'),
-            ('Intermediate', 'Intermediate'),
-            ('Advanced', 'Advanced'),
-            ('Expert', 'Expert'),
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`multipart/form-data`|  `Recipe object`  | `Recipe multipart/form-data object`                                | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Recipe object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/' --header 'Authorization: Token token_value' --form  'image=@"/path/image.jpg"' --form 'name="Recipe name"' --form 'servings="5"' --form 'category="1"' --form 'tag="1"' --form 'prep_time="20"' --form 'video=@"/path/video.mp4"' --form 'description="This is cool recipe"' --form 'cook_time="45"'
-        > ```
-    
-    
-    #### Update recipe main info (without ingredients and steps)
-    
-    ??? pied-piper-put "PUT /api/recipe/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Recipe object"
-        {
-            "image": file,
-            "name": string,
-            "serves": int,
-            "description": string,
-            "difficulty": string (DIFFICULTY_CHOICES),
-            "chef": string
-            "video": file (optional),
-            "category": <int:pk> (optional),
-            "tag": <int:pk> (optional), 
-            "prep_time": int,
-            "cook_time": int,
-            "clear_video": boolean (optional if you want to delete already set video)
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-        |`Content-Type`|`multipart/form-data`|  `Recipe object`  | `Recipe multipart/form-data object`                                | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/1' --header 'Authorization: Token token_value' --form  'image=@"/path/image.jpg"' --form 'name="Recipe name"' --form 'servings="5"' --form 'category="1"' --form 'tag="1"' --form 'prep_time="20"' --form 'video=@"/path/video.mp4"' --form 'description="This is cool recipe"' --form 'cook_time="45"'
-        > ```
-    
-    
-    #### Delete recipes
-    
-    ??? pied-piper-delete "DELETE /api/recipe/pk:int/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be deleted`                   | 
-    
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `      | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `204`         | `application/json`                |                                                                     |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/recipe/<int:pk>/' --header 'Authorization: Token token_value' 
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Category
-    
-    #### Get all categories
-    
-    ??? pied-piper-get "GET /api/recipe/category"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Category objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    
-    #### Get all categories recipes 
-    
-    ??? pied-piper-get "GET /api/recipe/category/int:pk/recipes"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Category primary key`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Recipe objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category/1/recipes' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Create category
-    
-    ??? pied-piper "POST /api/recipe/category/add"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint`              | 
-        |`Content-Type`|`application/json`|                   | `Applicaton Json content header                                     | 
-     
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Category object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category/add' --header 'Authorization: Token token_value' --data '{"name":"Greek"}'
-        > ```
-    
-    #### Update category
-    
-    ??? pied-piper-put "PUT /api/recipe/category/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string,
-    
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Category primary key`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`    | `Token obtained from login endpoint `              | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`|
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-        | `404`         | `application/json`                | `{"detail":"No Category matches the given query."}`                       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/category/6' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json'  --data '{"name":"Italiano"}'
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Tag
-    
-    #### Get all tags 
-    
-    ??? pied-piper-get "GET /api/recipe/tags"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Tag objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tags' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Get all recipes from tag 
-    
-    ??? pied-piper-get "GET /api/recipe/tag/int:pk/recipes"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Tag primary key`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tag/<int:pk>/recipes' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Create tag
-    
-    ??? pied-piper "POST /api/recipe/tag/add"
-    
-        ##### Payload
-        ``` json title="recipe.Tag object"
-        {
-            "name": string
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `      | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Category object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tag/add' --header 'Authorization: Token token_value' --data '{"name":"Summer vibes"}'
-        > ```
-    
-    #### Update tag
-    
-    ??? pied-piper-put "PUT /api/recipe/tag/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string,
-    
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Tag primary key`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Tag object}`|
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-        | `404`         | `application/json`                | `{"detail":"No Category matches the given query."}`                       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/tag/1' --header 'Authorization: Token token_value'  --header 'Content-Type: application/json'  --data '{"name":"Summer Vibes"}'
-        > ```
-    
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Ingredients
-    
-    ??? pied-piper "POST /api/recipe/int:pk/ingredients"
-    
-        ???+ Info 
-            
-            Override already existing ingredients for the recipe
-    
-        ##### Payload
-        ``` json title="recipe.Igredient object list"
-        [
-            {
-                "name": "string,
-                "quantity": string,
-                "metric": "string
-            },
-            {
-                "name": "string,
-                "quantity": string,
-                "metric": "string
-            },
-        ....
-        ]
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to which to link the ingredients`                   | 
-        
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint `                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `[{recipe.Ingrediant object}]`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/ingredients' --header 'Authorization: Token token_value' --data '[{"name":"Kasher salt","quantity":"1/5","metric":"tbsp","recipe":24}]'
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Steps
-    
-    ??? pied-piper "POST /api/recipe/int:pk/steps"
-    
-        ???+ Info 
-            
-            Override already existing steps for the recipe
-    
-        ##### Payload
-        ``` json title="recipe.Step object list"
-        [
-            {
-                "text": string
-            },
-            {
-                "text": string
-            },
-        ....
-        ]
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to which to link the steps`                   | 
-        
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint`                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `[{recipe.Step object}]`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/ingredients' --header 'Authorization: Token token_value' --data '[{"text":"Heat the oven","recipe":1}]'
-        > ```
-
-
-=== "v1.0"
-    <br />
-
-    # Authentication
-    #### Create admin user
-    
-    ??? pied-piper "POST /api/auth/signup"
-    
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "username": "username",
-            "password": "password",
-            "is_superuser": true
-        }
-        ```
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-        
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `201`         | `application/json`                | `User created successfully`                                         |
-        | `400`         | `application/json`                | `{"username":["user with this username already exists."]}`          |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/auth/signup' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"username":"username","password":"password","is_superuser":true}'
-        > ```
-    
-    
-    #### Obtain access token
-    
-    ??? pied-piper "POST /api/auth/token"
-    
-        ##### Payload
-        ``` json title="authentication.UserSerializer"
-        {
-            "username": "username",
-            "password": "password"
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-        
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"token":"token","user":{"username":"username","is_superuser":true}}`|
-        | `404`         | `application/json`                | `{"detail":"No User matches the given query."}`                       |
-        | `403`         | `application/json`                | `{"detail": "You must use authentication header"}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  `curl --location 'host/api/auth/token' --header 'X-Auth-Header: X_AUTH_HEADER' --header 'Content-Type: application/json' --data '{"username":"username","password":"password"}''
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Recipe
-    
-    #### Search for recipes
-    
-    ??? pied-piper-get "GET /api/recipe/home/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `search`  |`query (optional)` | `string`        | `Part or fulll name of the recipe.Recipe object`                      | 
-        | `page`    |`query (optional)` | `int`           | `Page number if there a mutilple pages result`                        | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`     |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/?name=name&page=1' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    #### Get favorite recipes
-    
-    ??? pied-piper-get "GET /api/recipe/home/favorites/"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}` |
-        | `404`         | `application/json`                | `{"detail":"No Recipe matches the given query."}`                                  |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'http://host:port/api/recipe/home/favorites/' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    
-    
-    #### Get trending recipes
-    
-    ??? pied-piper-get "GET /api/recipe/trending"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Recipe objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'localhost:8080/api/recipe/trending' --header 'X-Auth-Header: X_AUTH_HEADER
-        > ```
-    
-    
-    #### Update favorite status
-    
-    ??? pied-piper-patch "PATCH /api/recipe/int:pk/favorite"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be favorited or unfavorited`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint example "token 443c104be8c6daeeaf86df634e69b97668b99900"`                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `201`         | `application/json`        | `"Success favorite recipe"`                                |
-        | `201`         | `application/json`        | `"Success unfavorite recipe"`                                |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}     |
-        | `404`         | `application/json`                | `Not Found`          |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PATCH 'host/api/recipe/1/favorite' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    
-    #### Create recipe
-    
-    ??? pied-piper "POST /api/recipe/"
-    
-        ##### Payload
-        ``` json title="recipe.Recipe object"
-        {
-            "image": file,
-            "name": string,
-            "serves": int,
-            "video": file (optional),
-            "category": <int:pk>,
-            "tag": <int:pk>,
-            "prep_time": int,
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint example "token 443c104be8c6daeeaf86df634e69b97668b99900"`                         | 
-        |`Content-Type`|`multipart/form-data`|  `Recipe object`  | `Recipe multipart/form-data object`                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Recipe object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'localhost:8080/api/recipe/'  --header 'Authorization: Token d8916a5f6cf16d2c6a87bc7461bc4680245609f0' --form 'image=@"/path/image.jpg"' --form 'name="Test recipe creation"' --form 'serves="5"' --form 'category="1"' --form 'tag=1' --form 'prep_time="45"'
-        > ```
-    
-    
-    #### Update recipe main info (without ingredients and steps)
-    
-    ??? pied-piper-put "PUT /api/recipe/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Recipe object"
-        {
-            "image": file,
-            "name": string,
-            "serves": int,
-            "video": file (optional),
-            "category": <int:pk>,
-            "tag": <int:pk>,
-            "prep_time": int,
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be updated`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint example "token 443c104be8c6daeeaf86df634e69b97668b99900"`                         | 
-        |`Content-Type`|`multipart/form-data`|  `Recipe object`  | `Recipe multipart/form-data object`                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/1' --header 'Authorization: Token d8916a5f6cf16d2c6a87bc7461bc4680245609f0' --form 'image=@"/path/image.jpg"' --form 'name="Update name"' --form 'serves="4"' --form 'category="1"' --form 'tag="1"' --form 'prep_time="21"'
-        > ```
-    
-    
-    #### Delete recipes
-    
-    ??? pied-piper-delete "DELETE /api/recipe/pk:int/"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to be deleted`                   | 
-    
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint example "token 443c104be8c6daeeaf86df634e69b97668b99900"`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                            |
-        |---------------|-----------------------------------|---------------------------------------------------------------------|
-        | `204`         | `application/json`                |                                                                     |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request DELETE 'host/api/recipe/<int:pk>/' --header 'Authorization: Token d8916a5f6cf16d2c6a87bc7461bc4680245609f0' 
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Category
-    
-    #### Get all categories
-    
-    ??? pied-piper-get "GET /api/recipe/category"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Category objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    
-    #### Get all categories recipes 
-    
-    ??? pied-piper-get "GET /api/recipe/category/int:pk/recipes"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Category primary key`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Recipe objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category/1/recipes' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Create category
-    
-    ??? pied-piper "POST /api/recipe/category/add"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint example "token 443c104be8c6daeeaf86df634e69b97668b99900"`                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Category object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/category/add' --header 'Authorization: token 443c104be8c6daeeaf86df634e69b97668b99900' --data '{"name":"Greek"}'
-        > ```
-    
-    #### Update category
-    
-    ??? pied-piper-put "PUT /api/recipe/category/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string,
-    
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Category primary key`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint example "token 443c104be8c6daeeaf86df634e69b97668b99900"`                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Recipe object}`|
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-        | `404`         | `application/json`                | `{"detail":"No Category matches the given query."}`                       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/category/6' --header 'Authorization: token 443c104be8c6daeeaf86df634e69b97668b99900'  --header 'Content-Type: application/json'  --data '{"name":"Italiano"}'
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Tag
-    
-    #### Get all tags 
-    
-    ??? pied-piper-get "GET /api/recipe/tags"
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `[recipe.Tag objects list]`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tags' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Get all recipes from tag 
-    
-    ??? pied-piper-get "GET /api/recipe/tag/int:pk/recipes"
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Tag primary key`                   | 
-        
-    
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                                           |
-        |---------------|-----------------------------------|------------------------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{"count":int,"next":string,"previous":string,"results":[recipe.Recipe obj list]}`                                                     |
-        | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                                  |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tag/<int:pk>/recipes' --header 'X-Auth-Header: X_AUTH_HEADER'
-        > ```
-    
-    #### Create tag
-    
-    ??? pied-piper "POST /api/recipe/tag/add"
-    
-        ##### Payload
-        ``` json title="recipe.Tag object"
-        {
-            "name": string
-        }
-        ```
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint example "token 443c104be8c6daeeaf86df634e69b97668b99900"`                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `{recipe.Category object}`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/tag/add' --header 'Authorization: token 443c104be8c6daeeaf86df634e69b97668b99900' --data '{"name":"Summer vibes"}'
-        > ```
-    
-    #### Update tag
-    
-    ??? pied-piper-put "PUT /api/recipe/tag/int:pk"
-    
-        ##### Payload
-        ``` json title="recipe.Category object"
-        {
-            "name": string,
-    
-        }
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Tag primary key`                   | 
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint example "token 443c104be8c6daeeaf86df634e69b97668b99900"`                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `200`         | `application/json`                | `{recipe.Tag object}`|
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-        | `404`         | `application/json`                | `{"detail":"No Category matches the given query."}`                       |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location --request PUT 'host/api/recipe/tag/1' --header 'Authorization: token 443c104be8c6daeeaf86df634e69b97668b99900'  --header 'Content-Type: application/json'  --data '{"name":"Summer Vibes"}'
-        > ```
-    
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Ingredients
-    
-    ??? pied-piper "POST /api/recipe/int:pk/ingredients"
-    
-        ???+ Info 
-            
-            Override already existing ingredients for the recipe
-    
-        ##### Payload
-        ``` json title="recipe.Igredient object list"
-        [
-            {
-                "name": "string,
-                "quantity": string,
-                "metric": "string
-            },
-            {
-                "name": "string,
-                "quantity": string,
-                "metric": "string
-            },
-        ....
-        ]
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to which to link the ingredients`                   | 
-        
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint example "token 443c104be8c6daeeaf86df634e69b97668b99900"`                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `[{recipe.Ingrediant object}]`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/ingredients' --header 'Authorization: token 443c104be8c6daeeaf86df634e69b97668b99900' --data '[{"name":"Kasher salt","quantity":"1/5","metric":"tbsp","recipe":24}]'
-        > ```
-    
-    ------------------------------------------------------------------------------------------
-    
-    # Steps
-    
-    ??? pied-piper "POST /api/recipe/int:pk/steps"
-    
-        ???+ Info 
-            
-            Override already existing steps for the recipe
-    
-        ##### Payload
-        ``` json title="recipe.Step object list"
-        [
-            {
-                "text": string
-            },
-            {
-                "text": string
-            },
-        ....
-        ]
-        ```
-    
-        ##### Parameters
-        
-        | name      |  type     | data type               | description                                                           |
-        |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-        | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key to which to link the steps`                   | 
-        
-        
-        
-        ##### Headers
-        
-        | name          |  type     | data type               | description                                                           |
-        |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
-        |`Authorization`|`required `|       `Access Token`            | `Token obtained from login endpoint example "token 443c104be8c6daeeaf86df634e69b97668b99900"`                         | 
-        |`Content-Type`|`application/json`|    | `Applicaton Json content header                         | 
-    
-    
-        ##### Responses
-        
-        | http code     | content-type                      | response                                                              |
-        |---------------|-----------------------------------|-----------------------------------------------------------------------|
-        | `201`         | `application/json`                | `[{recipe.Step object}]`|
-        | `400`         | `application/json`                | `{"tag":["Incorrect type. message"]}`                       |
-        | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`                    |
-    
-        ##### Example cURL
-        
-        > ``` bash
-        >  curl --location 'host/api/recipe/ingredients' --header 'Authorization: token 443c104be8c6daeeaf86df634e69b97668b99900' --data '[{"text":"Heat the oven","recipe":1}]'
-        > ```
+    > ``` bash
+    >  curl --location --request DELETE 'host/api/shopping/<int:pk>/'  --header 'Authorization: Token token_value'
+    > ```
 
