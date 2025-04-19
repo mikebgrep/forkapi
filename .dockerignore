@@ -4,5 +4,12 @@ forkapi/authentication/migrations/*
 forkapi/schedule/migrations/*
 forkapi/media/images
 forkapi/media/videos
+forkapi/media/backups/**/*.zip
 forkapi/static/*
+forkapi/backupper/migrations/*
+assets/*
+.tox
+.github
+.venv
+.
 .env

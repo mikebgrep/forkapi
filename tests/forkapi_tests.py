@@ -221,7 +221,6 @@ def create_recipe(api_client, original_recipe_pk=None):
     recipe_data = {
         "name": f"Recipe-{uuid.uuid4()}",
         "servings": int(random.uniform(0, 20)),
-        "category": category.pk,
         "tag": tag.pk,
         "prep_time": random.randrange(1, 60),
         "cook_time": random.randrange(1, 40),
@@ -230,14 +229,24 @@ def create_recipe(api_client, original_recipe_pk=None):
         "video": open("tests/uploads/upload-video.mp4", 'rb'),
     }
 
+    category_data = {
+        "category_pk": category.pk
+    }
+
     response = api_client.post("/api/recipe/", recipe_data, format="multipart")
     assert response.status_code == 201
 
     recipe = Recipe.objects.get(name=recipe_data['name'])
+
+    response = api_client.patch(f"/api/recipe/{recipe.pk}/category", category_data, format="json")
+    assert response.status_code == 204
+
     if original_recipe_pk:
         recipe.original_recipe_pk = original_recipe_pk
         recipe.language = "Bulgarian"
         recipe.save()
+
+    recipe = Recipe.objects.get(pk=recipe.pk)
 
     return recipe, recipe_data
 
@@ -465,7 +474,7 @@ def test_create_recipe(api_client):
     assert recipe.servings == recipe_data['servings']
     assert recipe.is_favorite == False
     assert recipe.tag.pk == recipe_data['tag']
-    assert recipe.category.pk == recipe_data['category']
+    assert recipe.category.pk is not None
     assert recipe.created_at is not None
     assert recipe.image is not None
     assert recipe.video is not None
@@ -526,7 +535,6 @@ def test_update_recipe_main_info(api_client):
     update_recipe_data = {
         "name": f"Recipe-{uuid.uuid4()}",
         "servings": int(random.uniform(0, 20)),
-        "category": category.pk,
         "tag": tag.pk,
         "description": f"Description{uuid.uuid4()}",
         "prep_time": int(random.uniform(1, 60)),
@@ -534,8 +542,15 @@ def test_update_recipe_main_info(api_client):
         "video": open("tests/uploads/upload-video.mp4", 'rb')
     }
 
+    category_data = {
+        "category_pk": category.pk
+    }
+
     response = api_client.put(f"/api/recipe/{recipe.pk}", update_recipe_data, format="multipart")
     assert response.status_code == 200
+
+    response = api_client.patch(f"/api/recipe/{recipe.pk}/category", category_data, format="json")
+    assert response.status_code == 204
 
     updated_recipe = Recipe.objects.get(name=update_recipe_data['name'])
     assert updated_recipe.servings == update_recipe_data['servings']
@@ -815,7 +830,7 @@ def test_get_recipe_return_recipe_main_info(api_client):
     assert recipe.video is not None
     assert recipe.image is not None
     assert recipe.is_favorite == response_data['results'][0]['is_favorite']
-    assert recipe.category.pk == response_data['results'][0]['category']
+    assert recipe.category.pk == response_data['results'][0]['category']['pk']
     assert recipe.tag.pk == response_data['results'][0]['tag']
 
 
@@ -838,7 +853,7 @@ def test_get_recipe_return_full_info(api_client):
     assert recipe.video is not None
     assert recipe.image is not None
     assert recipe.is_favorite == response_data['results'][0]['is_favorite']
-    assert recipe.category.pk == response_data['results'][0]['category']
+    assert recipe.category.pk == response_data['results'][0]['category']['pk']
     assert recipe.tag.pk == response_data['results'][0]['tag']
 
     assert len(ingredients) == len([x for x in response_data['results'][0]['ingredients']])
@@ -874,8 +889,6 @@ def test_create_ingredients_second_time_rewrite_existing(api_client):
     recipe, recipe_data = create_recipe(api_client)
     ingredients, ingredients_data = create_ingredients_for_recipe(recipe, api_client)
     second_ingredients, second_ingredients_data = create_ingredients_for_recipe(recipe, api_client)
-    print(ingredients)
-    print(second_ingredients)
     assert len(second_ingredients) == len(second_ingredients_data)
     assert len([x for x in ingredients if x.name not in [y.name for y in second_ingredients]]) == 0
 

@@ -541,7 +541,6 @@ hide:
         "difficulty": string (DIFFICULTY_CHOICES),
         "chef": string
         "video": file (optional),
-        "category": <int:pk> (optional),
         "tag": <int:pk> (optional), 
         "prep_time": int,
         "cook_time": int
@@ -593,7 +592,6 @@ hide:
         "difficulty": string (DIFFICULTY_CHOICES),
         "chef": string
         "video": file (optional),
-        "category": <int:pk> (optional),
         "tag": <int:pk> (optional), 
         "prep_time": int,
         "cook_time": int,
@@ -630,6 +628,44 @@ hide:
     >  curl --location --request PUT 'host/api/recipe/1' --header 'Authorization: Token token_value' --form  'image=@"/path/image.jpg"' --form 'name="Recipe name"' --form 'servings="5"' --form 'category="1"' --form 'tag="1"' --form 'prep_time="20"' --form 'video=@"/path/video.mp4"' --form 'description="This is cool recipe"' --form 'cook_time="45"'
     > ```
 
+
+#### Update Recipe Category
+    
+??? pied-piper-patch "PATCH /api/recipe/int:pk/category"
+    
+     ##### Payload
+    ``` json
+    {
+        "category_pk": int
+    }
+    ```
+
+    ##### Parameters
+    
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `Recipe primary key`                   | 
+    
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
+
+    
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `204`         | `application/json`                | `` |
+    | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
+    | `404`         | `application/json`                | `{"detail": "No Recipe matches the given query."]}`             |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location --request PATCH 'host/api/recipe/<int:pk>/category' --header 'Authorization: Token TOKEN_VALUE'  --data '{"category_pk":2}'
+    > ```
 
 #### Delete recipes
 
