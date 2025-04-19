@@ -767,6 +767,8 @@ for the read only endpoint. Example header <code>261ec18d-0e81-4073-8d9e-b34a7a1
 <li><code>CORS_ALLOWED_HOSTS</code> are the front end domain names</li>
 <li><code>OPENAI_API_KEY</code> is the API KEY from OpenAI for the scraping recipe functionality</li>
 <li><code>OPENAI_MODEL</code> is the default model at this stage the <code>gpt-4o-mini</code> is most cost-efficient and is working ok for the scraping task</li>
+<li><code>OPEN_AI_TTS_MODEL_VOICE</code> is the voice of the TTS OpenAI model</li>
+<li></li>
 </ul>
 <details class="info">
 <summary>Scrape functionality dependencies</summary>
@@ -781,9 +783,8 @@ Note replace the 3.x with actual Python version
 </span></code></pre></div></p>
 <p>Make the needed migrations so Django can create sqlite database file with tables.
 <div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>$ cd forkapi
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>$ python manage.py makemigrations authentication
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>$ python manage.py makemigrations recipe
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>$ python manage.py migrate
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>$ python manage.py makemigrations
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>$ python manage.py migrate
 </span></code></pre></div></p>
 <p>At this point everything should be ok, and you can start the server. <br /></p>
 <p><div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>$ python manage.py runserver
