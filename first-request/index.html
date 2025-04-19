@@ -139,7 +139,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="light-blue" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
@@ -295,40 +295,6 @@
     
   
   Rest Reference
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../open-ai/" class="md-tabs__link">
-        
-  
-    
-  
-  OpenAI
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../clients/" class="md-tabs__link">
-        
-  
-    
-  
-  Clients
 
       </a>
     </li>
@@ -561,46 +527,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../open-ai/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    OpenAI
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../clients/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Clients
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../contribution/" class="md-nav__link">
         
   
@@ -676,20 +602,7 @@ This can be done ether with Django <code>manage.py</code> <code>python manage.py
 <p>I will present the method with the curl as more convenient method but you can use and Postman.</p>
 <h2 id="creating-superuser">Creating superuser<a class="headerlink" href="#creating-superuser" title="Permanent link">&para;</a></h2>
 <p>To create a superuser for login into the Admin Dashboard use the following curl command in you terminal or powershell.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">v5.x - v2.x</label><label for="__tabbed_1_2">v1.0</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<p><div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>curl<span class="w"> </span>--location<span class="w"> </span>--request<span class="w"> </span>POST<span class="w"> </span>--header<span class="w"> </span><span class="s2">&quot;Content-type: application/json&quot;</span><span class="w"> </span>--header<span class="w"> </span><span class="s2">&quot;X-Auth-Header: X_AUTH_HEADER&quot;</span><span class="w">  </span>--data-raw<span class="w"> </span><span class="s1">&#39;{&quot;username&quot;:&quot;your_username&quot;,&quot;email&quot;:&quot;your_email&quot;,&quot;password&quot;:&quot;you-password&quot;, &quot;is_superuser&quot;: true}&#39;</span><span class="w"> </span><span class="s1">&#39;https://your-domain-name/api/auth/signup&#39;</span>
-</span></code></pre></div>
-Take a note that you need to change</p>
-<ul>
-<li><code>X_AUTH_HEADER</code> with the value from <code>.env</code> file</li>
-<li><code>your-username</code>, <code>your-email</code> and <code>your-password</code> with valid data</li>
-<li><code>https://your-domain-name</code> with actual domain name </li>
-</ul>
-</div>
-<div class="tabbed-block">
-<p><div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>curl<span class="w"> </span>--location<span class="w"> </span>--request<span class="w"> </span>POST<span class="w"> </span>--header<span class="w"> </span><span class="s2">&quot;Content-type: application/json&quot;</span><span class="w"> </span>--header<span class="w"> </span><span class="s2">&quot;X-Auth-Header: X_AUTH_HEADER&quot;</span><span class="w">  </span>--data-raw<span class="w"> </span><span class="s1">&#39;{&quot;username&quot;:&quot;your_username&quot;,&quot;password&quot;:&quot;you-password&quot;, &quot;is_superuser&quot;: true}&#39;</span><span class="w"> </span><span class="s1">&#39;https://your-domain-name/api/auth/signup&#39;</span>
+<p><div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>curl<span class="w"> </span>--location<span class="w"> </span>--request<span class="w"> </span>POST<span class="w"> </span>--header<span class="w"> </span><span class="s2">&quot;Content-type: application/json&quot;</span><span class="w"> </span>--header<span class="w"> </span><span class="s2">&quot;X-Auth-Header: X_AUTH_HEADER&quot;</span><span class="w">  </span>--data-raw<span class="w"> </span><span class="s1">&#39;{&quot;username&quot;:&quot;your_username&quot;,&quot;password&quot;:&quot;you-password&quot;, &quot;is_superuser&quot;: true}&#39;</span><span class="w"> </span><span class="s1">&#39;https://your-domain-name/api/auth/signup&#39;</span>
 </span></code></pre></div>
 Take a note that you need to change</p>
 <ul>
@@ -697,9 +610,6 @@ Take a note that you need to change</p>
 <li><code>your-username</code> and <code>your-password</code> with valid data</li>
 <li><code>https://your-domain-name</code> with actual domain name </li>
 </ul>
-</div>
-</div>
-</div>
 <p>When you execute the curl command the admin user will be created you can log in to the admin dashboard from the base url of the api (the domain name).</p>
 
 
