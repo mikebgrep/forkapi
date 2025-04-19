@@ -5,6 +5,7 @@ forkapi/schedule/migrations/*
 forkapi/media/images
 forkapi/media/videos
 forkapi/media/backups/**/*.zip
+forkapi/media/audio/**/*.mp3
 forkapi/static/*
 forkapi/backupper/migrations/*
 assets/*
