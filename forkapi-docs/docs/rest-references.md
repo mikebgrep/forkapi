@@ -303,7 +303,9 @@ hide:
     ##### Payload
     ``` json title="auth.serializers.UserSettingsSerializer object"
     {
-        "preferred_translate_language": LANGUAGES_CHOICES
+        "preferred_translate_language": LANGUAGES_CHOICES,
+        "compact_pdf": bool,
+        "emoji_recipes": bool
     }
     ```
 
@@ -341,7 +343,7 @@ hide:
     ##### Example cURL
     
     > ``` bash
-    > curl --location --request PATCH 'host/api/auth/settings' --header 'Authorization: Token token_value' --data '{"language":"recipe.models.LANGUAGES_CHOICES"}'
+    > curl --location --request PATCH 'host/api/auth/settings' --header 'Authorization: Token token_value' --data '{"language":"recipe.models.LANGUAGES_CHOICES", "compact_pdf": true, "emoji_recipes": true}'
     > ```
 
 ------------------------------------------------------------------------------------------
@@ -693,6 +695,30 @@ hide:
     > curl --location 'host/api/recipe/20/variations' --header 'X-Auth-Header: X_AUTH_HEADER'
     > ```
 
+#### Get recipe variations (translation)
+
+??? pied-piper-get "GET /api/recipe/random"
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`X-Auth-Header`|`required `|       `UUID`            | `Header used for authentication with the API`                         | 
+
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `200`         | `application/json`                | `{recipe.serializers.RecipePreviewSerializer object}`                                              | 
+    | `403`         | `application/json`                | `{"detail":"You must use authentication header"}`                     |
+
+    ##### Example cURL
+    
+    > ``` bash
+    > curl --location 'host/api/recipe/random' --header 'X-Auth-Header: X_AUTH_HEADER'
+    > ```
+
 ------------------------------------------------------------------------------------------
 
 # Recipe OpenAI
@@ -742,7 +768,8 @@ hide:
     ##### Payload
     ``` json title="GenerateRecipeSerializer list of strings"
     {
-        "ingredients": []
+        "ingredients": [],
+        "meal_type": string
     }
     ```
 
@@ -763,7 +790,7 @@ hide:
     ##### Example cURL
     
     > ``` bash
-    > curl --location 'host/api/recipe/generate' --header 'Authorization: Token token_value' --header 'Content-Type: application/json' --data '{"ingredients":["tomato","onion","cheese","pasta","milk","red peparz"]}'
+    > curl --location 'host/api/recipe/generate' --header 'Authorization: Token token_value' --header 'Content-Type: application/json' --data '{"ingredients":["tomato","onion","cheese","pasta","milk","red peparz"], "meal_type": "Pasta"}'
     > ```
 
 #### Translate recipe
@@ -1662,3 +1689,175 @@ hide:
     >  curl --location --request DELETE 'host/api/shopping/<int:pk>/'  --header 'Authorization: Token token_value'
     > ```
 
+------------------------------------------------------------------------------------------
+
+# Backupper (backup database)
+
+#### Create backup
+
+??? pied-piper "POST /api/backupper/"
+
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
+    
+    
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                            |
+    |---------------|-----------------------------------|---------------------------------------------------------------------|
+    | `201`         | `application/json`                | `Successfully created backup file: backups/file.zip`                                         |
+    | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location --request POST 'host/api/backupper/' --header 'Authorization: Token TOKEN_VALUE'
+    > ```
+
+
+#### Get all backups
+
+??? pied-piper-get "GET /api/backupper/"
+
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                            |
+    |---------------|-----------------------------------|---------------------------------------------------------------------|
+    | `200`         | `application/json`                | `[BackupSnapshotSerializer objects]`                                |
+    | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`        |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'host/api/backupper/' --header 'Authorization: Token TOKEN_VALUE' 
+    > ```
+
+
+#### Get single backups
+
+??? pied-piper-get "GET /api/backupper/int:pk/"
+    
+    ##### Parameters
+    
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `BackupSnapshot.pk`                   | 
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
+
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                            |
+    |---------------|-----------------------------------|---------------------------------------------------------------------|
+    | `200`         | `application/json`                | `{BackupSnapshotSerializer object}`                                |
+    | `401`         | `application/json`                | `{"detail":"Authentication credentials were not provided."}`        |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location 'host/api/backupper/2/' --header 'Authorization: Token TOKEN_VALUE' 
+    > ```
+
+
+#### Apply backup
+    
+??? pied-piper-patch "PATCH /api/backupper/"
+    
+    ##### Payload
+    ``` json
+    {
+        "backup_pk": int"
+    }
+    ```
+    
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
+
+    
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `204`         | `application/json`                | `{"Successfully loaded backup file: backups/file.zip}` |
+    | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
+    | `404`         | `application/json`                | `{"detail": "No BackupSnapshot matches the given query."}`         |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location --request PATCH 'host/api/backupper/' --header 'Authorization: Token TOKEN_VALUE' --data '{"backup_pk":2}'
+    > ```
+
+#### Import backup
+
+??? pied-piper "POST /api/backupper/import/"
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint`      | 
+    
+    
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                            |
+    |---------------|-----------------------------------|---------------------------------------------------------------------|
+    | `201`         | `application/json`                | `File uploaded successfully`                                         |
+    | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl -X POST  --header 'Authorization: Token TOKEN_VALUE' -F "file=@file.zip" host/api/backupper/import/
+    > ```
+
+
+#### Delete backup
+    
+??? pied-piper-delete "DELETE /api/backupper/int:pk/"
+    
+     ##### Parameters
+    
+    | name      |  type     | data type               | description                                                           |
+    |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+    | `<int:pk>`    |`path (required)` | `int`        | `BackupSnapshot.pk`                   | 
+
+    ##### Headers
+    
+    | name          |  type     | data type               | description                                                           |
+    |---------------|-----------|-------------------------|-----------------------------------------------------------------------|
+    |`Authorization`|`required `|   `Access Token`        | `Token obtained from login endpoint `                                 | 
+
+    
+    ##### Responses
+    
+    | http code     | content-type                      | response                                                              |
+    |---------------|-----------------------------------|-----------------------------------------------------------------------|
+    | `204`         | `application/json`                | `No Content`                                                          |
+    | `403`         | `application/json`                | `{"detail": "Authentication credentials were not provided."}`         |
+    | `404`         | `application/json`                | `{"detail": "No BackupSnapshot matches the given query."}`         |
+
+    ##### Example cURL
+    
+    > ``` bash
+    >  curl --location --request DELETE 'host/api/backupper/1/' --header 'Authorization: Token TOKEN_VALUE'
+    > ```

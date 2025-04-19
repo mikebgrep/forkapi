@@ -67,7 +67,8 @@ There a case where the model fails and we return empty response with status code
     ##### Payload
     ``` json title="GenerateRecipeSerializer list of strings"
     {
-        "ingredients": []
+        "ingredients": [],
+        "meal_type": string
     }
     ```
 

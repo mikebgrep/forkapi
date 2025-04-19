@@ -67,6 +67,9 @@ You can follow the link of the official GitHub repository of the project here âž
     # Scrape functionality make sure to add '' for the API KEY
     OPENAI_API_KEY=
     OPENAI_MODEL=gpt-4o-mini
+   
+    # Voice for TTS model one of alloy, ash, ballad, coral, echo, fable, onyx, nova, sage, shimmer
+    OPEN_AI_TTS_MODEL_VOICE=coral
     ```
   There are comments for each section, but I will explain quick.
 
@@ -82,6 +85,7 @@ You can follow the link of the official GitHub repository of the project here âž
   * `CORS_ALLOWED_HOSTS` are the front end domain names
   * `OPENAI_API_KEY` is the API KEY from OpenAI for the scraping recipe functionality
   * `OPENAI_MODEL` is the default model at this stage the `gpt-4o-mini` is most cost-efficient and is working ok for the scraping task
+  * `OPEN_AI_TTS_MODEL_VOICE` is the voice which is used for generating the audio recipes
  
 !!! info "Read for local deploy without domain name"
 
