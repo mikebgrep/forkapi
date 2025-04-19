@@ -21,7 +21,8 @@ For TTS the model is `tts-4o-mini` which is the latest model can translate to an
 1. We use it to scrape a recipe from external url.
 2. We use it to generate a recipes from ingredients and after this we scrape the recipes from the available url online.
 3. We use it to translate recipe to selected number of languages
-4. We use it for generating of a recipe audio file that record the recipe name, ingredients and insstructions
+4. We use it for generating of a recipe audio file that record the recipe name, ingredients and instructions
+5. We use it to add emojis in the recipe name and ingredients if recognise a word that has representing emoji
 
 
 ## Edge cases
