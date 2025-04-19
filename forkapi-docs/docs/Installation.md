@@ -34,7 +34,8 @@ for the read only endpoint. Example header ``261ec18d-0e81-4073-8d9e-b34a7a1e5e0
 * `CORS_ALLOWED_HOSTS` are the front end domain names
 * `OPENAI_API_KEY` is the API KEY from OpenAI for the scraping recipe functionality
 * `OPENAI_MODEL` is the default model at this stage the `gpt-4o-mini` is most cost-efficient and is working ok for the scraping task
-
+* `OPEN_AI_TTS_MODEL_VOICE` is the voice of the TTS OpenAI model
+* 
 ??? info "Scrape functionality dependencies"
 
     The API use playwright python package to open the scrape url recipe link.
@@ -52,8 +53,7 @@ $ pip install -r requirements.txt
 Make the needed migrations so Django can create sqlite database file with tables.
 ```commandline
 $ cd forkapi
-$ python manage.py makemigrations authentication
-$ python manage.py makemigrations recipe
+$ python manage.py makemigrations
 $ python manage.py migrate
 ```
 
