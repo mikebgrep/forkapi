@@ -11,6 +11,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl-dev \
     libpcre3-dev \
     curl \
+    libpq-dev \
+    python-dev-is-python3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Raspberry Pi packages 📦
@@ -42,17 +44,3 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache-dir --verbose -r requirements.txt
 RUN playwright install-deps firefox
 RUN playwright install firefox
-
-
-# Collect static files
-RUN python manage.py makemigrations authentication
-RUN python manage.py makemigrations recipe
-RUN python manage.py makemigrations schedule
-RUN python manage.py makemigrations shopping
-RUN python manage.py makemigrations backupper
-RUN python manage.py migrate
-RUN python manage.py collectstatic --noinput
-
-# Give permissions around and add www-data to staff
-RUN chmod 660 /forkapi/sql/db.sqlite3
-RUN usermod -g staff www-data
