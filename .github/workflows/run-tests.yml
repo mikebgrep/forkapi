@@ -38,6 +38,7 @@ jobs:
       env:
         X_AUTH_HEADER: ${{ secrets.X_AUTH_HEADER }}
         DJANGO_SECRET: ${{ secrets.DJANGO_SECRET }}
+        DEPLOYMENT_TYPE: ${{ secrets.DEPLOYMENT_TYPE }}
         PAGINATION_PAGE_SIZE: 15
       run: |
         tox -- -v
