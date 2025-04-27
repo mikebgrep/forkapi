@@ -789,7 +789,7 @@
 </div>
 <div class="admonition info">
 <p class="admonition-title">Read for local deploy without domain name</p>
-<p>If you want to setup the application only for local use and you doesn't have a domain you can edit the <code>forkrecipes.nginx.template</code> file and  change the port for <code>listen</code> at line <code>21</code> for the API, 
+<p>If you want to setup the application only for local use and you doesn't have a domain you can edit the <code>forkrecipes.nginx.conf</code> file and  change the port for <code>listen</code> at line <code>28</code> for the API, 
 after this you need to add the port in <code>nginx</code> service in the <code>docker-compose.yml</code> file.This way you can login to admin from the localhost and the port number. 
 Keep in mind that <code>SERVICE_BASE_URL</code> envirument variable should be also with the newly added port and the local ip of the host eg. <code>http://192.168.x.x:port</code>.</p>
 <details class="tip">
@@ -865,10 +865,6 @@ This setup is only for local use on home server!</p>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>$<span class="w"> </span>sudo<span class="w"> </span>./compose.sh<span class="w"> </span>up
 </span></code></pre></div>
 This command will install NGINX, ForkAPI and the Fork.Recipes.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This setup is working only if you have domain name for <code>DOMAIN_NAME_NGINX</code> and sub domain for <code>DOMAIN_NAME_NGINX_API</code></p>
-</div>
 </div>
 <div class="tabbed-block">
 <p>You need to have valid certificates for your domain and subdomain.This files should be copied in the <code>nginx/ssl</code> folder. The files are <code>fullchain.pem</code> and <code>privkey.pem</code> (names need to be the same).<br />
