@@ -47,17 +47,12 @@ You can follow the link of the official GitHub repository of the project here âž
     EMAIL_PORT=
     EMAIL_USE_TLS=
     
-    ###### Domains ######
-    # ! This two must be without protocol
-    # localhost for homeserver can be used
+    # Databse/SLL deployment type one of postgres, postgres-ssl, sqlite, sqlite-ssl
+    DEPLOYMENT_TYPE=
     
-    # Domain name for the fork.recipes application
-    # ! subdomain should be used as api.host.
-    DOMAIN_NAME_NGINX=
-    
-    # Domain name for the forkapi be application
-    DOMAIN_NAME_NGINX_API=
-    
+    #Only if you use Posgress databse, format `postgres://user:password@ip:port/fork.recipes`
+    DATABASE_URL=
+   
     # Pagination for the recipe search endpoints
     PAGINATION_PAGE_SIZE=
    
@@ -74,19 +69,21 @@ You can follow the link of the official GitHub repository of the project here âž
   There are comments for each section, but I will explain quick.
 
   * `DJANGO_SECRET` and `X_AUTH_HEADER` are mandatory as Django secret can be generated online from this tool âž¡ [tool](https://djecrety.ir/) and the header should be something difficult to guest as a GUID  âž¡ [tool](https://www.uuidgenerator.net/guid)
-  * `SERVICE_BASE_URL` is the url that is used from the front end to communicate with the BE it's same as `DOMAIN_NAME_NGINX_API` but with `http://` or `https://` protocol.
+  * `SERVICE_BASE_URL` is the url that is used from the front end to communicate with the BE should be with `http://` or `https://` protocol.
   * Next are `SMTP settings` you can follow your email provider for the values I can say that only is used for reset password functionality so you may be will not need it
-  * `Domains` section is for the `NGINX` proxy configuration files `DOMAIN_NAME_NGINX` should be the base url of the fork.recipes application, `DOMAIN_NAME_NGINX_API` should be the subdomain normally starting with `api.` for the BE `forkapi` service.
-
-!!! warning 
-    
-    `DOMAIN_NAME_NGINX` and `DOMAIN_NAME_NGINX_API` shouldn't include protocol as `http://` or `https://` they should be plain.
 
   * `CORS_ALLOWED_HOSTS` are the front end domain names
   * `OPENAI_API_KEY` is the API KEY from OpenAI for the scraping recipe functionality
   * `OPENAI_MODEL` is the default model at this stage the `gpt-4o-mini` is most cost-efficient and is working ok for the scraping task
   * `OPEN_AI_TTS_MODEL_VOICE` is the voice which is used for generating the audio recipes
- 
+  * `DEPLOYMENT_TYPE` is the choice of deployment eather with SSL support and different database type combined.
+  * `DATABASE_URL` only if you use Postgres (already deployed).
+
+!!! info "Postgres users"
+    
+    If you does not have Postgres deployed locally you can deploy it with `sudo docker compose up` command in the folder `postgres`. Make sure to change user and password env variables there.
+
+
 !!! info "Read for local deploy without domain name"
 
     If you want to setup the application only for local use and you doesn't have a domain you can edit the `forkrecipes.nginx.template` file and  change the port for `listen` at line `21` for the API, 
@@ -106,12 +103,12 @@ You can follow the link of the official GitHub repository of the project here âž
               - "port-number:81"
           ```
     
-    ??? tip "forkrecipes.nginx.template"
+    ??? tip "forkrecipes.nginx.conf"
             
         ```
         server {
             listen 80;
-            server_name ${DOMAIN_NAME_NGINX};
+            server_name localhost;
             client_max_body_size 100M;
         
             location / {
@@ -130,7 +127,7 @@ You can follow the link of the official GitHub repository of the project here âž
 
         server {
             listen 81;
-            server_name ${DOMAIN_NAME_NGINX_API};
+            server_name localhost;
             client_max_body_size 100M;
         
             location / {
@@ -161,9 +158,11 @@ You can follow the link of the official GitHub repository of the project here âž
 2.Run docker compose
 === "No SSL"
     
-    You are all set for setup without SSL installation you just need to run the docker compose file with the following command in the root of the project.
+    If you use domain names without SSL you must define them in `nginx/forkapi.nginx.conf` file in lines `3` for the FE and line `28` for the BE.
+
     ``` bash
-    $ docker compose up
+    $ sudo chomd +x compose.sh
+    $ sudo ./compose.sh up
     ```
     This command will install NGINX, ForkAPI and the Fork.Recipes.
 
@@ -173,16 +172,29 @@ You can follow the link of the official GitHub repository of the project here âž
 
 === "SSL"
     You need to have valid certificates for your domain and subdomain.This files should be copied in the `nginx/ssl` folder. The files are `fullchain.pem` and `privkey.pem` (names need to be the same).  
-    At this step you must open the `docker-compose.yml` file and uncomment all commented sections on lines `6`, `11` and `15`.
-    Don't forget to comment the others on lines `5` and `16`. <br>
-    That all run the docker compose and wait the docker do his job.
+    Choice `DEPLOYMENT_TYPE` variable accordingly of the Database type `postgres-ssl` or `sqlite-ssl` <br>
+    Add your domain names in `nginx/forkapi-ssl.nginx.conf` on lines `3` and `20` for the FE service and on line `11` and `51` for the BE service.
     ``` bash
-    $ docker compose up
+    $ sudo chomd +x compose.sh
+    $ sudo ./compose.sh up
     ```
 
-3.You can access the API admin panel and the FE from the links `DOMAIN_NAME_NGINX` and `DOMAIN_NAME_NGINX_API` that was setup  in the `.env` file 
+3.You can access the API admin panel and the FE from the links added in the `nginx` configuration files 
 
-4.Create superuser as following this step [docs](https://mikebgrep.github.io/forkapi/first-request/#creating-superuser) as the registration from the UI is not available.
+4.Login into the app with the default user `email:admin@example.com`, `password:ChangeMe` you can update this values after the first login in Profile screen.
+Currently, there no signup implemented so you can add another user is from the admin panel.
+
+??? tip "compose.sh arguments"
+    
+    This is the available compose.sh arguments
+    ``` bash
+    $ sudo ./compose.sh 'up' #Start the containers
+    $ sudo ./compose.sh 'down' #Remove the container
+    $ sudo ./compose.sh 'down --volumes' #Remove the containers volumes
+    $ sudo ./compose.sh 'build' #Build the images
+    $ sudo ./compose.sh 'build --no-cache' #Build without cache
+    ```
+
 
 ## Final thoughts
 There a number of different options you can do as using different domain for the BE that is not subdomain of the FE domain name.

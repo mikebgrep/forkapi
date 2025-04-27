@@ -28,14 +28,17 @@ or with the following command if you have installed django on the machine
 ```commandline
 $ python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
 ```
-* `DOMAIN_NAME_NGINX` the domain which will serve the api
+* `DEPLOYMENT_TYPE` one of postgres, postgres-ssl, sqlite, sqlite-ssl
 * ``X_AUTH_HEADER`` also you can generate random UUID online that will be used for authentication <br />
 for the read only endpoint. Example header ``261ec18d-0e81-4073-8d9e-b34a7a1e5e06`` (Don`t use it this is for demo purpose)
 * `CORS_ALLOWED_HOSTS` are the front end domain names
 * `OPENAI_API_KEY` is the API KEY from OpenAI for the scraping recipe functionality
 * `OPENAI_MODEL` is the default model at this stage the `gpt-4o-mini` is most cost-efficient and is working ok for the scraping task
 * `OPEN_AI_TTS_MODEL_VOICE` is the voice of the TTS OpenAI model
-* 
+* `DATABASE_URL` is the Postgres connection string if you choice to use Postgres as database (else leave empty).Follow this format `DATABASE_URL=postgres://user:password@ip:port/fork.recipes`
+
+Change the nginx
+
 ??? info "Scrape functionality dependencies"
 
     The API use playwright python package to open the scrape url recipe link.
@@ -77,16 +80,18 @@ In this mode you can use it locally if in debug mode which you can change in ```
 
 To installing in Docker container follow the steps bellow. <br />
 
-
-* Fist step is to clone the repo. The needed files are in `nginx` folder, `.env` file and `docker-compose.yml` file.
-* Next step is setting up the ``fullchain.pem`` and ``privkey.pem`` files needed for the ssl settings in ``nginx``.
-* After you obtain ssl certificates for your domain you need to copy them in the ``nginx/ssl`` folder.
-* Then add environment variable (if you didn't add it already) in `.env` file for `DOMAIN_NAME_NGINX` that should be used  with your actual domain name in the ``nginx/forkapi-ssl.nginx.template`` configuration file.
-* Next uncomment the commented lines `8`, `12` and `21` in the `docker-compose.yml` and comment lines `7` and `22`.
-* That all you need to run the ``docker compose up`` command and the API will be deployed on the server instance or locally on your machine.
+* Fist add `fullchain.pem` and `privkey.cert` files in `nginx/ssl` folder
+* Second add your domain name if you are not using `localhost` in the appropriate file in `nginx` folder files `forkapi.nginx.conf` or `forkapi-ssl.nginx.conf`
+* Set `DEPLOYMENT_TYPE` variable in the `.env` file with your ssl type `postgres-ssl` or `sqlite-ssl`
+* Next give `+x` permission to `compose.sh` file 
 ``` bash
-$ docker compose up
+$ sudo chomd +x compose.sh
 ```
+* Then run `sudo ./compose.sh` and the script will deploy the app.
+``` bash
+$ sudo ./compose.sh up
+```
+
 
 * Access the admin dashboard at ```your-domain:80``` or ```your-domain:443```
 
@@ -95,18 +100,31 @@ $ docker compose up
     I will not include steps for setting the domain name servers on this as you can follow the official documentation on your server or the Raspberry Pi documentation.
 
 ## Installing in Docker container (Production No SSL)
-
-* Fist step is to clone the repo. The needed files are in `nginx` folder, `.env` file and `docker-compose.yml` file.
-* Add environment variable (if you didn't add it already) in `.env` file for `DOMAIN_NAME_NGINX` that should be used  with your actual domain name in the ``nginx/forkapi.nginx.template`` configuration file.
-* That all you need to run the ``docker compose up`` command and the API will be deployed on the server instance or locally on your machine.
+* Fist add your domain name if you are not using `localhost` in the appropriate file in `nginx` folder files `forkapi.nginx.conf` or `forkapi-ssl.nginx.conf`
+* Next give `+x` permission to `compose.sh` file 
 ``` bash
-$ docker compose up
+$ sudo chomd +x compose.sh
+```
+* Then run `sudo ./compose.sh` and the script will deploy the app with the selected database type from the `.env` file, variable `DEPLOYMENT_TYPE`
+``` bash
+$ sudo ./compose.sh up
 ```
 
 !!! note
 
     This method is the prefered choice if your server already provide ssl connection by default as Digital ocean do for their apps.
 
+
+??? tip "compose.sh arguments"
+    
+    This is the available compose.sh arguments
+    ``` bash
+    $ sudo ./compose.sh 'up' #To start the services
+    $ sudo ./compose.sh 'down' #To remove the services
+    $ sudo ./compose.sh 'down --volumes' #To remove the services volumes
+    $ sudo ./compose.sh 'build' #To build the images
+    $ sudo ./compose.sh 'build --no-cache' #To build without cache
+    ```
 
 
 Follow next step to check how you can and must be made your first request.
