@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://mikebgrep.github.io/forkapi/6.1.x/</loc>
+         <lastmod>2025-04-27</lastmod>
+    </url>
+    <url>
+         <loc>https://mikebgrep.github.io/forkapi/6.1.x/Installation/</loc>
+         <lastmod>2025-04-27</lastmod>
+    </url>
+    <url>
+         <loc>https://mikebgrep.github.io/forkapi/6.1.x/clients/</loc>
+         <lastmod>2025-04-27</lastmod>
+    </url>
+    <url>
+         <loc>https://mikebgrep.github.io/forkapi/6.1.x/contribution/</loc>
+         <lastmod>2025-04-27</lastmod>
+    </url>
+    <url>
+         <loc>https://mikebgrep.github.io/forkapi/6.1.x/first-request/</loc>
+         <lastmod>2025-04-27</lastmod>
+    </url>
+    <url>
+         <loc>https://mikebgrep.github.io/forkapi/6.1.x/open-ai/</loc>
+         <lastmod>2025-04-27</lastmod>
+    </url>
+    <url>
+         <loc>https://mikebgrep.github.io/forkapi/6.1.x/rest-references/</loc>
+         <lastmod>2025-04-27</lastmod>
+    </url>
+    <url>
+         <loc>https://mikebgrep.github.io/forkapi/6.1.x/user-guide/</loc>
+         <lastmod>2025-04-27</lastmod>
+    </url>
+</urlset>
