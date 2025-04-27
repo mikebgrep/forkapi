@@ -18,7 +18,7 @@ backup_json_database_file_path = f"{base_temp_data_path}/data.json"
 media_images_folder = 'media/images'
 media_video_folder = 'media/videos'
 media_audio_folder = 'media/audio'
-
+media_backups_folder = 'media/backups'
 
 def backup():
     zip_file_name_with_path = os.path.join(base_path_backup,
@@ -55,6 +55,8 @@ def dump_media():
     file_paths.extend(get_files_from_folder_to_zip_paths(media_images_folder))
     file_paths.extend(get_files_from_folder_to_zip_paths(media_video_folder))
     file_paths.extend(get_files_from_folder_to_zip_paths(media_audio_folder))
+
+file_paths.extend(get_files_from_folder_to_zip_paths(media_backups_folder))
 
     return file_paths
 
