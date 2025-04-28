@@ -319,7 +319,7 @@ class TranslateRecipeView(CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        if "None" in os.environ["DEFAULT_RECIPE_DISPLAY_LANGUAGE"]:
+        if "None" in request.user.preferred_translate_language:
             return Response(data={"errors": ["Default language for translation should be set"]},
                             status=HTTP_400_BAD_REQUEST)
         serializer = self.get_serializer(data=request.data)
@@ -327,7 +327,7 @@ class TranslateRecipeView(CreateAPIView):
             try:
                 language = serializer.validated_data['language']
             except KeyError:
-                language = os.environ["DEFAULT_RECIPE_DISPLAY_LANGUAGE"]
+                language = request.user.preferred_translate_language
             recipe_id = serializer.validated_data['pk']
             recipe = Recipe.objects.get(pk=recipe_id)
             if not recipe.is_original:

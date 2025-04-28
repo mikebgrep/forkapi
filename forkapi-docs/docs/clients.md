@@ -86,7 +86,7 @@ You can follow the link of the official GitHub repository of the project here âž
 
 !!! info "Read for local deploy without domain name"
 
-    If you want to setup the application only for local use and you doesn't have a domain you can edit the `forkrecipes.nginx.template` file and  change the port for `listen` at line `21` for the API, 
+    If you want to setup the application only for local use and you doesn't have a domain you can edit the `forkrecipes.nginx.conf` file and  change the port for `listen` at line `28` for the API, 
     after this you need to add the port in `nginx` service in the `docker-compose.yml` file.This way you can login to admin from the localhost and the port number. 
     Keep in mind that `SERVICE_BASE_URL` envirument variable should be also with the newly added port and the local ip of the host eg. `http://192.168.x.x:port`.
 
@@ -166,9 +166,6 @@ You can follow the link of the official GitHub repository of the project here âž
     ```
     This command will install NGINX, ForkAPI and the Fork.Recipes.
 
-    !!! note
-    
-        This setup is working only if you have domain name for `DOMAIN_NAME_NGINX` and sub domain for `DOMAIN_NAME_NGINX_API`
 
 === "SSL"
     You need to have valid certificates for your domain and subdomain.This files should be copied in the `nginx/ssl` folder. The files are `fullchain.pem` and `privkey.pem` (names need to be the same).  

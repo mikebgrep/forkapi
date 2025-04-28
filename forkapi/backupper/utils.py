@@ -12,16 +12,15 @@ from recipe.utils import instructions_and_steps_json_to_lists, save_recipe, \
 
 from .models import BackupSnapshot
 
-base_path_backup = "media/backups"
 base_temp_data_path = "backupper/data"
 backup_json_database_file_path = f"{base_temp_data_path}/data.json"
 media_images_folder = 'media/images'
 media_video_folder = 'media/videos'
 media_audio_folder = 'media/audio'
-
+media_backups_folder = 'media/backups'
 
 def backup():
-    zip_file_name_with_path = os.path.join(base_path_backup,
+    zip_file_name_with_path = os.path.join(media_backups_folder,
                                            f"fork_recipes_{datetime.now().date().strftime('%Y.%m.%d')}_{datetime.now().strftime('%H.%M.%S')}.zip")
 
     snapshot = BackupSnapshot.objects.create()
@@ -39,7 +38,6 @@ def backup_recipes(zip_file_name_with_path: str):
     file_paths.extend(dump_media())
     append_to_file(file_paths=file_paths, zip_file_name_with_path=zip_file_name_with_path,
                    mode='w')
-
     delete_file(backup_json_database_file_path)
 
 
@@ -84,11 +82,11 @@ def upload_recipes(full_path: str):
 
         for file in zip_file.namelist():
             if file.startswith("images/"):
-                move_file(f"{extract_to}/{file.replace("image/", "")}", media_images_folder)
+                move_file(f"{extract_to}/{file}", media_images_folder)
             elif file.startswith("audio/"):
-                move_file(f"{extract_to}/{file.replace("image/", "")}", media_audio_folder)
+                move_file(f"{extract_to}/{file}", media_audio_folder)
             elif file.startswith("videos/"):
-                move_file(f"{extract_to}/{file.replace("image/", "")}", media_video_folder)
+                move_file(f"{extract_to}/{file}", media_video_folder)
 
         if "data.json" in zip_file.namelist():
             call_command("loaddata", f"{extract_to}/data.json")

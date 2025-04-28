@@ -9,6 +9,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_409_CONFLICT, HTTP_201_CREATED
+from django.core.management import call_command
 
 from forkapi.authentication.HeaderAuthentication import HeaderAuthentication
 from . import models, password_validation
@@ -26,7 +27,7 @@ class SignUpView(generics.CreateAPIView):
         Creating and UserSettings for the user
         """
         instance = serializer.save()
-        UserSettings.objects.create(user=instance)
+        UserSettings.objects.create(user=instance, preferred_translate_language="English")
 
 
 class LoginView(generics.CreateAPIView):
@@ -41,7 +42,7 @@ class LoginView(generics.CreateAPIView):
             return Response("Forbidden", status.HTTP_403_FORBIDDEN)
         token, created = Token.objects.get_or_create(user=user)
         serializer = UserSerializer(user)
-        # Temporary workaround for default language for recipe.filters.FilterRecipeByLanguage
+        # Temporary workaround for default language for recipe.filters.FilterRecipeByLanguage anonymous user does not have .settings
         os.environ["DEFAULT_RECIPE_DISPLAY_LANGUAGE"] = (user.settings.preferred_translate_language or "None")
         return Response({'token': token.key, 'user': serializer.data})
 
@@ -64,6 +65,7 @@ class DeleteAccountView(generics.DestroyAPIView):
     def destroy(self, request, *args, **kwargs):
         instance = request.user
         self.perform_destroy(instance)
+        call_command("flush", interactive=False)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -191,7 +193,6 @@ class UserSettingsView(generics.GenericAPIView):
             instance.preferred_translate_language = language
             # TODO: Temporary workaround for default language for recipe.filters.FilterRecipeByLanguage
             os.environ["DEFAULT_RECIPE_DISPLAY_LANGUAGE"] = language
-
         if compact_pdf is not None:
             instance.compact_pdf = compact_pdf
 
