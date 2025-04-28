@@ -1115,7 +1115,6 @@ def test_translate_recipe_without_request_data_language_and_the_recipe_is_origin
     recipe, recipe_data = create_recipe(api_client)
     recipe, recipe_data = create_recipe(api_client, original_recipe_pk=recipe.pk)
     os.environ["DEFAULT_RECIPE_DISPLAY_LANGUAGE"] = "Bulgarian"
-
     json_data = {
         "pk": recipe.pk
     }
@@ -1132,7 +1131,6 @@ def test_translate_translated_recipe_same_language(api_client):
     original_recipe, recipe_data = create_recipe(api_client)
     create_recipe(api_client, original_recipe_pk=original_recipe.pk)
     os.environ["DEFAULT_RECIPE_DISPLAY_LANGUAGE"] = "Bulgarian"
-
     json_data = {
         "pk": original_recipe.pk,
         "language": "Bulgarian"

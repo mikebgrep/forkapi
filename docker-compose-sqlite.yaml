@@ -31,7 +31,7 @@ services:
       - .env
     restart: always
     command: >
-        sh -c "chmod +x /scripts/migration.sh && /scripts/migration.sh && chmod 660 /forkapi/sql/db.sqlite3 & usermod -g staff www-data & uwsgi --ini uwsgi.ini --chown-socket=www-data:www-data"
+        sh -c "chmod +x /scripts/migration.sh && /scripts/migration.sh ${SEED_DEFAULT_DATA} && chmod 660 /forkapi/sql/db.sqlite3 & usermod -g staff www-data & uwsgi --ini uwsgi.ini --chown-socket=www-data:www-data"
     volumes:
       - ./scripts:/scripts
       - data:/forkapi/sql/
