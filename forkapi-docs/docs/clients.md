@@ -78,6 +78,7 @@ You can follow the link of the official GitHub repository of the project here âž
   * `OPEN_AI_TTS_MODEL_VOICE` is the voice which is used for generating the audio recipes
   * `DEPLOYMENT_TYPE` is the choice of deployment eather with SSL support and different database type combined.
   * `DATABASE_URL` only if you use Postgres (already deployed).
+  * `SEED_DEFAULT_DATA` if you want to seed default admin user and categories into the database (handy on first deploy)
 
 !!! info "Postgres users"
     
