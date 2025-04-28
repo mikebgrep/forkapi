@@ -2,11 +2,11 @@
 
 
 ## Usage
-## sudo ./compose.sh 'up' # To start the services
-## sudo ./compose.sh 'down' # To remove the services
-## sudo ./compose.sh 'down --volumes' # To remove the services volumes
-## sudo ./compose.sh 'build' # To build the images
-## sudo ./compose.sh 'build --no-cache' to build without cache
+#$ sudo ./compose.sh 'up' #Start the containers
+#$ sudo ./compose.sh 'down' #Remove the container
+#$ sudo ./compose.sh 'down --volumes' #Remove the containers volumes
+#$ sudo ./compose.sh 'build' #Build the images
+#$ sudo ./compose.sh 'build --no-cache' #Build without cache
 
 (
 source .env

@@ -6,10 +6,15 @@ hide:
 # Make your first request
 
 ---
-After the API is deployed you need to create a superuser for the admin dashboard. <br />
+After the API is deployed you need can create a own superuser for the admin dashboard. <br />
 This can be done ether with Django ``manage.py`` ``python manage.py createsuperuser`` command or using an API Client as Postman or curl CLI tool. <br />
+The app deploys with default admin account which info can be changed: `email:admin@example.com`, `username:admin` and `password:ChangeMe`
 
-I will present the method with the curl as more convenient method but you can use and Postman.
+!!! info
+    
+    The default admin user info should be updated accordingly
+
+I will show how to add another one the curl as more convenient method but you can use and Postman.
 
 ## Creating superuser
 To create a superuser for login into the Admin Dashboard use the following curl command in you terminal or powershell.

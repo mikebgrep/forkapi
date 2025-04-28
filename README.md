@@ -1,6 +1,6 @@
 # ForkAPI
 
-![version](https://img.shields.io/badge/version-6.0.0-green) [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3_Clause-red.svg)](https://opensource.org/license/bsd-3-clause)  <a aria-label="Build" href="https://github.com/mikebgrep/forkapi/actions?query=Build%20and%20Push%20to%20Docker%20Registry">
+![version](https://img.shields.io/badge/version-6.1.0-green) [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3_Clause-red.svg)](https://opensource.org/license/bsd-3-clause)  <a aria-label="Build" href="https://github.com/mikebgrep/forkapi/actions?query=Build%20and%20Push%20to%20Docker%20Registry">
     <img alt="build" src="https://img.shields.io/github/actions/workflow/status/mikebgrep/forkapi/run-tests.yml?label=Build&logo=github&style=flat-quare&labelColor=000000" /> [![Docker pulls](https://img.shields.io/docker/pulls/mikebgrep/forkapi?logo=docker&color=informational)](https://hub.docker.com/r/mikebgrep/forkapi)
 
 <img align="right" src="https://github.com/mikebgrep/foodie/blob/master/assets/logo.png" height="170px" alt="Logo">
@@ -14,6 +14,7 @@ ForkApi is a Lightweight RestAPI with admin panel to manage food recipes easily.
    - 🔐 Header authentication for easy access management to the API read endpoints
    - 🔐 Token authentication for create and update endpoints
    - 🪶 SQLite database support.
+   - 🐘 Postgres database support
    - 🌐︎ FE ready made web application [fork.recipes](https://github.com/mikebgrep/fork.recipes)
    - 🔎 Search endpoints supporting pagination
    - 📋 Schedule Meal plan application
