@@ -27,6 +27,8 @@ class SignUpView(generics.CreateAPIView):
         Creating and UserSettings for the user
         """
         instance = serializer.save()
+
+        ##TODO:// Check if settings preferred_translate_language is needed
         UserSettings.objects.create(user=instance, preferred_translate_language="English")
 
 
