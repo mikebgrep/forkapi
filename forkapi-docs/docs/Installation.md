@@ -36,7 +36,7 @@ for the read only endpoint. Example header ``261ec18d-0e81-4073-8d9e-b34a7a1e5e0
 * `OPENAI_MODEL` is the default model at this stage the `gpt-4o-mini` is most cost-efficient and is working ok for the scraping task
 * `OPEN_AI_TTS_MODEL_VOICE` is the voice of the TTS OpenAI model
 * `DATABASE_URL` is the Postgres connection string if you choice to use Postgres as database (else leave empty).Follow this format `DATABASE_URL=postgres://user:password@ip:port/fork.recipes`
-
+* `SEED_DEFAULT_DATA` if you want to seed default user admin ina database on first deploy
 Change the nginx
 
 ??? info "Scrape functionality dependencies"
