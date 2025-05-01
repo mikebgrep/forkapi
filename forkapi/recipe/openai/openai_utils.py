@@ -5,19 +5,33 @@ from django.core.files import File
 from django.core.validators import URLValidator
 
 from .browser import Browser
-from .messages import open_ai_scrape_message, open_ai_generate_recipe_message, open_ai_translate_recipe_message, \
-    openai_tts_stream
-from ..models import PromptType, Recipe, Ingredient, Step, AudioInstructions
-from ..utils import delete_file, get_first_matching_link, remove_stop_words, \
-    extract_link_from_duckduck_go_url_result, instructions_and_steps_json_to_lists, parse_recipe_info, manage_media, \
-    flatten, \
-    delete_files, save_recipe
+from .messages import (
+    open_ai_scrape_message,
+    open_ai_generate_recipe_message,
+    open_ai_translate_recipe_message,
+    openai_tts_stream,
+)
+from ..models import PromptType, Recipe, AudioInstructions
+from ..utils import (
+    delete_file,
+    get_first_matching_link,
+    remove_stop_words,
+    extract_link_from_duckduck_go_url_result,
+    instructions_and_steps_json_to_lists,
+    parse_recipe_info,
+    manage_media,
+    flatten,
+    delete_files,
+    save_recipe,
+)
 
-blacklist = ['foodnetwork.co.uk', 'foodnetwork.com', 'foodnetwork']
+blacklist = ["foodnetwork.co.uk", "foodnetwork.com", "foodnetwork"]
 
 
 def generate_recipes(ingredients: List[str], meal_type: str):
-    json_response = open_ai_generate_recipe_message(ingredients, "any" if not meal_type else meal_type)
+    json_response = open_ai_generate_recipe_message(
+        ingredients, "any" if not meal_type else meal_type
+    )
     json_content_recipes = parse_recipe_info(json_response)
     filtered_recipes = []
 
@@ -25,9 +39,11 @@ def generate_recipes(ingredients: List[str], meal_type: str):
 
     # TODO:// Return multiple recipes from json_content_recipes if have more than one link per recipe name
     for single_recipe_json in json_content_recipes:
-        recipe_name = single_recipe_json['name']
+        recipe_name = single_recipe_json["name"]
         print(recipe_name)
-        hrefs = browser.get_duckduckgo_result(url=f"https://duckduckgo.com/html/?q={recipe_name.replace(' ', '%20')}")
+        hrefs = browser.get_duckduckgo_result(
+            url=f"https://duckduckgo.com/html/?q={recipe_name.replace(' ', '%20')}"
+        )
 
         if not hrefs:
             continue
@@ -44,7 +60,7 @@ def generate_recipes(ingredients: List[str], meal_type: str):
             try:
                 url = extract_link_from_duckduck_go_url_result(link_with_recipe)
                 val(url)
-                single_recipe_json['url'] = url
+                single_recipe_json["url"] = url
             except (ValidationError, AttributeError) as ex:
                 print(ex)
                 continue
@@ -53,7 +69,7 @@ def generate_recipes(ingredients: List[str], meal_type: str):
                 content, meta_content_thumbnail = browser.get_page_content_recipe(url)
                 try:
                     val(meta_content_thumbnail)
-                    single_recipe_json['thumbnail'] = meta_content_thumbnail
+                    single_recipe_json["thumbnail"] = meta_content_thumbnail
                 except ValidationError as ex:
                     print(ex)
                     continue
@@ -79,33 +95,42 @@ def scrape_recipe(url: str, emoji_enabled: bool):
         return None, None, None
 
     # Main info of the recipe
-    json_response = open_ai_scrape_message(content, PromptType.MAIN_INFO if not emoji_enabled else PromptType.MAIN_INFO_WITH_EMOJI )
+    json_response = open_ai_scrape_message(
+        content,
+        PromptType.MAIN_INFO if not emoji_enabled else PromptType.MAIN_INFO_WITH_EMOJI,
+    )
     json_content_main_info = parse_recipe_info(json_response)
 
     # Edge case when the content contains more than one recipe after the prompt
     try:
-        json_content_main_info['image']
+        json_content_main_info["image"]
     except KeyError as ex:
         print(ex)
         return None, None, None
 
     if meta_content_thumbnail:
-        json_content_main_info['image'] = meta_content_thumbnail.split("?")[0] if \
-            len(meta_content_thumbnail.split("?")) > 1 else meta_content_thumbnail
+        json_content_main_info["image"] = (
+            meta_content_thumbnail.split("?")[0]
+            if len(meta_content_thumbnail.split("?")) > 1
+            else meta_content_thumbnail
+        )
 
     file_path = manage_media(json_content_main_info, False)
 
     recipe = Recipe(**json_content_main_info)
-    file_name = json_content_main_info['name'].replace("/", "")
+    file_name = json_content_main_info["name"].replace("/", "")
 
-    with open(file_path, 'rb') as img_file:
-        recipe.image.save(f'{file_name}.png', File(img_file), save=True)
+    with open(file_path, "rb") as img_file:
+        recipe.image.save(f"{file_name}.png", File(img_file), save=True)
         delete_file(file_path)
 
-    if json_content_main_info['video'] and not 'youtube' in json_content_main_info['video']:
+    if (
+        json_content_main_info["video"]
+        and "youtube" not in json_content_main_info["video"]
+    ):
         file_path = manage_media(json_content_main_info, True)
-        with open(file_path, 'rb') as video_file:
-            recipe.video.save(f'{file_name}.mp4', File(video_file), save=True)
+        with open(file_path, "rb") as video_file:
+            recipe.video.save(f"{file_name}.mp4", File(video_file), save=True)
             delete_file(file_path)
 
     recipe.save()
@@ -115,10 +140,17 @@ def scrape_recipe(url: str, emoji_enabled: bool):
     json_content_instructions = parse_recipe_info(json_response)
 
     # Ingredients of the recipe
-    json_response = open_ai_scrape_message(content, PromptType.INGREDIENTS if not emoji_enabled else  PromptType.INGREDIENT_WITH_EMOJI)
+    json_response = open_ai_scrape_message(
+        content,
+        PromptType.INGREDIENTS
+        if not emoji_enabled
+        else PromptType.INGREDIENT_WITH_EMOJI,
+    )
     json_content_ingredients = parse_recipe_info(json_response)
 
-    steps, ingredients = instructions_and_steps_json_to_lists(json_content_instructions, json_content_ingredients)
+    steps, ingredients = instructions_and_steps_json_to_lists(
+        json_content_instructions, json_content_ingredients
+    )
 
     return recipe, ingredients, steps
 
@@ -128,24 +160,36 @@ def translate_recipe_to_language(recipe: Recipe, language: str):
     print(json_response)
     json_content = parse_recipe_info(json_response)
 
-    name_translated = json_content['name']
-    description_translated = json_content['description']
-    ingredients_translated = json_content['ingredients']
-    instructions_translated = json_content['steps']
+    name_translated = json_content["name"]
+    description_translated = json_content["description"]
+    ingredients_translated = json_content["ingredients"]
+    instructions_translated = json_content["steps"]
 
-    return name_translated, description_translated, ingredients_translated, instructions_translated
+    return (
+        name_translated,
+        description_translated,
+        ingredients_translated,
+        instructions_translated,
+    )
 
 
 def translate_and_save_recipe(recipe: Recipe, language: str) -> Recipe | None:
     if any([x for x in recipe.get_variations if x.language == language]):
         return None
 
-    name_translated, description_translated, ingredients_translated, instructions_translated = \
-        translate_recipe_to_language(recipe, language)
+    (
+        name_translated,
+        description_translated,
+        ingredients_translated,
+        instructions_translated,
+    ) = translate_recipe_to_language(recipe, language)
 
-    steps, ingredients = instructions_and_steps_json_to_lists(instructions_translated, ingredients_translated)
+    steps, ingredients = instructions_and_steps_json_to_lists(
+        instructions_translated, ingredients_translated
+    )
 
     from copy import deepcopy
+
     new_recipe = deepcopy(recipe)
     new_recipe.pk = None
     new_recipe.name = name_translated
@@ -154,9 +198,9 @@ def translate_and_save_recipe(recipe: Recipe, language: str) -> Recipe | None:
     new_recipe.language = language
 
     # TODO:// Saving image and video to new file if one of the copies is deleted
-    new_recipe.image.save(f"{recipe.name.replace(" ", "_")}.png", recipe.image)
+    new_recipe.image.save(f"{recipe.name.replace(' ', '_')}.png", recipe.image)
     if recipe.video:
-        new_recipe.video.save(f"{recipe.name.replace(" ", "_")}.mp4", recipe.video)
+        new_recipe.video.save(f"{recipe.name.replace(' ', '_')}.mp4", recipe.video)
 
     translated_recipe = save_recipe(new_recipe, ingredients, steps)
 
@@ -166,8 +210,10 @@ def translate_and_save_recipe(recipe: Recipe, language: str) -> Recipe | None:
 def recipe_to_tts_audio(recipe: Recipe):
     formated_result = {
         "name": recipe.name,
-        "ingredients": [[i.quantity, i.metric, i.name] for i in recipe.ingredients.all()],
-        "instructions": [step.text for step in recipe.steps.all()]
+        "ingredients": [
+            [i.quantity, i.metric, i.name] for i in recipe.ingredients.all()
+        ],
+        "instructions": [step.text for step in recipe.steps.all()],
     }
 
     sentences = []
@@ -175,7 +221,9 @@ def recipe_to_tts_audio(recipe: Recipe):
     chunks = split_recipe_json_to_sentences(sentences)
 
     file_name, chunk_files = openai_tts_stream(chunks, recipe.name, recipe.language)
-    audio_instructions = AudioInstructions.objects.create(file=f"audio/{file_name}", recipe=recipe)
+    audio_instructions = AudioInstructions.objects.create(
+        file=f"audio/{file_name}", recipe=recipe
+    )
     delete_files(chunk_files)
 
     return audio_instructions

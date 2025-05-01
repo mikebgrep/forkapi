@@ -14,27 +14,31 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
 if settings.DEBUG:
-    urlpatterns = (static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(settings.STATIC_URL,
-                                                                                          document_root=settings.STATIC_ROOT) + [
-                       path("api/auth/", include("authentication.urls")),
-                       path("api/recipe/", include("recipe.urls")),
-                       path("api/schedule/", include("schedule.urls")),
-                       path("api/shopping/", include("shopping.urls")),
-                       path("api/backupper/", include("backupper.urls")),
-                       path('', admin.site.urls),
-                   ])
+    urlpatterns = (
+        static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+        + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+        + [
+            path("api/auth/", include("authentication.urls")),
+            path("api/recipe/", include("recipe.urls")),
+            path("api/schedule/", include("schedule.urls")),
+            path("api/shopping/", include("shopping.urls")),
+            path("api/backupper/", include("backupper.urls")),
+            path("", admin.site.urls),
+        ]
+    )
 else:
-    urlpatterns = ([
+    urlpatterns = [
         path("api/auth/", include("authentication.urls")),
         path("api/recipe/", include("recipe.urls")),
         path("api/schedule/", include("schedule.urls")),
         path("api/shopping/", include("shopping.urls")),
         path("api/backupper/", include("backupper.urls")),
-        path('', admin.site.urls),
-    ])
+        path("", admin.site.urls),
+    ]

@@ -21,7 +21,7 @@ class ScheduleView(ListCreateDestroyViewSet):
         """
         Instantiates and returns the list of authentication_classes that this view requires.
         """
-        if self.request.method == 'GET':
+        if self.request.method == "GET":
             authentication_classes = [HeaderAuthentication]
         else:
             authentication_classes = [TokenAuthentication]
@@ -29,12 +29,17 @@ class ScheduleView(ListCreateDestroyViewSet):
         return [auth() for auth in authentication_classes]
 
     def list(self, request, *args, **kwargs):
-        date = request.query_params.get('date')
+        date = request.query_params.get("date")
         try:
             valid_date = datetime.strptime(date, "%Y-%m-%d").date()
             queryset = Schedule.objects.filter(date=valid_date)
-            serializer = ScheduleSerializer(queryset, many=True, context={"request": request})
+            serializer = ScheduleSerializer(
+                queryset, many=True, context={"request": request}
+            )
             return Response(serializer.data)
 
         except ValueError:
-            return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Invalid date format. Use YYYY-MM-DD."},
+                status=HTTP_400_BAD_REQUEST,
+            )

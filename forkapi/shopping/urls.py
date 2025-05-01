@@ -9,10 +9,9 @@ router_list = SimpleRouter()
 router_list.register(r"", views.CreateListShoppingListView)
 
 urlpatterns = [
-    path('', include(router_list.urls)),
-    path('complete-list/<int:pk>/', views.CompleteShoppingList.as_view()),
-    path('item/<int:pk>/', views.ShoppingListItemView.as_view()),
-    path('single/<int:pk>/', views.RetrieveUpdateShoppingListView.as_view()),
-    path('item/<int:pk>/complete/', views.ShoppingListCompleteItemView.as_view()),
-
+    path("", include(router_list.urls)),
+    path("complete-list/<int:pk>/", views.CompleteShoppingList.as_view()),
+    path("item/<int:pk>/", views.ShoppingListItemView.as_view()),
+    path("single/<int:pk>/", views.RetrieveUpdateShoppingListView.as_view()),
+    path("item/<int:pk>/complete/", views.ShoppingListCompleteItemView.as_view()),
 ]

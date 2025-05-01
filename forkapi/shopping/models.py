@@ -1,6 +1,5 @@
 from django.db import models
-from recipe.models import BaseIngredient, Recipe
-
+from recipe.models import BaseIngredient
 
 
 class ShoppingList(models.Model):
@@ -11,10 +10,10 @@ class ShoppingList(models.Model):
     def recipes(self):
         return list({item.recipe.pk for item in self.items.all() if item.recipe})
 
+
 class ShoppingItem(BaseIngredient):
     is_completed = models.BooleanField(default=False)
-    shopping_list = models.ForeignKey(ShoppingList, on_delete=models.CASCADE, related_name="items")
+    shopping_list = models.ForeignKey(
+        ShoppingList, on_delete=models.CASCADE, related_name="items"
+    )
     times = models.IntegerField(default=1)
-
-
-

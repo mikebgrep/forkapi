@@ -6,39 +6,41 @@ import django
 from django.db import models
 from django.db.models import Q
 
+
 def upload_to(instance, filename):
-    return 'images/{uuid}_{filename}'.format(uuid=str(uuid.uuid4()), filename=filename)
+    return "images/{uuid}_{filename}".format(uuid=str(uuid.uuid4()), filename=filename)
 
 
 def upload_video_to(instance, filename):
-    return 'videos/{uuid}_{filename}'.format(uuid=str(uuid.uuid4()), filename=filename)
+    return "videos/{uuid}_{filename}".format(uuid=str(uuid.uuid4()), filename=filename)
+
 
 def upload_audio_to(instance, filename):
-    return 'audio/{uuid}_{filename}'.format(uuid=str(uuid.uuid4()), filename=filename)
+    return "audio/{uuid}_{filename}".format(uuid=str(uuid.uuid4()), filename=filename)
 
 
 DIFFICULTY_CHOICES = [
-    ('Easy', 'Easy'),
-    ('Intermediate', 'Intermediate'),
-    ('Advanced', 'Advanced'),
-    ('Expert', 'Expert'),
+    ("Easy", "Easy"),
+    ("Intermediate", "Intermediate"),
+    ("Advanced", "Advanced"),
+    ("Expert", "Expert"),
 ]
 
 LANGUAGES_CHOICES = [
-    ('English', 'English'),
-    ('Spanish', 'Español'),
-    ('French', 'Français'),
-    ('German', 'Deutsch'),
-    ('Chinese', '中文'),
-    ('Russian', 'Русский'),
-    ('Italian', 'Italiano'),
-    ('Japanese', '日本語'),
-    ('Dutch', 'Nederlands'),
-    ('Polish', 'Polski'),
-    ('Greek', 'Ελληνικά'),
-    ('Swedish', 'Svenska'),
-    ('Czech', 'Čeština'),
-    ('Bulgarian', 'Български'),
+    ("English", "English"),
+    ("Spanish", "Español"),
+    ("French", "Français"),
+    ("German", "Deutsch"),
+    ("Chinese", "中文"),
+    ("Russian", "Русский"),
+    ("Italian", "Italiano"),
+    ("Japanese", "日本語"),
+    ("Dutch", "Nederlands"),
+    ("Polish", "Polski"),
+    ("Greek", "Ελληνικά"),
+    ("Swedish", "Svenska"),
+    ("Czech", "Čeština"),
+    ("Bulgarian", "Български"),
 ]
 
 
@@ -64,12 +66,29 @@ class Recipe(models.Model):
     created_at = models.DateTimeField(default=django.utils.timezone.now)
     image = models.ImageField(upload_to=upload_to, blank=True, null=True)
     video = models.FileField(upload_to=upload_video_to, blank=True, null=True)
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name="recipies", blank=True, null=True)
-    tag = models.ForeignKey(Tag, on_delete=models.CASCADE, related_name="recipes", default=None, blank=True, null=True)
-    difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, default=None, blank=True, null=True)
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        related_name="recipies",
+        blank=True,
+        null=True,
+    )
+    tag = models.ForeignKey(
+        Tag,
+        on_delete=models.CASCADE,
+        related_name="recipes",
+        default=None,
+        blank=True,
+        null=True,
+    )
+    difficulty = models.CharField(
+        max_length=20, choices=DIFFICULTY_CHOICES, default=None, blank=True, null=True
+    )
     chef = models.CharField(max_length=100, default=None, blank=True, null=True)
     reference = models.TextField(max_length=170, blank=True, null=True)
-    language = models.CharField(max_length=20, choices=LANGUAGES_CHOICES, default='English')
+    language = models.CharField(
+        max_length=20, choices=LANGUAGES_CHOICES, default="English"
+    )
     original_recipe_pk = models.IntegerField(default=None, blank=False, null=True)
     # prep_time & cook_time in minutes
     prep_time = models.IntegerField(default=0, null=True)
@@ -86,7 +105,8 @@ class Recipe(models.Model):
     @property
     def is_original(self):
         return (self.is_translated and self.original_recipe_pk is None) or (
-                not self.is_translated and self.original_recipe_pk is None)
+            not self.is_translated and self.original_recipe_pk is None
+        )
 
     @property
     def get_variations(self):
@@ -94,8 +114,10 @@ class Recipe(models.Model):
         Get variations of the recipes of any and the original recipe
         """
         recipes = Recipe.objects.filter(
-            Q(original_recipe_pk=self.pk) | Q(pk=self.pk) if self.original_recipe_pk is None \
-                else Q(original_recipe_pk=self.original_recipe_pk) | Q(pk=self.original_recipe_pk)
+            Q(original_recipe_pk=self.pk) | Q(pk=self.pk)
+            if self.original_recipe_pk is None
+            else Q(original_recipe_pk=self.original_recipe_pk)
+            | Q(pk=self.original_recipe_pk)
         )  ## Consider exclude self .exclude(pk=self.pk)
 
         return recipes
@@ -104,6 +126,7 @@ class Recipe(models.Model):
     @property
     def total_time(self) -> str | None:
         from .utils import calculate_recipe_total_time
+
         prep_time = int(self.prep_time.__repr__()) if self.prep_time is not None else 0
         cook_time = int(self.cook_time.__repr__()) if self.cook_time is not None else 0
         total = prep_time + cook_time
@@ -131,7 +154,9 @@ class BaseIngredient(models.Model):
 
 
 class Ingredient(BaseIngredient):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="ingredients")
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name="ingredients"
+    )
 
     def __str__(self):
         return self.name
@@ -145,29 +170,32 @@ class Step(models.Model):
         return self.pk > other.pk
 
     def get_step_number(self):
-        step_pks = list(self.recipe.steps.values_list('pk', flat=True).order_by('pk'))
+        step_pks = list(self.recipe.steps.values_list("pk", flat=True).order_by("pk"))
         return step_pks.index(self.pk) + 1 if self.pk in step_pks else None
 
     def __str__(self):
         index = self.get_step_number()
-        return f"Step {index}" if index else f"Step (unsaved)"
+        return f"Step {index}" if index else "Step (unsaved)"
 
 
 class AudioInstructions(models.Model):
     file = models.FileField(upload_to=upload_audio_to, blank=True, null=True)
-    recipe = models.OneToOneField(Recipe, on_delete=models.CASCADE, null=True, blank=True,
-                                  related_name="audio_instructions")
+    recipe = models.OneToOneField(
+        Recipe,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="audio_instructions",
+    )
 
     def __str__(self):
-        return f'{self.file}, {self.recipe.pk}'
+        return f"{self.file}, {self.recipe.pk}"
 
 
 class PromptType(Enum):
-    MAIN_INFO = 0,
+    MAIN_INFO = (0,)
     MAIN_INFO_WITH_EMOJI = 1
-    INGREDIENTS = 2,
-    INGREDIENT_WITH_EMOJI = 3,
-    INSTRUCTIONS = 4,
-    GENERATE = 5,
-
-
+    INGREDIENTS = (2,)
+    INGREDIENT_WITH_EMOJI = (3,)
+    INSTRUCTIONS = (4,)
+    GENERATE = (5,)

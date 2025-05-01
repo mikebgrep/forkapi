@@ -1,11 +1,30 @@
 from django.urls import path, include
 from rest_framework.routers import SimpleRouter
 
-from .views import Categories, TrendingRecipies, CategoryRecipes, FavoriteRecipes, Tags, TagsRecipies, SearchRecipies, \
-    CreateCategory, UpdateCategory, RetrieveCreateDestroyRecipeSet, CreateIngredients, CreateSteps, UpdateRecipe, \
-    CreateTag, \
-    UpdateTag, ScrapeView, GenerateRecipeView, TranslateRecipeView, RetrieveRecipeLangVariationsView, \
-    GenerateRecipeAudion, PatchRecipeCategory, RetrieveRandomRecipe
+from .views import (
+    Categories,
+    TrendingRecipies,
+    CategoryRecipes,
+    FavoriteRecipes,
+    Tags,
+    TagsRecipies,
+    SearchRecipies,
+    CreateCategory,
+    UpdateCategory,
+    RetrieveCreateDestroyRecipeSet,
+    CreateIngredients,
+    CreateSteps,
+    UpdateRecipe,
+    CreateTag,
+    UpdateTag,
+    ScrapeView,
+    GenerateRecipeView,
+    TranslateRecipeView,
+    RetrieveRecipeLangVariationsView,
+    GenerateRecipeAudion,
+    PatchRecipeCategory,
+    RetrieveRandomRecipe,
+)
 
 app_name = "recipe"
 
@@ -15,16 +34,15 @@ router_recipe = SimpleRouter()
 router_recipe.register(r"", RetrieveCreateDestroyRecipeSet)
 
 urlpatterns = [
-    path('random', RetrieveRandomRecipe.as_view()),
+    path("random", RetrieveRandomRecipe.as_view()),
     path("category", Categories.as_view()),
     path("trending", TrendingRecipies.as_view()),
     path("category/<int:pk>/recipes", CategoryRecipes.as_view()),
     path("tags", Tags.as_view()),
     path("tag/<int:pk>/recipes", TagsRecipies.as_view()),
     path("<int:pk>/favorite", FavoriteRecipes.as_view()),
-    path('', include(router_search.urls)),
-    path('', include(router_recipe.urls)),
-
+    path("", include(router_search.urls)),
+    path("", include(router_recipe.urls)),
     # Creation and update views
     path("category/add", CreateCategory.as_view()),
     path("category/<int:pk>", UpdateCategory.as_view()),

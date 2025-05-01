@@ -6,20 +6,33 @@ from typing import List, Union
 from urllib.parse import unquote
 
 import requests
-from django.core.files.base import ContentFile
 
 from .models import Recipe, Ingredient, Step
 
 
 def download_media_files(address: str, recipe_name: str, is_video: bool):
     recipe_name = recipe_name.replace("/", "")
-    file_path = os.getcwd() + os.sep + "media" + os.sep + "temp_recipe_media" + os.sep + f"{recipe_name}.png" if not is_video else f"{recipe_name}.mp4"
+    file_path = (
+        os.getcwd()
+        + os.sep
+        + "media"
+        + os.sep
+        + "temp_recipe_media"
+        + os.sep
+        + f"{recipe_name}.png"
+        if not is_video
+        else f"{recipe_name}.mp4"
+    )
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36'
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
     }
-    response = requests.get(address if 'https://' in address else f'https://{address}', stream=True, headers=headers)
+    response = requests.get(
+        address if "https://" in address else f"https://{address}",
+        stream=True,
+        headers=headers,
+    )
     if response.status_code == 200:
-        with open(file_path, 'wb') as f:
+        with open(file_path, "wb") as f:
             f.write(response.content)
             del response
 
@@ -28,7 +41,7 @@ def download_media_files(address: str, recipe_name: str, is_video: bool):
 
 def get_first_matching_link(words: str, strings: List[str]) -> str | None:
     """
-        Used to get the first link that contains all the matching recipe words
+    Used to get the first link that contains all the matching recipe words
     """
     for string in strings:
         if all(word.lower() in string for word in words):
@@ -41,12 +54,47 @@ def get_first_matching_link(words: str, strings: List[str]) -> str | None:
 
 def remove_stop_words(text: str):
     stop_words = {
-        "a", "an", "the", "and", "or", "but", "if", "then", "of", "on",
-        "in", "to", "with", "at", "by", "from", "for", "about", "as",
-        "into", "like", "through", "over", "between", "out", "against",
-        "during", "without", "within", "along", "around", "before",
-        "after", "above", "below", "up", "down", "under", "again",
-        "further", "once"
+        "a",
+        "an",
+        "the",
+        "and",
+        "or",
+        "but",
+        "if",
+        "then",
+        "of",
+        "on",
+        "in",
+        "to",
+        "with",
+        "at",
+        "by",
+        "from",
+        "for",
+        "about",
+        "as",
+        "into",
+        "like",
+        "through",
+        "over",
+        "between",
+        "out",
+        "against",
+        "during",
+        "without",
+        "within",
+        "along",
+        "around",
+        "before",
+        "after",
+        "above",
+        "below",
+        "up",
+        "down",
+        "under",
+        "again",
+        "further",
+        "once",
     }
     words = text.split()
     filtered_words = [word for word in words if word.lower() not in stop_words]
@@ -61,12 +109,18 @@ def parse_recipe_info(json_response: str):
 
 
 def manage_media(json_content_main_info, is_video: bool):
-    image_url = json_content_main_info['image'] if not is_video else json_content_main_info['video']
-    file_path = download_media_files(address=image_url, recipe_name=json_content_main_info['name'], is_video=is_video)
+    image_url = (
+        json_content_main_info["image"]
+        if not is_video
+        else json_content_main_info["video"]
+    )
+    file_path = download_media_files(
+        address=image_url, recipe_name=json_content_main_info["name"], is_video=is_video
+    )
     if not is_video:
-        del json_content_main_info['image']
+        del json_content_main_info["image"]
     else:
-        del json_content_main_info['video']
+        del json_content_main_info["video"]
     return file_path
 
 
@@ -83,8 +137,11 @@ def extract_link_from_duckduck_go_url_result(url: str) -> str:
     return unquote(encoded_url)
 
 
-def instructions_and_steps_json_to_lists(json_content_steps: dict, json_content_ingredients: dict):
+def instructions_and_steps_json_to_lists(
+    json_content_steps: dict, json_content_ingredients: dict
+):
     from .models import Ingredient, Step
+
     steps = []
     ingredients = []
 
@@ -99,7 +156,12 @@ def instructions_and_steps_json_to_lists(json_content_steps: dict, json_content_
     return steps, ingredients
 
 
-def save_recipe(recipe: Recipe, ingredients: List[Ingredient], steps: List[Step], page_address: str = None):
+def save_recipe(
+    recipe: Recipe,
+    ingredients: List[Ingredient],
+    steps: List[Step],
+    page_address: str = None,
+):
     if page_address is not None:
         recipe.reference = page_address
 
@@ -127,7 +189,6 @@ def calculate_recipe_total_time(total: int) -> str:
     hours = total // 60
     minutes = total % 60
     return f"{hours}.{minutes:02}"
-
 
 
 def flatten(nested_list):
@@ -166,16 +227,20 @@ def delete_files(files: List[Union[str, Path]]):
             print(f"Error deleting {file_path}: {e}")
 
 
-def get_files_from_folder_to_zip_paths(source_folder: str, ):
+def get_files_from_folder_to_zip_paths(
+    source_folder: str,
+):
     file_paths = []
     zip_folder_root = os.path.basename(source_folder)
     for root, dirs, files in os.walk(source_folder):
         for file in files:
             # Skip .md file from audio
-            if not file.endswith('.md'):
+            if not file.endswith(".md"):
                 local_path = os.path.join(root, file)
                 relative_path = os.path.relpath(local_path, start=source_folder)
-                zip_path = os.path.join(zip_folder_root, relative_path).replace("\\", "/")
+                zip_path = os.path.join(zip_folder_root, relative_path).replace(
+                    "\\", "/"
+                )
                 file_paths.append((local_path, zip_path))
 
     return file_paths

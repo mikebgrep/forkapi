@@ -1,8 +1,9 @@
 from django.core.management.base import BaseCommand
 from recipe.models import Category
 
+
 class Command(BaseCommand):
-    help = 'Seed initial categories into the database'
+    help = "Seed initial categories into the database"
 
     def handle(self, *args, **kwargs):
         categories = [
