@@ -9,31 +9,58 @@ from rest_framework.generics import CreateAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST, HTTP_200_OK
+from rest_framework.status import (
+    HTTP_201_CREATED,
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
+    HTTP_200_OK,
+)
 
 from forkapi.authentication.HeaderAuthentication import HeaderAuthentication
-from forkapi.generics import UpdateAPIView, PatchAPIView, ListModelViewSet, RetrieveCreateDestroyViewSet
+from forkapi.generics import (
+    UpdateAPIView,
+    PatchAPIView,
+    ListModelViewSet,
+    RetrieveCreateDestroyViewSet,
+)
 from .filters import FilterRecipeByLanguage
 from .models import Category, Recipe, Tag, Ingredient, Step
-from .serializers import RecipesSerializer, CategorySerializer, TagsSerializer, IngredientsSerializer, StepsSerializer, \
-    RecipePreviewSerializer, GenerateRecipeSerializer, RecipeLinkSerializer, \
-    GenerateRecipeResultSerializer, TranslateRecipeSerializer, CreateRecipeAudioSerializer, AudioInstructionsSerializer
-from .openai.openai_utils import scrape_recipe, save_recipe, generate_recipes, \
-    translate_and_save_recipe, recipe_to_tts_audio
+from .serializers import (
+    RecipesSerializer,
+    CategorySerializer,
+    TagsSerializer,
+    IngredientsSerializer,
+    StepsSerializer,
+    RecipePreviewSerializer,
+    GenerateRecipeSerializer,
+    RecipeLinkSerializer,
+    GenerateRecipeResultSerializer,
+    TranslateRecipeSerializer,
+    CreateRecipeAudioSerializer,
+    AudioInstructionsSerializer,
+)
+from .openai.openai_utils import (
+    scrape_recipe,
+    save_recipe,
+    generate_recipes,
+    translate_and_save_recipe,
+    recipe_to_tts_audio,
+)
 
 
 class SearchRecipies(ListModelViewSet):
     """
     View for fetching recipes ether from search keyword name or all favorites
     """
+
     authentication_classes = [HeaderAuthentication]
     pagination_class = PageNumberPagination
     serializer_class = RecipesSerializer
     permission_classes = [IsAuthenticated]
 
-    queryset = Recipe.objects.all().order_by('created_at')
+    queryset = Recipe.objects.all().order_by("created_at")
     filter_backends = [FilterRecipeByLanguage, filters.SearchFilter]
-    search_fields = ['name', 'ingredients__name']
+    search_fields = ["name", "ingredients__name"]
 
     @action(detail=False)
     def favorites(self, request, *args, **kwargs):
@@ -59,7 +86,7 @@ class RetrieveRandomRecipe(views.APIView):
     def get(self, request):
         recipes = Recipe.objects.all()
         random_recipe = random.choice(recipes)
-        serializer = self.serializer_class(random_recipe, context={'request': request})
+        serializer = self.serializer_class(random_recipe, context={"request": request})
         return Response(data=serializer.data, status=HTTP_200_OK)
 
 
@@ -79,7 +106,9 @@ class CategoryRecipes(generics.ListAPIView):
     filter_backends = [FilterRecipeByLanguage]
 
     def get_queryset(self):
-        return Recipe.objects.select_related('category').filter(category_id=self.kwargs['pk'])
+        return Recipe.objects.select_related("category").filter(
+            category_id=self.kwargs["pk"]
+        )
 
 
 class TrendingRecipies(generics.ListAPIView):
@@ -90,12 +119,14 @@ class TrendingRecipies(generics.ListAPIView):
     filter_backends = [FilterRecipeByLanguage]
 
     def get_queryset(self):
-        results_pks = [x.pk for x in Recipe.objects.all() if x.is_trending == True][:15]
+        results_pks = [x.pk for x in Recipe.objects.all() if x.is_trending][:15]
         if len(results_pks) < 15:
-            for pk in [x.pk for x in Recipe.objects.order_by('-pk')[:15 - len(results_pks)]]:
+            for pk in [
+                x.pk for x in Recipe.objects.order_by("-pk")[: 15 - len(results_pks)]
+            ]:
                 results_pks.append(pk)
 
-        return Recipe.objects.filter(pk__in=results_pks).order_by('-pk')
+        return Recipe.objects.filter(pk__in=results_pks).order_by("-pk")
 
 
 class FavoriteRecipes(PatchAPIView):
@@ -105,15 +136,17 @@ class FavoriteRecipes(PatchAPIView):
     queryset = Recipe.objects.all()
 
     def patch(self, request, *args, **kwargs):
-        recipe = get_object_or_404(Recipe, pk=kwargs['pk'])
+        recipe = get_object_or_404(Recipe, pk=kwargs["pk"])
         if recipe.is_favorite:
             recipe.is_favorite = False
         else:
             recipe.is_favorite = True
         recipe.save()
 
-        return Response(data=f"Success {"favorite" if recipe.is_favorite else "unfavorite"} recipe",
-                        status=HTTP_201_CREATED)
+        return Response(
+            data=f"Success {'favorite' if recipe.is_favorite else 'unfavorite'} recipe",
+            status=HTTP_201_CREATED,
+        )
 
 
 class Tags(generics.ListAPIView):
@@ -131,7 +164,9 @@ class TagsRecipies(generics.ListAPIView):
     filter_backends = [FilterRecipeByLanguage]
 
     def get_queryset(self):
-        recipies_pks = [x.pk for x in get_list_or_404(Recipe, tag__pk=self.kwargs['pk'])]
+        recipies_pks = [
+            x.pk for x in get_list_or_404(Recipe, tag__pk=self.kwargs["pk"])
+        ]
         return Recipe.objects.filter(pk__in=recipies_pks)
 
 
@@ -166,6 +201,7 @@ class RetrieveCreateDestroyRecipeSet(RetrieveCreateDestroyViewSet):
     View for creating a recipe (only main info without ingredients and steps)
     and delete (steps and ingredients inclusive)
     """
+
     permission_classes = [IsAuthenticated]
     serializer_class = RecipesSerializer
     queryset = Recipe.objects.all()
@@ -174,7 +210,7 @@ class RetrieveCreateDestroyRecipeSet(RetrieveCreateDestroyViewSet):
         """
         Instantiates and returns the list of authentication_classes that this view requires.
         """
-        if self.request.method == 'GET':
+        if self.request.method == "GET":
             authentication_classes = [HeaderAuthentication]
         else:
             authentication_classes = [TokenAuthentication]
@@ -186,24 +222,27 @@ class CreateIngredients(generics.CreateAPIView):
     """
     View for creating Ingredients (many) for recipe (recipe pk needs to be passwd in the response).
     """
+
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = IngredientsSerializer
 
     def get_serializer(self, *args, **kwargs):
-        kwargs['many'] = True
+        kwargs["many"] = True
         return IngredientsSerializer(*args, **kwargs)
 
     def perform_create(self, serializer):
-        recipe_id = self.kwargs.get('pk')
+        recipe_id = self.kwargs.get("pk")
 
         # Perform delete of the current ingredients if any
-        ingredients = Ingredient.objects.prefetch_related('recipe').filter(recipe_id=recipe_id)
+        ingredients = Ingredient.objects.prefetch_related("recipe").filter(
+            recipe_id=recipe_id
+        )
         ingredients.delete()
 
         ingredients_data = serializer.validated_data
         for ingredient in ingredients_data:
-            ingredient['recipe_id'] = recipe_id
+            ingredient["recipe_id"] = recipe_id
 
         serializer.save()
 
@@ -212,24 +251,25 @@ class CreateSteps(generics.CreateAPIView):
     """
     View for creating Steps (many) for recipe (recipe pk needs to be passwd in the response).
     """
+
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = StepsSerializer
 
     def get_serializer(self, *args, **kwargs):
-        kwargs['many'] = True
+        kwargs["many"] = True
         return StepsSerializer(*args, **kwargs)
 
     def perform_create(self, serializer):
-        recipe_id = self.kwargs.get('pk')
+        recipe_id = self.kwargs.get("pk")
 
         # Perform delete on current steps
-        steps = Step.objects.prefetch_related('recipe').filter(recipe_id=recipe_id)
+        steps = Step.objects.prefetch_related("recipe").filter(recipe_id=recipe_id)
         steps.delete()
 
         steps_data = serializer.validated_data
         for step in steps_data:
-            step['recipe_id'] = recipe_id
+            step["recipe_id"] = recipe_id
 
         serializer.save()
 
@@ -238,6 +278,7 @@ class UpdateRecipe(UpdateAPIView):
     """
     View for updating the recipe (only main info without ingredients and steps).
     """
+
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = RecipesSerializer
@@ -249,8 +290,8 @@ class PatchRecipeCategory(PatchAPIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, *args, **kwargs):
-        recipe = get_object_or_404(Recipe, pk=kwargs['pk'])
-        category_pk = request.data['category_pk']
+        recipe = get_object_or_404(Recipe, pk=kwargs["pk"])
+        category_pk = request.data["category_pk"]
         category = get_object_or_404(Category, pk=category_pk)
 
         if recipe.is_translated and category != recipe.category:
@@ -273,7 +314,7 @@ class RetrieveRecipeLangVariationsView(generics.ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
-        recipe = get_object_or_404(Recipe, pk=self.kwargs['recipe_pk'])
+        recipe = get_object_or_404(Recipe, pk=self.kwargs["recipe_pk"])
         variations = recipe.get_variations
         return variations
 
@@ -286,11 +327,15 @@ class ScrapeView(CreateAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            page_address = serializer.validated_data['url']
+            page_address = serializer.validated_data["url"]
             user = request.user
-            recipe, ingredients, steps = scrape_recipe(page_address, user.settings.emoji_recipes)
+            recipe, ingredients, steps = scrape_recipe(
+                page_address, user.settings.emoji_recipes
+            )
             if any(item is None for item in (recipe, ingredients, steps)):
-                return Response(status=HTTP_204_NO_CONTENT, content_type="application/json")
+                return Response(
+                    status=HTTP_204_NO_CONTENT, content_type="application/json"
+                )
 
             recipe = save_recipe(recipe, ingredients, steps, page_address)
             serializer = RecipesSerializer(recipe)
@@ -305,8 +350,8 @@ class GenerateRecipeView(CreateAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            ingredients = serializer.validated_data['ingredients']
-            meal_type = serializer.validated_data['meal_type']
+            ingredients = serializer.validated_data["ingredients"]
+            meal_type = serializer.validated_data["meal_type"]
             json_content_recipes = generate_recipes(ingredients, meal_type)
             print(json_content_recipes)
             serializer = GenerateRecipeResultSerializer(json_content_recipes, many=True)
@@ -320,27 +365,40 @@ class TranslateRecipeView(CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         if "None" in os.environ["DEFAULT_RECIPE_DISPLAY_LANGUAGE"]:
-            return Response(data={"errors": ["Default language for translation should be set"]},
-                            status=HTTP_400_BAD_REQUEST)
+            return Response(
+                data={"errors": ["Default language for translation should be set"]},
+                status=HTTP_400_BAD_REQUEST,
+            )
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             try:
-                language = serializer.validated_data['language']
+                language = serializer.validated_data["language"]
             except KeyError:
                 language = os.environ["DEFAULT_RECIPE_DISPLAY_LANGUAGE"]
-            recipe_id = serializer.validated_data['pk']
+            recipe_id = serializer.validated_data["pk"]
             recipe = Recipe.objects.get(pk=recipe_id)
             if not recipe.is_original:
-                return Response(data={"errors": ["Translation must be performed only on original recipes"]},
-                                status=HTTP_400_BAD_REQUEST)
+                return Response(
+                    data={
+                        "errors": [
+                            "Translation must be performed only on original recipes"
+                        ]
+                    },
+                    status=HTTP_400_BAD_REQUEST,
+                )
 
             translated_recipe = translate_and_save_recipe(recipe, language)
             if translated_recipe:
                 serializer = RecipesSerializer(translated_recipe)
                 return Response(data=serializer.data, content_type="application/json")
-            return Response(data={
-                "errors": ["Translation language is already used and there a recipe translated with that language."]},
-                status=HTTP_400_BAD_REQUEST)
+            return Response(
+                data={
+                    "errors": [
+                        "Translation language is already used and there a recipe translated with that language."
+                    ]
+                },
+                status=HTTP_400_BAD_REQUEST,
+            )
 
 
 class GenerateRecipeAudion(CreateAPIView):
@@ -351,15 +409,22 @@ class GenerateRecipeAudion(CreateAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            recipe_pk = serializer.validated_data['recipe_pk']
+            recipe_pk = serializer.validated_data["recipe_pk"]
             recipe = get_object_or_404(Recipe, pk=recipe_pk)
-            if not hasattr(recipe, 'audio_instructions'):
+            if not hasattr(recipe, "audio_instructions"):
                 audio_instructions = recipe_to_tts_audio(recipe)
-                recipe_audio_serializer = AudioInstructionsSerializer(audio_instructions)
-                return Response(status=HTTP_201_CREATED, data=recipe_audio_serializer.data,
-                                content_type="application/json")
+                recipe_audio_serializer = AudioInstructionsSerializer(
+                    audio_instructions
+                )
+                return Response(
+                    status=HTTP_201_CREATED,
+                    data=recipe_audio_serializer.data,
+                    content_type="application/json",
+                )
             else:
-                return Response(data={
-                    "errors": [
-                        "Recipe is converted to audio instructions already."]},
-                    status=HTTP_400_BAD_REQUEST)
+                return Response(
+                    data={
+                        "errors": ["Recipe is converted to audio instructions already."]
+                    },
+                    status=HTTP_400_BAD_REQUEST,
+                )

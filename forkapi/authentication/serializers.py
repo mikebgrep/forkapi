@@ -9,12 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = (
-            "username",
-            "email",
-            "password",
-            "is_superuser"
-        )
+        fields = ("username", "email", "password", "is_superuser")
 
     # TODO:// Add password validation on create
     def create(self, validated_data):
@@ -24,14 +19,9 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
-        fields = (
-            "username",
-            "email",
-            "date_joined"
-        )
+        fields = ("username", "email", "date_joined")
 
 
 class ResetPasswordRequestSerializer(serializers.Serializer):
@@ -39,7 +29,6 @@ class ResetPasswordRequestSerializer(serializers.Serializer):
 
 
 class UserSettingsSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = UserSettings
         fields = (

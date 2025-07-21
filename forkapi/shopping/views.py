@@ -7,8 +7,12 @@ from rest_framework.status import HTTP_201_CREATED
 
 from forkapi import generics
 from .models import ShoppingList, ShoppingItem
-from .serializers import ShoppingListSerializer, ShoppingItemPatchSerializer, SingleShoppingListSerializer, \
-    ShoppingItemSerializer
+from .serializers import (
+    ShoppingListSerializer,
+    ShoppingItemPatchSerializer,
+    SingleShoppingListSerializer,
+    ShoppingItemSerializer,
+)
 
 
 class CreateListShoppingListView(generics.ListCreateUpdateDestroyViewSet):
@@ -26,12 +30,14 @@ class RetrieveUpdateShoppingListView(generics.RetrieveUpdateView):
     queryset = ShoppingList.objects.all()
 
     def patch(self, request, *args, **kwargs):
-        shopping_list = get_object_or_404(ShoppingList, pk=kwargs['pk'])
+        shopping_list = get_object_or_404(ShoppingList, pk=kwargs["pk"])
         data = request.data
         serializer = ShoppingItemSerializer(data=data)
         if serializer.is_valid():
             new_item = serializer.save(shopping_list=shopping_list)
-            return Response(ShoppingItemSerializer(new_item).data, status=status.HTTP_201_CREATED)
+            return Response(
+                ShoppingItemSerializer(new_item).data, status=status.HTTP_201_CREATED
+            )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -41,7 +47,7 @@ class CompleteShoppingList(generics.PatchAPIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, *args, **kwargs):
-        shopping_list = get_object_or_404(ShoppingList, pk=kwargs['pk'])
+        shopping_list = get_object_or_404(ShoppingList, pk=kwargs["pk"])
         if shopping_list.is_completed:
             shopping_list.is_completed = False
             for x in shopping_list.items.all():
@@ -54,8 +60,10 @@ class CompleteShoppingList(generics.PatchAPIView):
                 x.save()
         shopping_list.save()
 
-        return Response(data=f"Success {"complete" if shopping_list.is_completed else "incomplete"} shopping list",
-                        status=HTTP_201_CREATED)
+        return Response(
+            data=f"Success {'complete' if shopping_list.is_completed else 'incomplete'} shopping list",
+            status=HTTP_201_CREATED,
+        )
 
 
 class ShoppingListItemView(generics.UpdateDestroyView):
@@ -70,7 +78,7 @@ class ShoppingListCompleteItemView(generics.PatchAPIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, *args, **kwargs):
-        item = get_object_or_404(ShoppingItem, pk=kwargs['pk'])
+        item = get_object_or_404(ShoppingItem, pk=kwargs["pk"])
 
         if item.is_completed:
             item.is_completed = False
@@ -84,5 +92,7 @@ class ShoppingListCompleteItemView(generics.PatchAPIView):
         #     item.shopping_list.is_completed = True
         #     item.shopping_list.save()
 
-        return Response(data=f"Success {"completed" if item.is_completed else "incompleted"} item",
-                        status=HTTP_201_CREATED)
+        return Response(
+            data=f"Success {'completed' if item.is_completed else 'incompleted'} item",
+            status=HTTP_201_CREATED,
+        )

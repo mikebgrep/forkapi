@@ -22,10 +22,10 @@ services:
       - forkapi
 
   be:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    #      image: mikebgrep/forkapi:latest  # change with mikebgrep/forkapi:arm64 for RaspberryPI
+   # build:
+   #   context: .
+   #   dockerfile: Dockerfile
+    image: mikebgrep/forkapi:latest  # change with mikebgrep/forkapi:arm64 for RaspberryPI
     container_name: forkapi
     env_file:
       - .env

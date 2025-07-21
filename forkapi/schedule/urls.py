@@ -9,5 +9,5 @@ router_schedule = SimpleRouter()
 router_schedule.register(r"", ScheduleView)
 
 urlpatterns = [
-    path('', include(router_schedule.urls)),
+    path("", include(router_schedule.urls)),
 ]

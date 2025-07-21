@@ -3,17 +3,14 @@ from typing import Tuple, List
 from playwright.sync_api import sync_playwright, TimeoutError
 from playwright_stealth import stealth_sync, StealthConfig
 from playwright_stealth.properties import BrowserType
-from playwright.sync_api import sync_playwright
 
 
 class Browser:
-
     def __init__(self):
         self.playwright = sync_playwright().start()
         self.browser = self.playwright.firefox.launch(headless=True)
         self.page = self.browser.new_page()
         self.apply_stealth()
-
 
     def close(self):
         self.browser.close()
@@ -38,10 +35,10 @@ class Browser:
             navigator_user_agent=False,
             browser_type=BrowserType.FIREFOX,
             # Disable Chrome as we use Firefox
-            chrome_app = False,
-            chrome_csi = False,
-            chrome_load_times = False,
-            chrome_runtime = True,
+            chrome_app=False,
+            chrome_csi=False,
+            chrome_load_times=False,
+            chrome_runtime=True,
         )
 
         # page = context.new_page()
@@ -69,13 +66,16 @@ class Browser:
 
         try:
             # Get thumbnail for recipies without image
-            meta_content_thumbnail = self.page.locator('meta[property="og:image"]').nth(0).get_attribute('content', timeout=3700)
+            meta_content_thumbnail = (
+                self.page.locator('meta[property="og:image"]')
+                .nth(0)
+                .get_attribute("content", timeout=3700)
+            )
         except TimeoutError as ex:
             print(ex)
             return content, None
 
         return content, meta_content_thumbnail
-
 
     def get_duckduckgo_result(self, url) -> List[str] | None:
         try:
@@ -84,7 +84,9 @@ class Browser:
             print(ex)
             return None
 
-        href_elements = self.page.locator('a.result__a')
-        href_values = href_elements.evaluate_all('elements => elements.map(e => e.href)')
+        href_elements = self.page.locator("a.result__a")
+        href_values = href_elements.evaluate_all(
+            "elements => elements.map(e => e.href)"
+        )
 
         return href_values

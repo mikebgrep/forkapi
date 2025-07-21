@@ -20,9 +20,7 @@ class ScheduleRepresentationSerializer(serializers.ModelSerializer):
 
 class ScheduleSerializer(serializers.ModelSerializer):
     recipe = serializers.PrimaryKeyRelatedField(
-        queryset=Recipe.objects.all(),
-        write_only=True,
-        required=True
+        queryset=Recipe.objects.all(), write_only=True, required=True
     )
 
     class Meta:
@@ -35,4 +33,6 @@ class ScheduleSerializer(serializers.ModelSerializer):
         )
 
     def to_representation(self, instance):
-        return ScheduleRepresentationSerializer(context=self.context).to_representation(instance)
+        return ScheduleRepresentationSerializer(context=self.context).to_representation(
+            instance
+        )

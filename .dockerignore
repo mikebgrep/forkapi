@@ -2,8 +2,9 @@ forkapi/sql/db.sqlite3
 forkapi/recipe/migrations/*
 forkapi/authentication/migrations/*
 forkapi/schedule/migrations/*
-forkapi/media/images
-forkapi/media/videos
+forkapi/media/images/**/*.png
+forkapi/media/images/**/*.jpg
+forkapi/media/videos/**/*.mp4
 forkapi/media/backups/**/*.zip
 forkapi/media/audio/**/*.mp3
 forkapi/static/*

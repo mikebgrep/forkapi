@@ -1,6 +1,14 @@
 from rest_framework import serializers
 
-from .models import Category, Recipe, Ingredient, Step, Tag, LANGUAGES_CHOICES, AudioInstructions
+from .models import (
+    Category,
+    Recipe,
+    Ingredient,
+    Step,
+    Tag,
+    LANGUAGES_CHOICES,
+    AudioInstructions,
+)
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -12,56 +20,39 @@ class CategorySerializer(serializers.ModelSerializer):
         )
 
     def update(self, instance, validated_data):
-        instance.name = validated_data['name']
+        instance.name = validated_data["name"]
         instance.save()
         return instance
 
 
 class IngredientsSerializer(serializers.ModelSerializer):
     recipe_id = serializers.PrimaryKeyRelatedField(
-        queryset=Recipe.objects.all(),
-        write_only=True,
-        required=False
+        queryset=Recipe.objects.all(), write_only=True, required=False
     )
 
     class Meta:
         model = Ingredient
-        fields = (
-            "name",
-            "quantity",
-            "metric",
-            "recipe_id"
-        )
+        fields = ("name", "quantity", "metric", "recipe_id")
 
 
 class StepsSerializer(serializers.ModelSerializer):
     recipe_id = serializers.PrimaryKeyRelatedField(
-        queryset=Recipe.objects.all(),
-        write_only=True,
-        required=False
+        queryset=Recipe.objects.all(), write_only=True, required=False
     )
 
     class Meta:
         model = Step
-        fields = (
-            "text",
-            "recipe_id"
-        )
+        fields = ("text", "recipe_id")
 
 
 class AudioInstructionsSerializer(serializers.ModelSerializer):
     recipe_id = serializers.PrimaryKeyRelatedField(
-        queryset=Recipe.objects.all(),
-        write_only=True,
-        required=False
+        queryset=Recipe.objects.all(), write_only=True, required=False
     )
 
     class Meta:
         model = AudioInstructions
-        fields = (
-            "file",
-            "recipe_id"
-        )
+        fields = ("file", "recipe_id")
 
 
 class RecipesSerializer(serializers.ModelSerializer):
@@ -96,7 +87,7 @@ class RecipesSerializer(serializers.ModelSerializer):
             "is_original",
             "original_recipe_pk",
             "is_translated",
-            "audio_instructions"
+            "audio_instructions",
         )
 
     def create(self, validated_data):
@@ -104,11 +95,13 @@ class RecipesSerializer(serializers.ModelSerializer):
         Make sure the image is present for create/post requests
         Remove clear_video from validated data on create
         """
-        if 'image' not in validated_data:
-            raise serializers.ValidationError({'image': 'Image is required for new recipes.'})
+        if "image" not in validated_data:
+            raise serializers.ValidationError(
+                {"image": "Image is required for new recipes."}
+            )
 
-        if 'clear_video' in validated_data:
-            validated_data.pop('clear_video')
+        if "clear_video" in validated_data:
+            validated_data.pop("clear_video")
 
         return super().create(validated_data)
 
@@ -116,13 +109,12 @@ class RecipesSerializer(serializers.ModelSerializer):
         """
         Set video to None if  on updated is removed clear_video write only bool should be set to True
         """
-        if 'clear_video' in validated_data and validated_data['clear_video']:
+        if "clear_video" in validated_data and validated_data["clear_video"]:
             if instance.video:
                 instance.video.delete()
-            validated_data['video'] = None
+            validated_data["video"] = None
 
         return super().update(instance, validated_data)
-
 
 
 class RecipePreviewSerializer(serializers.ModelSerializer):
@@ -159,7 +151,7 @@ class TagsSerializer(serializers.ModelSerializer):
         )
 
     def update(self, instance, validated_data):
-        instance.name = validated_data['name']
+        instance.name = validated_data["name"]
         instance.save()
         return instance
 
@@ -168,13 +160,13 @@ class RecipeLinkSerializer(serializers.Serializer):
     url = serializers.URLField()
 
     class Meta:
-        fields = (
-            "url",
-        )
+        fields = ("url",)
 
 
 class GenerateRecipeSerializer(serializers.Serializer):
-    ingredients = serializers.ListField(child=serializers.CharField(), allow_empty=False)
+    ingredients = serializers.ListField(
+        child=serializers.CharField(), allow_empty=False
+    )
     meal_type = serializers.CharField(allow_blank=True, default=None)
 
     class Meta:
@@ -190,11 +182,7 @@ class GenerateRecipeResultSerializer(serializers.Serializer):
     thumbnail = serializers.URLField()
 
     class Meta:
-        fields = (
-            "name",
-            "url",
-            "thumbnail"
-        )
+        fields = ("name", "url", "thumbnail")
 
 
 class TranslateRecipeSerializer(serializers.Serializer):
@@ -203,21 +191,16 @@ class TranslateRecipeSerializer(serializers.Serializer):
     language is on of the LANGUAGES_CHOICES
     pk is the recipe pk that it's been translated
     """
+
     language = serializers.ChoiceField(choices=LANGUAGES_CHOICES, required=False)
     pk = serializers.IntegerField()
 
     class Meta:
-        fields = (
-            "language",
-            "pk"
-        )
-
+        fields = ("language", "pk")
 
 
 class CreateRecipeAudioSerializer(serializers.Serializer):
     recipe_pk = serializers.IntegerField()
 
     class Meta:
-        fields = (
-            "recipe_pk"
-        )
+        fields = "recipe_pk"

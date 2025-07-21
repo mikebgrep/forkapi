@@ -48,11 +48,6 @@ docker pull mikebgrep/forkapi:arm64
 You can benefit from already build dockerized FE web application fork.recipes.That can be deployed together with the API.
 All instructions are added in the documentations ➡ [docs](https://mikebgrep.github.io/forkapi/clients/)
 
-## Support 
-You can support the repo as clicking on the sponsorship button.
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/mikebgrep)
-
 ## License
 This project is licensed under the BSD 3-Clause License.
 

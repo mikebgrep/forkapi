@@ -6,8 +6,16 @@ from typing import List
 from openai import OpenAI
 
 from ..models import PromptType, Recipe
-from .prompts import prompt_recipe_main_info, prompt_recipe_instructions, prompt_recipe_ingredients, \
-    prompt_generate_recipe, prompt_translate_recipe, prompt_tts_audio, additional_prompt_for_emojis_ingredients, additional_prompt_for_emojis_name
+from .prompts import (
+    prompt_recipe_main_info,
+    prompt_recipe_instructions,
+    prompt_recipe_ingredients,
+    prompt_generate_recipe,
+    prompt_translate_recipe,
+    prompt_tts_audio,
+    additional_prompt_for_emojis_ingredients,
+    additional_prompt_for_emojis_name,
+)
 from markdownify import markdownify as md
 from dotenv import load_dotenv
 
@@ -27,13 +35,15 @@ def openai_tts_stream(chunks: list, recipe_name: str, language: str):
     chunk_files = []
 
     for i, chunk in enumerate(chunks):
-        chunk_file = Path(__file__).parent.parent.parent / f"media/audio/chunks/chunk_{i}.mp3"
+        chunk_file = (
+            Path(__file__).parent.parent.parent / f"media/audio/chunks/chunk_{i}.mp3"
+        )
 
         with client.audio.speech.with_streaming_response.create(
-                model="gpt-4o-mini-tts",
-                voice=os.getenv("OPEN_AI_TTS_MODEL_VOICE"),
-                input=chunk,
-                instructions=prompt_tts_audio.format(language)
+            model="gpt-4o-mini-tts",
+            voice=os.getenv("OPEN_AI_TTS_MODEL_VOICE"),
+            input=chunk,
+            instructions=prompt_tts_audio.format(language),
         ) as response:
             with open(chunk_file, "wb") as f:
                 for chunk_data in response.iter_bytes():
@@ -41,7 +51,7 @@ def openai_tts_stream(chunks: list, recipe_name: str, language: str):
 
         chunk_files.append(chunk_file)
 
-    file_name = f"{uuid.uuid4()}-{recipe_name.replace(" ", "_")}.mp3"
+    file_name = f"{uuid.uuid4()}-{recipe_name.replace(' ', '_')}.mp3"
     speech_file_path = Path(__file__).parent.parent.parent / f"media/audio/{file_name}"
 
     with open(speech_file_path, "wb") as final_file:
@@ -67,30 +77,45 @@ def open_ai_scrape_message(page_content: str, prompt_type: PromptType):
     markdown_content = md(page_content)
 
     messages = [
-        {"role": "system",
-         "content": "You are a helpful assistant that convert markdown page content to a valid json."},
+        {
+            "role": "system",
+            "content": "You are a helpful assistant that convert markdown page content to a valid json.",
+        },
         {
             "role": "user",
-            "content": f"Provided markdown: {markdown_content}. Your task is to {prompt_recipe_main_info if prompt_type is PromptType.MAIN_INFO
-            else prompt_recipe_main_info.format(additional_prompt_for_emojis_name) if prompt_type is PromptType.MAIN_INFO_WITH_EMOJI
-            else prompt_recipe_ingredients.format(additional_prompt_for_emojis_ingredients) if prompt_type is PromptType.INGREDIENT_WITH_EMOJI
-            else prompt_recipe_ingredients if prompt_type is PromptType.INGREDIENTS
-            else prompt_recipe_instructions if prompt_type is PromptType.INSTRUCTIONS
-            else prompt_recipe_main_info}.",
-        }
+            "content": f"Provided markdown: {markdown_content}. Your task is to {
+                prompt_recipe_main_info
+                if prompt_type is PromptType.MAIN_INFO
+                else prompt_recipe_main_info.format(additional_prompt_for_emojis_name)
+                if prompt_type is PromptType.MAIN_INFO_WITH_EMOJI
+                else prompt_recipe_ingredients.format(
+                    additional_prompt_for_emojis_ingredients
+                )
+                if prompt_type is PromptType.INGREDIENT_WITH_EMOJI
+                else prompt_recipe_ingredients
+                if prompt_type is PromptType.INGREDIENTS
+                else prompt_recipe_instructions
+                if prompt_type is PromptType.INSTRUCTIONS
+                else prompt_recipe_main_info
+            }.",
+        },
     ]
 
     return __openai_chat_completion(messages)
 
 
-def open_ai_generate_recipe_message(ingredients: List[str] = None, meal_type:str = None):
+def open_ai_generate_recipe_message(
+    ingredients: List[str] = None, meal_type: str = None
+):
     messages = [
-        {"role": "system",
-         "content": "You are helpful assistant that generate a valid recipes from a given ingredients and return them to a valid json"},
+        {
+            "role": "system",
+            "content": "You are helpful assistant that generate a valid recipes from a given ingredients and return them to a valid json",
+        },
         {
             "role": "user",
-            "content": f"With provided ingredients: {ingredients}. Your task is to {prompt_generate_recipe.format(meal_type)}"
-        }
+            "content": f"With provided ingredients: {ingredients}. Your task is to {prompt_generate_recipe.format(meal_type)}",
+        },
     ]
 
     return __openai_chat_completion(messages)
@@ -98,12 +123,14 @@ def open_ai_generate_recipe_message(ingredients: List[str] = None, meal_type:str
 
 def open_ai_translate_recipe_message(recipe: Recipe, language: str):
     messages = [
-        {"role": "system",
-         "content": "Your are helpful assistant that translate recipes to foreign languages and return them to a valid json"},
+        {
+            "role": "system",
+            "content": "Your are helpful assistant that translate recipes to foreign languages and return them to a valid json",
+        },
         {
             "role": "user",
-            "content": f"With the provided name: {recipe.name}, description: {recipe.description}, ingredients: {json.dumps(list(recipe.ingredients.all().values()))} and instruction/steps: {json.dumps(list(recipe.steps.all().values()))}. Your task it to {prompt_translate_recipe} to the  provided language: {language}"
-        }
+            "content": f"With the provided name: {recipe.name}, description: {recipe.description}, ingredients: {json.dumps(list(recipe.ingredients.all().values()))} and instruction/steps: {json.dumps(list(recipe.steps.all().values()))}. Your task it to {prompt_translate_recipe} to the  provided language: {language}",
+        },
     ]
     # TODO: Change model if not performing well on translation , model="gpt-4-turbo"
     return __openai_chat_completion(messages)
