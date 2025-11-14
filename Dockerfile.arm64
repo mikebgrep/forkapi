@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpcre3-dev \
     curl \
     libpq-dev \
-    python-dev-is-python3 \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Raspberry Pi packages 📦
