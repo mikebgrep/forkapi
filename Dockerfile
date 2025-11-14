@@ -32,5 +32,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN playwright install --with-deps firefox || \
     playwright install firefox --force
 
-RUN python -c "from playwright.sync_api import sync_playwright; \
-    with sync_playwright() as p: p.firefox.launch(headless=True).close(); print('Firefox OK')"
+# Verify Firefox was installed correctly and can launch
+RUN python -c "\
+from playwright.sync_api import sync_playwright; \
+with sync_playwright() as p: \
+    browser = p.firefox.launch(headless=True); \
+    browser.close(); \
+    print('Firefox OK - launched and closed successfully')\
+"
