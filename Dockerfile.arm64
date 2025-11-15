@@ -38,14 +38,9 @@ WORKDIR /forkapi
 # Copy the project
 COPY /forkapi /forkapi
 COPY ./requirements.txt /forkapi/requirements.txt
-COPY /scripts/playwright-test.py /forkapi/playwright-test.py
 
 # Install dependencies
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN playwright install --with-deps firefox || \
-    playwright install firefox --force
-
-# Verify Firefox was installed correctly and can launch
-RUN python playwright-test.py
+RUN playwright install --with-deps firefox

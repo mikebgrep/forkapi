@@ -49,7 +49,7 @@ paginate==0.5.7
 pathspec==0.12.1
 pillow==11.0.0
 platformdirs==4.3.6
-playwright==1.49.1
+playwright==1.47.0
 pluggy==1.5.0
 psycopg2==2.9.10
 psycopg2-binary==2.9.10
