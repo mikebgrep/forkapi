@@ -18,26 +18,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Set the working directory
 WORKDIR /forkapi
 
+
 # Copy the project
 COPY /forkapi /forkapi
 COPY ./requirements.txt /forkapi/requirements.txt
+COPU /scripts/playwright-test.py /forkapi/playwright-test.py
 
 # Install dependencies
-
-# Install Python dependencies
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright browsers – this works on Ubuntu 24.04, Raspberry Pi OS, Debian 12/13, etc.
 RUN playwright install --with-deps firefox || \
     playwright install firefox --force
 
 # Verify Firefox was installed correctly and can launch
-
-RUN python - << 'EOF'
-from playwright.sync_api import sync_playwright
-with sync_playwright() as p:
-    browser = p.firefox.launch(headless=True)
-    browser.close()
-    print("Firefox OK - launched and closed successfully")
-EOF
+RUN python playwright-test.py
