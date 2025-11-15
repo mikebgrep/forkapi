@@ -22,7 +22,7 @@ WORKDIR /forkapi
 # Copy the project
 COPY /forkapi /forkapi
 COPY ./requirements.txt /forkapi/requirements.txt
-COPU /scripts/playwright-test.py /forkapi/playwright-test.py
+COPY /scripts/playwright-test.py /forkapi/playwright-test.py
 
 # Install dependencies
 RUN pip install --upgrade pip
