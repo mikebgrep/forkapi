@@ -81,7 +81,7 @@ tox==4.23.2
 tqdm==4.67.1
 typing_extensions==4.12.2
 tzlocal==5.2
-urllib3==2.5.0
+urllib3==2.6.0
 uWSGI==2.0.28
 verspec==0.1.0
 virtualenv==20.27.1
