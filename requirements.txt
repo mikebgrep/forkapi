@@ -57,7 +57,7 @@ pydantic==2.10.4
 pydantic_core==2.27.2
 pyee==12.0.0
 Pygments==2.18.0
-pymdown-extensions==10.12
+pymdown-extensions==10.16.1
 pyparsing==3.2.3
 pyproject-api==1.8.0
 pytest==8.3.4
