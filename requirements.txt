@@ -20,7 +20,7 @@ django-filter==24.3
 django-jazzmin==3.0.1
 djangorestframework==3.15.2
 fake-http-header==0.3.5
-filelock==3.16.1
+filelock==3.20.1
 ghp-import==2.1.0
 gitignore_parser==0.1.11
 greenlet==3.1.1
