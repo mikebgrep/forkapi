@@ -60,12 +60,12 @@ Pygments==2.18.0
 pymdown-extensions==10.16.1
 pyparsing==3.2.3
 pyproject-api==1.8.0
-pytest==8.3.4
+pytest==9.0.3
 pytest-base-url==2.1.0
 pytest-mockito==0.0.4
 pytest-playwright==0.6.2
 python-dateutil==2.9.0.post0
-python-dotenv==1.0.1
+python-dotenv==1.2.2
 python-slugify==8.0.4
 PyYAML==6.0.2
 pyyaml_env_tag==0.1
