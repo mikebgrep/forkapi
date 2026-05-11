@@ -60,7 +60,7 @@ Pygments==2.18.0
 pymdown-extensions==10.16.1
 pyparsing==3.2.3
 pyproject-api==1.8.0
-pytest==8.3.3
+pytest==9.0.3
 pytest-base-url==2.1.0
 pytest-mockito==0.0.4
 pytest-playwright==0.7.2
@@ -81,7 +81,7 @@ tox==4.23.2
 tqdm==4.67.1
 typing_extensions==4.12.2
 tzlocal==5.2
-urllib3==2.6.3
+urllib3==2.7.0
 uWSGI==2.0.28
 verspec==0.1.0
 virtualenv==20.36.1
