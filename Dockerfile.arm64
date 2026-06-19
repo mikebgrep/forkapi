@@ -1,5 +1,5 @@
 # Use the official Python image from the Docker Hub
-FROM python:3.12-bullseye
+FROM python:3.12-bookworm
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -12,11 +12,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpcre2-dev \
     curl \
     libpq-dev \
-    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Raspberry Pi packages 📦
-RUN apt update && apt install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libjpeg-dev \
     zlib1g-dev \
     libpng-dev \
@@ -30,7 +29,7 @@ RUN apt update && apt install -y \
     python3-tk \
     libharfbuzz-dev \
     libfribidi-dev \
-    libpq-dev
+    && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
 WORKDIR /forkapi
